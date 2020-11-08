@@ -173,7 +173,6 @@ void setup()
 {
   data = new Data();
   d = new Display();
-  delay(5000);
   data->init();
   ti.init();
   d->init(data);
@@ -195,7 +194,7 @@ void setup()
   }
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
 
-  d->logPercent("Connexion au wifi...", 50);
+  d->logPercent("Connexion au reseau wifi...", 50);
   delay(350); // just to see progress bar
 
   // ========= WIFI MANAGER =========
@@ -223,6 +222,8 @@ void setup()
     ESP.reset();
     delay(1000);
   }
+
+  WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
   d->logPercent("Connecte a " + String(WiFi.SSID()), 80);
   delay(500); // just to see progress bar

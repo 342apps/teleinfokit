@@ -17,6 +17,7 @@
 #define PIN_BUTTON 1
 #define CONFIG_FILE "/config.dat"
 #define RESET_CONFIRM_DELAY 10000
+#define SCREEN_OFF_MESSAGE_DELAY 5000
 #define AP_NAME "TeleInfoKit"
 #define AP_PWD  "givememylinkydata"
 
@@ -63,6 +64,9 @@ uint8_t reset = IDLE;
 
 // timestamp for reset request auto-cancellation
 unsigned long resetTs = 0;
+
+// timestamp for message before screen off
+unsigned long offTs = 0;
 
 Data *data;
 Display *d;
@@ -141,6 +145,7 @@ void handlerBtn(Button2 &btn)
   case SINGLE_CLICK:
     mode = (mode + 1) % 7; // cycle through 7 screens
     resetTs = 0;
+    offTs = millis();
     break;
   case DOUBLE_CLICK:
     break;
@@ -375,7 +380,13 @@ void loop()
       break;
     case OFF:
       reset = IDLE;
-      d->displayOff();
+      if(millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
+      {
+        d->displayOff();
+      }
+      else{
+        d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
+      }
       break;
     }
 

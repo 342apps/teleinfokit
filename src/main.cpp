@@ -336,7 +336,7 @@ void loop()
 
   if (millis() - refreshTime > REFRESH_DELAY)
   {
-    // data.storeValue(ti.hp, ti.hc);
+    data->storeValue(ti.hp, ti.hc);
 
     switch (mode)
     {

@@ -11,17 +11,10 @@ class WebServer
 public:
     WebServer();
 
-    void init(ESPTeleInfo * ti);
+    void init(ESPTeleInfo *ti);
     void loop();
 
 private:
-    
-    // void getPower();
-    // void getIndex();
-    // void getMeterInfo();
-    // void GetSysInfo();
-    // void handleNotFound();
-    // void restServerRouting();
 };
 
-#endif      /* WEBSERVER_H */
+#endif /* WEBSERVER_H */

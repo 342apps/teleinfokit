@@ -11,7 +11,7 @@ public:
     ESPTeleInfo();
 
     void init();
-    void initMqtt(char *server, uint16_t port, char *username, char * password);
+    void initMqtt(char *server, uint16_t port, char *username, char *password);
     void loop(void);
 
     // les données de consommation

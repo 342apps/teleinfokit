@@ -5,14 +5,14 @@ SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY
 
 Display::Display()
 {
-    oled.init();
-    oled.flipScreenVertically();
-    oled.setFont(ArialMT_Plain_10);
+  oled.init();
+  oled.flipScreenVertically();
+  oled.setFont(ArialMT_Plain_10);
 }
 
-void Display::init(Data * d)
+void Display::init(Data *d)
 {
-    data = d;
+  data = d;
 }
 
 void Display::loop(void)
@@ -88,7 +88,7 @@ void Display::displayData2(long hp, long hc)
   oled.display();
 }
 
-void Display::displayData3(char* adc0, long isousc, char* ptec)
+void Display::displayData3(char *adc0, long isousc, char *ptec)
 {
   oled.displayOn();
   oled.clear();

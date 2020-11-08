@@ -19,7 +19,7 @@
 #define RESET_CONFIRM_DELAY 10000
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define AP_NAME "TeleInfoKit"
-#define AP_PWD  "givememylinkydata"
+#define AP_PWD "givememylinkydata"
 
 #define REFRESH_DELAY 1000
 
@@ -195,7 +195,7 @@ void setup()
 
   readConfig();
   uint16_t port = 1883;
-  if(config.mqtt_port[0] != '\0')
+  if (config.mqtt_port[0] != '\0')
   {
     port = atoi(config.mqtt_port);
     delay(1000);
@@ -236,7 +236,7 @@ void setup()
   d->logPercent("Connecte a " + String(WiFi.SSID()), 80);
   delay(500); // just to see progress bar
 
-// TODO issue on load here ??
+  // TODO issue on load here ??
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_server_username, custom_mqtt_username.getValue());
@@ -322,9 +322,10 @@ void setup()
 
   web->init(&ti);
 
-  if(!ti.LogStartup()){
+  if (!ti.LogStartup())
+  {
     d->logPercent("Demarrage termine", 100);
-    d->log("Erreur config MQTT \nReinitialiser les reglages",5000);
+    d->log("Erreur config MQTT \nReinitialiser les reglages", 5000);
   }
 
   d->logPercent("Demarrage termine", 100);
@@ -380,11 +381,12 @@ void loop()
       break;
     case OFF:
       reset = IDLE;
-      if(millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
+      if (millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
       {
         d->displayOff();
       }
-      else{
+      else
+      {
         d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
       }
       break;

@@ -8,8 +8,6 @@ Display::Display()
     oled.init();
     oled.flipScreenVertically();
     oled.setFont(ArialMT_Plain_10);
-    oled.drawRect(0,0,128,32);
-    oled.display();
 }
 
 void Display::init(Data * d)

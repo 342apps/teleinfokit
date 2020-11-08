@@ -315,7 +315,7 @@ void setup()
   });
   ArduinoOTA.begin();
 
-  web->init();
+  web->init(&ti);
 
   if(!ti.LogStartup()){
     d->logPercent("Demarrage termine", 100);

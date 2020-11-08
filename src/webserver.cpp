@@ -1,6 +1,7 @@
 #include "webserver.h"
 
 ESP8266WebServer server(80);
+ESPTeleInfo * teleinfows;
 
 WebServer::WebServer()
 {
@@ -10,15 +11,15 @@ WebServer::WebServer()
 
 // Serving Hello world
 void getPower() {
-    server.send(200, "application/json", "{\"name\": \"Hello getPower\"}");
+    server.send(200, "application/json", "{\"papp\": "+ String(teleinfows->papp)+", \"iinst\": "+ String(teleinfows->iinst)+"}");
 }
 
 void getIndex() {
-    server.send(200, "application/json", "{\"name\": \"Hello getIndex\"}");
+    server.send(200, "application/json", "{\"hp\": "+ String(teleinfows->hp)+", \"hc\": "+ String(teleinfows->hc)+"}");
 }
 
 void getMeterInfo() {
-    server.send(200, "application/json", "{\"name\": \"Hello getMeterInfo\"}");
+    server.send(200, "application/json", "{\"adc0\": \""+ String(teleinfows->adc0)+"\", \"isousc\": "+ String(teleinfows->isousc)+", \"ptec\": \""+ String(teleinfows->ptec)+"\"}");
 }
 
 // Serving Hello world
@@ -28,6 +29,8 @@ void GetSysInfo() {
     response+= "\"ip\": \""+WiFi.localIP().toString()+"\"";
     response+= ",\"gw\": \""+WiFi.gatewayIP().toString()+"\"";
     response+= ",\"nm\": \""+WiFi.subnetMask().toString()+"\"";
+    response+= ",\"ssid\": \""+WiFi.SSID()+"\"";
+    response+= ",\"mac\": \""+WiFi.macAddress()+"\"";
  
     if (server.arg("signalStrength")== "true"){
         response+= ",\"signalStrengh\": \""+String(WiFi.RSSI())+"\"";
@@ -84,8 +87,9 @@ void WebServer::loop()
     server.handleClient();
 }
 
-void WebServer::init()
+void WebServer::init(ESPTeleInfo * ti)
 {
+    teleinfows = ti;
   // Activate mDNS this is used to be able to connect to the server
   // with local DNS hostmane esp8266.local
 //   if (MDNS.begin("esp8266")) {

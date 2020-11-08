@@ -19,7 +19,7 @@ public:
     void loop(void);
     void log(String text, int16_t displayTime = 500);
     void logPercent(String text, int percentage);
-    void drawGraph();
+    void drawGraph(long papp);
     void displayData1(long papp, long iinst);
     void displayData2(long hp, long hc);
     void displayData3(char *adc0, long isousc, char *ptec);

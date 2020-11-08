@@ -354,7 +354,7 @@ void loop()
     {
     case GRAPH:
       reset = IDLE;
-      d->drawGraph();
+      d->drawGraph(ti.papp);
       break;
     case DATA1:
       reset = IDLE;

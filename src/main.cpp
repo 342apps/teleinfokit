@@ -11,6 +11,7 @@
 #include "data.h"
 #include "espteleinfo.h"
 #include "display.h"
+#include "webserver.h"
 
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
@@ -66,6 +67,7 @@ unsigned long resetTs = 0;
 Data *data;
 Display *d;
 ESPTeleInfo ti = ESPTeleInfo();
+WebServer *web;
 Button2 button = Button2(PIN_BUTTON);
 WiFiManager wifiManager;
 
@@ -176,6 +178,7 @@ void setup()
   data->init();
   ti.init();
   d->init(data);
+  web = new WebServer();
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
   //pinMode(PIN_OPTO, INPUT_PULLUP);
@@ -312,6 +315,8 @@ void setup()
   });
   ArduinoOTA.begin();
 
+  web->init();
+
   if(!ti.LogStartup()){
     d->logPercent("Demarrage termine", 100);
     d->log("Erreur config MQTT \nReinitialiser les reglages",5000);
@@ -326,6 +331,7 @@ void loop()
 {
   ArduinoOTA.handle();
   button.loop();
+  web->loop();
 
   // for cancelling reset settings requests automatically
   if (resetTs != 0 && (millis() - resetTs > RESET_CONFIRM_DELAY))

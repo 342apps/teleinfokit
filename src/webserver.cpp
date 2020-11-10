@@ -63,8 +63,9 @@ void handleNotFound()
 void restServerRouting()
 {
     server.on("/", HTTP_GET, []() {
-        server.send(200, F("text/html"),
-                    F("Welcome to the REST Web Server"));
+        // server.send(200, F("text/html"),
+        //             F("Welcome to the REST Web Server"));
+        server.serveStatic("/index.html", LittleFS, "/index.html");
     });
     server.on(F("/power"), HTTP_GET, getPower);
     server.on(F("/index"), HTTP_GET, getIndex);

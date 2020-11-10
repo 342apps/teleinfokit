@@ -1,0 +1,115 @@
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <style>
+    body {
+      min-width: 310px;
+    	max-width: 800px;
+    	height: 400px;
+      margin: 0 auto;
+    }
+    h2 {
+      font-family: Arial;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>TeleInfo Kit</h2>
+  <div id="chart-power" class="container"></div>
+</body>
+<script>
+var chartT = new Highcharts.Chart({
+  chart:{ renderTo : 'chart-power' },
+  title: { text: 'Données de consommation instantanées', align: 'left' },
+  subtitle: {
+    text: 'Source: TeleInfoKit_1235<br />Compteur: ADC0123',
+    align: 'left'
+  },
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true }
+    },
+  },
+  xAxis: { type: 'datetime',
+    dateTimeLabelFormats: { second: '%H:%M:%S' }
+  },
+  yAxis: [{
+    id: 'papp_data',
+    labels: {
+      format: '{value} VA',
+      style: {
+        color: Highcharts.getOptions().colors[5]
+      }
+    },
+    title: { text: 'Puissance' },
+    min: 0
+  },
+  {
+    id: 'iinst_data',
+    labels: {
+      format: '{value} A',
+      style: {
+        color: Highcharts.getOptions().colors[4]
+      }
+    },
+    title: { text: 'Intensité' },
+    opposite: true,
+    min: 0
+  }],
+  series: [{
+    name: 'Puissance',
+    type: 'spline',
+    color: Highcharts.getOptions().colors[5],
+    yAxis: 0,
+    tooltip: {
+      valueSuffix: ' VA'
+    }
+    
+  }, {
+    name: 'Intensité',
+    type: 'spline',
+    color: Highcharts.getOptions().colors[4],
+    yAxis: 1,
+    marker: {
+      enabled: false
+    },
+    dashStyle: 'shortdot',
+    tooltip: {
+      valueSuffix: ' A'
+    }
+
+  }],
+  tooltip: {
+    shared: true
+  },
+  credits: { enabled: false }
+});
+setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var obj = JSON.parse(this.responseText);
+      var x = (new Date()).getTime(),
+          papp = obj.papp,
+          iinst = obj.iinst;
+      if(chartT.series[0].data.length > 1200) {
+        chartT.series[0].addPoint([x, papp], true, true, true);
+      } else {
+        chartT.series[0].addPoint([x, papp], true, false, true);
+      }
+      if(chartT.series[1].data.length > 1200) {
+        chartT.series[1].addPoint([x, iinst], true, true, true);
+      } else {
+        chartT.series[1].addPoint([x, iinst], true, false, true);
+      }
+    }
+  };
+  xhttp.open("GET", "/power", true);
+  xhttp.send();
+}, 5000 ) ;
+</script>
+</html>

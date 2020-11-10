@@ -7,7 +7,6 @@
     body {
       min-width: 310px;
     	max-width: 800px;
-    	height: 400px;
       margin: 0 auto;
     }
     h2 {
@@ -20,9 +19,10 @@
 <body>
   <h2>TeleInfo Kit</h2>
   <div id="chart-power" class="container"></div>
+  <div id="chart-history" class="container"></div>
 </body>
 <script>
-var chartT = new Highcharts.Chart({
+var chartPower = new Highcharts.Chart({
   chart:{ renderTo : 'chart-power' },
   title: { text: 'Données de consommation instantanées', align: 'left' },
   subtitle: {
@@ -88,6 +88,39 @@ var chartT = new Highcharts.Chart({
   },
   credits: { enabled: false }
 });
+
+var chartHistory = new Highcharts.Chart({
+  chart:{ renderTo : 'chart-history'},
+  title: { text: 'Historique 24h', align: 'left' },
+  subtitle: {
+    text: 'Source: TeleInfoKit_1235<br />Compteur: ADC0123',
+    align: 'left'
+  },
+  xAxis: { categories: ["24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1" ] },
+  yAxis: {
+    id: 'conso_data',
+    labels: {
+      format: '{value} Wh',
+      style: {
+        color: Highcharts.getOptions().colors[1]
+      }
+    },
+    title: { text: 'Consommation' },
+    min: 0
+  },
+  series: [{
+    name: 'Consommation ',
+    type: 'column',
+    color: Highcharts.getOptions().colors[0],
+    yAxis: 0,
+    tooltip: {
+      valueSuffix: ' Wh'
+    }
+    
+  }],
+  credits: { enabled: false }
+});
+
 setInterval(function ( ) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -96,20 +129,38 @@ setInterval(function ( ) {
       var x = (new Date()).getTime(),
           papp = obj.papp,
           iinst = obj.iinst;
-      if(chartT.series[0].data.length > 1200) {
-        chartT.series[0].addPoint([x, papp], true, true, true);
+      if(chartPower.series[0].data.length > 720) {
+        chartPower.series[0].addPoint([x, papp], true, true, true);
       } else {
-        chartT.series[0].addPoint([x, papp], true, false, true);
+        chartPower.series[0].addPoint([x, papp], true, false, true);
       }
-      if(chartT.series[1].data.length > 1200) {
-        chartT.series[1].addPoint([x, iinst], true, true, true);
+      if(chartPower.series[1].data.length > 720) {
+        chartPower.series[1].addPoint([x, iinst], true, true, true);
       } else {
-        chartT.series[1].addPoint([x, iinst], true, false, true);
+        chartPower.series[1].addPoint([x, iinst], true, false, true);
       }
     }
   };
   xhttp.open("GET", "/power", true);
   xhttp.send();
+}, 5000 ) ;
+
+  setInterval(function ( ) {
+var xhttpHistory = new XMLHttpRequest();
+xhttpHistory.onreadystatechange = function() {
+  if (this.readyState == 4 && this.status == 200) {
+    var obj = JSON.parse(this.responseText);
+    var history = obj.history;
+    //console.log(this.responseText);
+
+    for (i=0; i<24; i++)
+    {
+        chartHistory.series[0].addPoint([i, history[23-i]], true, false, true);
+    }
+  }
+};
+xhttpHistory.open("GET", "/history", true);
+xhttpHistory.send();
 }, 5000 ) ;
 </script>
 </html>

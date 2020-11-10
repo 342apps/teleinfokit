@@ -320,7 +320,7 @@ void setup()
   });
   ArduinoOTA.begin();
 
-  web->init(&ti);
+  web->init(&ti, data);
 
   if (!ti.LogStartup())
   {

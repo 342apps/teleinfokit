@@ -2,6 +2,7 @@
 
 ESP8266WebServer server(80);
 ESPTeleInfo *teleinfows;
+Data *history_data;
 
 WebServer::WebServer()
 {
@@ -15,6 +16,18 @@ void getPower()
 void getIndex()
 {
     server.send(200, "application/json", "{\"hp\": " + String(teleinfows->hp) + ", \"hc\": " + String(teleinfows->hc) + "}");
+}
+
+void getHistory()
+{
+    String response = "{\"history\": [" ;
+    for (uint8_t i = 0; i < NB_BARS-1; i++)
+    {
+        response += String(history_data->history[i]) + ",";
+    }
+    response += String(history_data->history[NB_BARS - 1]) + "]}";
+
+    server.send(200, "application/json", response);
 }
 
 void getMeterInfo()
@@ -62,13 +75,10 @@ void handleNotFound()
 // Define routing
 void restServerRouting()
 {
-    server.on("/", HTTP_GET, []() {
-        // server.send(200, F("text/html"),
-        //             F("Welcome to the REST Web Server"));
-        server.serveStatic("/index.html", LittleFS, "/index.html");
-    });
+    server.serveStatic("/", LittleFS, "/index.html");
     server.on(F("/power"), HTTP_GET, getPower);
     server.on(F("/index"), HTTP_GET, getIndex);
+    server.on(F("/history"), HTTP_GET, getHistory);
     server.on(F("/meter"), HTTP_GET, getMeterInfo);
     server.on(F("/info"), HTTP_GET, GetSysInfo);
 }
@@ -78,9 +88,10 @@ void WebServer::loop()
     server.handleClient();
 }
 
-void WebServer::init(ESPTeleInfo *ti)
+void WebServer::init(ESPTeleInfo *ti, Data *d)
 {
     teleinfows = ti;
+    history_data = d;
 
     // Set server routing
     restServerRouting();

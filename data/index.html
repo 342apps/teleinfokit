@@ -10,27 +10,162 @@
             min-width: 310px;
             max-width: 800px;
             margin: 0 auto;
+            font-family: Arial;
         }
 
         h2 {
-            font-family: Arial;
             font-size: 2.5rem;
             text-align: center;
         }
-    </style>
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+.greyed {
+  color: #888;
+  font-size: smaller;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+</style>
 </head>
 
 <body>
-    <h2>TeleInfo Kit</h2>
-    <div id="chart-power" class="container"></div>
-    <div id="chart-history" class="container"></div>
+<h2>TeleInfoKit</h2>
+<div id="chart-power" class="container"></div>
+<div id="chart-history" class="container"></div>
+
+<!-- Tab links -->
+<div class="tab">
+<button class="tablinks" onclick="openTab(event, 'meter')" id="defaultOpen">Compteur</button>
+<button class="tablinks" onclick="openTab(event, 'network')">Réseau</button>
+<button class="tablinks" onclick="openTab(event, 'api')">API</button>
+<button class="tablinks" onclick="openTab(event, 'system')">Système</button>
+</div>
+
+<!-- Tab content -->
+<div id="meter" class="tabcontent active">
+<table>
+  <tr>
+    <td>ID compteur</td>
+    <td id="adc0"></td>
+    <td class="greyed">[ADC0]</td>
+  </tr>
+  <tr>
+    <td>Intensité souscrite</td>
+    <td id="isousc"></td>
+    <td class="greyed">[ISOUSC]</td>
+  </tr>
+  <tr>
+    <td>Période tariffaire en cours</td>
+    <td id="ptec"></td>
+    <td class="greyed">[PTEC]</td>
+  </tr>
+  <tr>
+    <td>Index Heures Pleines</td>
+    <td id="hp"></td>
+    <td class="greyed">[HP]</td>
+  </tr>
+  <tr>
+    <td>Index Heures Creuses</td>
+    <td id="hc"></td>
+    <td class="greyed">[HC]</td>
+  </tr>
+</table>
+
+</div>
+
+<div id="network" class="tabcontent">
+<table>
+  <tr>
+    <td>Réseau wifi</td>
+    <td id="ssid"></td>
+  </tr>
+  <tr>
+    <td>Adresse IP</td>
+    <td id="ip"></td>
+  </tr>
+  <tr>
+    <td>Passerelle</td>
+    <td id="gw"></td>
+  </tr>
+  <tr>
+    <td>Masque</td>
+    <td id="nm"></td>
+  </tr>
+  <tr>
+    <td>Adresse MAC</td>
+    <td id="mac"></td>
+  </tr>
+  <tr>
+    <td>RSSI</td>
+    <td id="signalStrengh"></td>
+  </tr>
+</table>
+</div>
+
+<div id="api" class="tabcontent">
+API links
+</div>
+
+<div id="system" class="tabcontent">
+<table>
+  <tr>
+    <td>Chip ID</td>
+    <td id="chipId"></td>
+  </tr>
+  <tr>
+    <td>Flash Chip ID</td>
+    <td id="flashChipId"></td>
+  </tr>
+  <tr>
+    <td>Flash Chip size</td>
+    <td id="flashChipSize"></td>
+  </tr>
+  <tr>
+    <td>Free Heap</td>
+    <td id="freeHeap"></td>
+  </tr>
+</table>
+    </div>
+
 </body>
 <script>
     var chartPower = new Highcharts.Chart({
         chart: { renderTo: 'chart-power' },
         title: { text: 'Données de consommation instantanées', align: 'left' },
         subtitle: {
-            text: 'Source: TeleInfoKit_1235<br />Compteur: ADC0123',
+            text: 'Compteur:',
             align: 'left'
         },
         plotOptions: {
@@ -95,14 +230,25 @@
         credits: { enabled: false }
     });
 
+    var sysInfo;
+    var meter;
+    var indexData;
+
+    var hours = [];
+    var d = new Date();
+    var h = d.getHours();
+    for (i = 0; i < 24; i++) {
+        hours.push((h + i + 1) % 24 + "h");
+    }
+
     var chartHistory = new Highcharts.Chart({
         chart: { renderTo: 'chart-history' },
         title: { text: 'Historique 24h', align: 'left' },
         subtitle: {
-            text: 'Source: TeleInfoKit_1235<br />Compteur: ADC0123',
+            text: 'Compteur:',
             align: 'left'
         },
-        xAxis: { categories: ["24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"] },
+        xAxis: { categories: hours },
         yAxis: {
             id: 'conso_data',
             labels: {
@@ -127,7 +273,7 @@
         credits: { enabled: false }
     });
 
-    setInterval(function () {
+    function getPower() {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -149,15 +295,18 @@
         };
         xhttp.open("GET", "/power", true);
         xhttp.send();
-    }, 5000);
+    }
 
-    setInterval(function () {
+    function getHistory() {
         var xhttpHistory = new XMLHttpRequest();
         xhttpHistory.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 var obj = JSON.parse(this.responseText);
                 var history = obj.history;
                 //console.log(this.responseText);
+                while (chart.series.length > 0) {
+                chart.series[0].remove(true);
+                }
 
                 for (i = 0; i < 24; i++) {
                     chartHistory.series[0].addPoint([i, history[23 - i]], true, false, true);
@@ -166,7 +315,87 @@
         };
         xhttpHistory.open("GET", "/history", true);
         xhttpHistory.send();
-    }, 5000);
+    }
+    getHistory();
+    getPower();
+
+    setInterval(getPower, 5000);
+    setInterval(getHistory, 60000);
+
+    function getSysInfo() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+        sysInfo = JSON.parse(this.responseText);
+        document.getElementById("ip").innerHTML = sysInfo.ip;
+        document.getElementById("gw").innerHTML = sysInfo.gw;
+        document.getElementById("nm").innerHTML = sysInfo.nm;
+        document.getElementById("ssid").innerHTML = sysInfo.ssid;
+        document.getElementById("mac").innerHTML = sysInfo.mac;
+        document.getElementById("signalStrengh").innerHTML = sysInfo.signalStrengh;
+        document.getElementById("chipId").innerHTML = sysInfo.chipId;
+        document.getElementById("flashChipId").innerHTML = sysInfo.flashChipId;
+        document.getElementById("flashChipSize").innerHTML = sysInfo.flashChipSize;
+        document.getElementById("freeHeap").innerHTML = sysInfo.freeHeap;
+      }
+    };
+    xhttpHistory.open("GET", "/info", true);
+    xhttpHistory.send();
+  }
+  getSysInfo();
+
+  function getMeterInfo() {
+    var xhttpHistory = new XMLHttpRequest();
+    xhttpHistory.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        meter = JSON.parse(this.responseText);
+        chartPower.subtitle = "Compteur : " + meter.adc0;
+        document.getElementById("adc0").innerHTML = meter.adc0;
+        document.getElementById("isousc").innerHTML = meter.isousc;
+        document.getElementById("ptec").innerHTML = meter.ptec;
+      }
+    };
+    xhttpHistory.open("GET", "/meter", true);
+    xhttpHistory.send();
+  }
+  getMeterInfo();
+
+  function getIndexInfo() {
+    var xhttpHistory = new XMLHttpRequest();
+    xhttpHistory.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        indexData = JSON.parse(this.responseText);
+        document.getElementById("hp").innerHTML = indexData.hp;
+        document.getElementById("hc").innerHTML = indexData.hc;
+      }
+    };
+    xhttpHistory.open("GET", "/index", true);
+    xhttpHistory.send();
+  }
+  getIndexInfo();
+
+  function openTab(evt, tabName) {
+    getIndexInfo();
+    getMeterInfo();
+    getSysInfo();
+
+    var i, tabcontent, tablinks;
+
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+  }
+
+  document.getElementById("defaultOpen").click();
 </script>
 
 </html>

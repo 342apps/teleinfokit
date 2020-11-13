@@ -82,7 +82,7 @@
     <div id="meter" class="tabcontent active">
         <table>
             <tr>
-                <td>ID compteur</td>
+                <td>Adresse compteur</td>
                 <td id="adc0"></td>
                 <td class="greyed">[ADC0]</td>
             </tr>
@@ -99,21 +99,26 @@
             <tr>
                 <td>Index Heures Pleines</td>
                 <td id="hp"></td>
-                <td class="greyed">[HP]</td>
+                <td class="greyed">[HPHP]</td>
             </tr>
             <tr>
                 <td>Index Heures Creuses</td>
                 <td id="hc"></td>
-                <td class="greyed">[HC]</td>
+                <td class="greyed">[HCHC]</td>
             </tr>
         </table>
+
+        <p>
+            <a href="https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf" target="_blank" class="greyed">Information Enedis sur la télé-information (pdf)</a>
+        </p>
 
     </div>
 
     <div id="network" class="tabcontent">
+        <p><b>Connection wifi</b></p>
         <table>
             <tr>
-                <td>Réseau wifi</td>
+                <td>Réseau wifi (ssid)</td>
                 <td id="ssid"></td>
             </tr>
             <tr>
@@ -137,14 +142,7 @@
                 <td id="signalStrengh"></td>
             </tr>
         </table>
-    </div>
-
-    <div id="api" class="tabcontent">
-        API links
-    </div>
-
-    <div id="system" class="tabcontent">
-        <p><b>Configuration</b></p>
+        <p><b>Configuration MQTT</b></p>
         <table>
             <tr>
                 <td>Serveur MQTT</td>
@@ -159,8 +157,44 @@
                 <td id="mqttUsername"></td>
             </tr>
         </table>
+    </div>
 
-        <p><b>ESP-01</b></p>
+    <div id="api" class="tabcontent">
+        <table>
+            <tr>
+                <td>Puissance</td>
+                <td><a href="/power" target="_blank" >/power</a></td>
+                <td>Données de consommation instantannée (puissance apparente et intensité).</td>
+            </tr>
+            <tr>
+                <td>Index</td>
+                <td><a href="/index" target="_blank" >/index</a></td>
+                <td>Index des compteurs heure pleine et heure creuse.</td>
+            </tr>
+            <tr>
+                <td>Compteur</td>
+                <td><a href="/meter" target="_blank" >/meter</a></td>
+                <td>Informations sur le compteur, et période tarifaire en cours.</td>
+            </tr>
+            <tr>
+                <td>Historique</td>
+                <td><a href="/history" target="_blank" >/history</a></td>
+                <td>Données de consommation sur 24h.</td>
+            </tr>
+            <tr>
+                <td>Configuration</td>
+                <td><a href="/config" target="_blank" >/config</a></td>
+                <td>Configuration mqtt.</td>
+            </tr>
+            <tr>
+                <td>Informations générales</td>
+                <td><a href="/info" target="_blank" >/info</a></td>
+                <td>Configuration réseau, et le status du chip.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="system" class="tabcontent">
         <table>
             <tr>
                 <td>Chip ID</td>
@@ -180,6 +214,9 @@
             </tr>
         </table>
     </div>
+<p>
+    <a href="" target="_blank" class="greyed">Gitlab TeleInfoKit</a>
+</p>
 
 </body>
 <script>

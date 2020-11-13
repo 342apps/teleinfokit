@@ -3,6 +3,9 @@
 ESP8266WebServer server(80);
 ESPTeleInfo *teleinfows;
 Data *history_data;
+char *config_mqtt_server;
+char *config_mqtt_port;
+char *config_mqtt_username;
 
 WebServer::WebServer()
 {
@@ -35,7 +38,12 @@ void getMeterInfo()
     server.send(200, "application/json", "{\"adc0\": \"" + String(teleinfows->adc0) + "\", \"isousc\": " + String(teleinfows->isousc) + ", \"ptec\": \"" + String(teleinfows->ptec) + "\"}");
 }
 
-void GetSysInfo()
+void getConfigInfo()
+{
+    server.send(200, "application/json", "{\"mqttServer\": \"" + String(config_mqtt_server) + "\", \"mqttPort\": \"" + String(config_mqtt_port) + "\", \"mqttUsername\": \"" + String(config_mqtt_username) + "\"}");
+}
+
+void getSysInfo()
 {
     String response = "{";
     response += "\"ip\": \"" + WiFi.localIP().toString() + "\"";
@@ -80,7 +88,8 @@ void restServerRouting()
     server.on(F("/index"), HTTP_GET, getIndex);
     server.on(F("/history"), HTTP_GET, getHistory);
     server.on(F("/meter"), HTTP_GET, getMeterInfo);
-    server.on(F("/info"), HTTP_GET, GetSysInfo);
+    server.on(F("/info"), HTTP_GET, getSysInfo);
+    server.on(F("/config"), HTTP_GET, getConfigInfo);
 }
 
 void WebServer::loop()
@@ -88,10 +97,13 @@ void WebServer::loop()
     server.handleClient();
 }
 
-void WebServer::init(ESPTeleInfo *ti, Data *d)
+void WebServer::init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username)
 {
     teleinfows = ti;
     history_data = d;
+    config_mqtt_port = conf_mqtt_port;
+    config_mqtt_server = conf_mqtt_server;
+    config_mqtt_username = conf_mqtt_username;
 
     // Set server routing
     restServerRouting();

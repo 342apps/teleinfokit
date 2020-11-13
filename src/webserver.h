@@ -13,7 +13,7 @@ class WebServer
 public:
     WebServer();
 
-    void init(ESPTeleInfo *ti, Data *d);
+    void init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username);
     void loop();
 
 private:

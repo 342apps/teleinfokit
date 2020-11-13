@@ -236,7 +236,6 @@ void setup()
   d->logPercent("Connecte a " + String(WiFi.SSID()), 80);
   delay(500); // just to see progress bar
 
-  // TODO issue on load here ??
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_server_username, custom_mqtt_username.getValue());
@@ -283,7 +282,6 @@ void setup()
       type = "filesystem";
     }
 
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
     d->log("Demarrage MAJ " + type);
   });
   ArduinoOTA.onEnd([]() {
@@ -320,7 +318,7 @@ void setup()
   });
   ArduinoOTA.begin();
 
-  web->init(&ti, data);
+  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
 
   if (!ti.LogStartup())
   {

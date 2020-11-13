@@ -144,6 +144,23 @@
     </div>
 
     <div id="system" class="tabcontent">
+        <p><b>Configuration</b></p>
+        <table>
+            <tr>
+                <td>Serveur MQTT</td>
+                <td id="mqttServer"></td>
+            </tr>
+            <tr>
+                <td>Port MQTT</td>
+                <td id="mqttPort"></td>
+            </tr>
+            <tr>
+                <td>User MQTT</td>
+                <td id="mqttUsername"></td>
+            </tr>
+        </table>
+
+        <p><b>ESP-01</b></p>
         <table>
             <tr>
                 <td>Chip ID</td>
@@ -369,6 +386,21 @@
         xhttpHistory.send();
     }
     getIndexInfo();
+
+    function getConfigInfo() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                config = JSON.parse(this.responseText);
+                document.getElementById("mqttServer").innerHTML = config.mqttServer;
+                document.getElementById("mqttPort").innerHTML = config.mqttPort;
+                document.getElementById("mqttUsername").innerHTML = config.mqttUsername;
+            }
+        };
+        xhttpHistory.open("GET", "/config", true);
+        xhttpHistory.send();
+    }
+    getConfigInfo();
 
     function openTab(evt, tabName) {
         getIndexInfo();

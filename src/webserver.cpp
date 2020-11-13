@@ -57,6 +57,7 @@ void getSysInfo()
     response += ",\"flashChipSize\": \"" + String(ESP.getFlashChipSize()) + "\"";
     response += ",\"flashChipRealSize\": \"" + String(ESP.getFlashChipRealSize()) + "\"";
     response += ",\"freeHeap\": \"" + String(ESP.getFreeHeap()) + "\"";
+    response += ",\"startupTime\": \"" + String(history_data->startupTime) + "\"";
     response += "}";
 
     server.send(200, "application/json", response);

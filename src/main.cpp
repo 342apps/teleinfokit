@@ -324,6 +324,7 @@ void setup()
   ArduinoOTA.begin();
 
   timeClient.begin();
+  timeClient.update();
   d->logPercent("Connexion NTP", 85);
   data->setNtp(&timeClient);
 

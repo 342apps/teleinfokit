@@ -1,0 +1,314 @@
+openapi: 3.0.0
+info:
+  title: TeleInfoKit data
+  version: '1.0'
+  description: Cette API permet d'accéder au données de télé-information reçues par le module TeleInfoKit. Le dashboard fourni utilise ces APIs pour alimenter les graphiques.
+servers:
+  - url: 'http://TeleInfoKit_xxxxxxxx:80'
+paths:
+  /history:
+    get:
+      summary: history
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  history:
+                    type: array
+                    minItems: 24
+                    maxItems: 24
+                    description: 'Historique des consommations sur les dernières 24h. Unités : Watt.heure (Wh)'
+                    items:
+                      type: integer
+                required:
+                  - history
+              examples:
+                Example:
+                  value:
+                    history:
+                      - 270
+                      - 338
+                      - 486
+                      - 594
+                      - 1201
+                      - 899
+                      - 704
+                      - 857
+                      - 123
+                      - 165
+                      - 310
+                      - 256
+                      - 189
+                      - 236
+                      - 418
+                      - 517
+                      - 413
+                      - 450
+                      - 419
+                      - 324
+                      - 358
+                      - 569
+                      - 458
+                      - 342
+      operationId: get-history
+      description: |-
+        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h.
+
+        L'index 0  contient la consommation de l'heure en cours. Les index suivants contiennent les consommations des heures précédentes. L'index 0 évolue constamment, à mesure que la consommation augmente sur l'heure courante.
+
+        Les index 1 à 23 ne changent pas, sauf une fois que l'heure en cours est écoulée. Les index 0 à 22 sont décalés de 1, la précédente valeur de l'index 23 correspondant à la consommation il y a 24h est perdue. L'index 0 est remis à zéro et reprend son évolution.
+
+        **Note importante** : le firmware du module TeleInfoKit ne dispose pas de l'heure. Le temps écoulé démarre à la mise en route du module. Cela veut dire que les index d'historique ne vont pas se décaler à l'heure pile réelle (00 min), mais au bout d'une heure de fonctionnement.
+    parameters: []
+  /power:
+    get:
+      summary: power
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  papp:
+                    type: number
+                    description: Puissance apparente arrondi à la dizaine la plus proche. Unité Volt.Ampère (VA)
+                  iinst:
+                    type: number
+                    description: 'Courant efficace. Unités : Ampères (A)'
+                  ptec:
+                    type: string
+                    description: Periode tarifaire en cours
+                    enum:
+                      - HP..
+                      - HC..
+                    minLength: 4
+                    maxLength: 4
+                required:
+                  - papp
+                  - iinst
+                  - ptec
+              examples:
+                Example:
+                  value:
+                    papp: 2560
+                    iinst: 11
+                    ptec: HP..
+      operationId: get-power
+      description: |-
+        Le endpoint `power` donne la consommation courante envoyée par le compteur, ainsi que la période tarifaire en cours.
+
+        Ces données ne sont pas enregistrées par le firmware, mais seulement envoyées par MQTT (voir documentation MQTT).
+    parameters: []
+  /meter:
+    get:
+      summary: meter
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  adc0:
+                    type: string
+                    description: Adresse du compteur
+                    minLength: 12
+                    maxLength: 12
+                  isousc:
+                    type: number
+                    description: Intensité souscrite. Unité Ampère (A)
+                  ptec:
+                    type: string
+                    description: Période Tarifaire en cours
+                    enum:
+                      - HP..
+                      - HC..
+                    minLength: 4
+                    maxLength: 4
+                required:
+                  - adc0
+                  - isousc
+                  - ptec
+              examples:
+                Example:
+                  value:
+                    adc0: '061764019411'
+                    isousc: 45
+                    ptec: HP..
+      operationId: get-meter
+      description: |-
+        Le endpoint `meter` donne les informations générales sur le compteur et l'abonnement.
+
+        Les valeurs de `ptec` peuvent être `HP..` ou `HC..` qui correspondent respectivement à "Heure Pleine" et "Heure Creuse".
+  /index:
+    get:
+      summary: index
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  hp:
+                    type: number
+                    description: 'Valeur de l''index "Heures Pleines". Unité : Watt.heure (Wh)'
+                  hc:
+                    type: number
+                    description: 'Valeur de l''index "Heures Creuses". Unité : Watt.heure (Wh)'
+                required:
+                  - hp
+                  - hc
+              examples:
+                Example:
+                  value:
+                    hp: 12808037
+                    hc: 9587586
+      operationId: get-index
+      description: Le endpoint `index` donne les valeurs des index "Heures creuses" et "Heures Pleines" du compteur.
+  /info:
+    get:
+      summary: info
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  ip:
+                    type: string
+                    minLength: 1
+                    description: Adresse IP sur le réseau wifi
+                  gw:
+                    type: string
+                    minLength: 1
+                    description: Passerelle par défaut
+                  nm:
+                    type: string
+                    minLength: 1
+                    description: Masque réseau
+                  ssid:
+                    type: string
+                    minLength: 1
+                    description: SSID du réseau wifi sur lequel le module est connecté
+                  mac:
+                    type: string
+                    minLength: 1
+                    description: Adresse MAC du module ESP-01
+                  signalStrengh:
+                    type: string
+                    minLength: 1
+                    description: 'Qualité du signal reçu par le module ESP-01 (RSSI). Unité : dBm'
+                  chipId:
+                    type: string
+                    minLength: 1
+                    description: Id du chip ESP8266
+                  flashChipId:
+                    type: string
+                    minLength: 1
+                    description: ID du chip de mémoire flash
+                  flashChipSize:
+                    type: string
+                    minLength: 1
+                    description: 'Taille de la mémoire flash déterminé par le firmware. Unité : octets'
+                  flashChipRealSize:
+                    type: string
+                    minLength: 1
+                    description: 'Taille détectée de la mémoire flash. Unité : octets'
+                  freeHeap:
+                    type: string
+                    minLength: 1
+                    description: 'Quantité de mémoire libre dans le heap (tas). Unité : octets'
+                required:
+                  - ip
+                  - gw
+                  - nm
+                  - ssid
+                  - mac
+                  - signalStrengh
+                  - chipId
+                  - flashChipId
+                  - flashChipSize
+                  - flashChipRealSize
+                  - freeHeap
+              examples:
+                Example:
+                  value:
+                    ip: 192.168.3.62
+                    gw: 192.168.3.1
+                    nm: 255.255.255.0
+                    ssid: MyWifiNetwork
+                    mac: 'DC:4F:22:84:78:7C'
+                    signalStrengh: '-68'
+                    chipId: '7879544'
+                    flashChipId: '1335929'
+                    flashChipSize: '1048576'
+                    flashChipRealSize: '1048576'
+                    freeHeap: '33120'
+      operationId: get-info
+      description: |-
+        Le endpoint `info` donne des informations sur la connection réseau wifi, et du chip ESP-01 utilisé dans le module TeleInfoKit.
+
+        Tant que le module est connecté au réseau wifi, les valeurs ne changeront pas, à l'exception de `signalStrengh` et `freeHeap`.
+  /config:
+    get:
+      summary: config
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  mqttServer:
+                    type: string
+                    minLength: 1
+                    description: Adresse IP du serveur MQTT configuré à l'initialisation
+                  mqttPort:
+                    type: string
+                    minLength: 1
+                    description: Port du serveur MQTT configuré à l'initialisation
+                  mqttUsername:
+                    type: string
+                    minLength: 1
+                    description: Nom d'utilisateur pour la connexion au serveur MQTT configuré à l'initialisation
+                required:
+                  - mqttServer
+                  - mqttPort
+                  - mqttUsername
+              examples:
+                Example:
+                  value:
+                    mqttServer: 192.168.3.3
+                    mqttPort: '1883'
+                    mqttUsername: mqttUser
+      operationId: get-config
+      description: |-
+        Le endpoint `config` permet de visualiser la configuration MQTT enregistrée à l'initialisation. Le mot de passe n'est pas connu du serveur HTTP donc n'est pas renvoyé.
+
+        Il n'est pas possible de modifier ces valeurs en dehors de la réinitialisation via l'écran du module TeleInfoKit pour des raisons de sécurité des données.
+components:
+  schemas: {}

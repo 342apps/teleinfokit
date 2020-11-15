@@ -88,6 +88,7 @@ void handleNotFound()
 void restServerRouting()
 {
     server.serveStatic("/", LittleFS, "/index.html");
+    server.serveStatic("/chartbulb-160.gif", LittleFS, "/chartbulb-160.gif");
     server.on(F("/power"), HTTP_GET, getPower);
     server.on(F("/index"), HTTP_GET, getIndex);
     server.on(F("/history"), HTTP_GET, getHistory);

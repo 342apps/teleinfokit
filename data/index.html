@@ -4,6 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="chartbulb-160.gif">
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <style>
         body {
@@ -309,17 +310,10 @@
     var meter;
     var indexData;
 
-    var hours = [];
-    var d = new Date();
-    var h = d.getHours();
-    for (i = 0; i < 24; i++) {
-        hours.push((h + i + 1) % 24 + "h");
-    }
-
     var chartHistory = new Highcharts.Chart({
         chart: { renderTo: 'chart-history' },
         title: { text: 'Historique 24h', align: 'left' },
-        xAxis: { categories: hours },
+        xAxis: { categories: [] },
         yAxis: {
             id: 'conso_data',
             labels: {
@@ -376,7 +370,14 @@
             if (this.readyState == 4 && this.status == 200) {
                 var obj = JSON.parse(this.responseText);
                 var history = obj.history;
-
+                var hours = [];
+                var d = new Date(obj.historyStartupTime * 1000);
+                var h = d.getHours();
+                for (i = 0; i < 24; i++) {
+                    hours.push((h + i + 1) % 24 + "h");
+                }
+        
+                chartHistory.xAxis[0].setCategories(hours);
                 chartHistory.series[0].setData(history.reverse());
             }
         };

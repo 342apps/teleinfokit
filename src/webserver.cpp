@@ -23,7 +23,10 @@ void getIndex()
 
 void getHistory()
 {
-    String response = "{\"history\": [" ;
+
+    String response = "{";
+    response += "\"historyStartupTime\": " + String(history_data->historyStartTime) + ",";
+    response += "\"history\": [" ;
     for (uint8_t i = 0; i < NB_BARS-1; i++)
     {
         response += String(history_data->history[i]) + ",";
@@ -57,6 +60,7 @@ void getSysInfo()
     response += ",\"flashChipSize\": \"" + String(ESP.getFlashChipSize()) + "\"";
     response += ",\"flashChipRealSize\": \"" + String(ESP.getFlashChipRealSize()) + "\"";
     response += ",\"freeHeap\": \"" + String(ESP.getFreeHeap()) + "\"";
+    response += ",\"startupTime\": " + String(history_data->startupTime);
     response += "}";
 
     server.send(200, "application/json", response);
@@ -84,6 +88,7 @@ void handleNotFound()
 void restServerRouting()
 {
     server.serveStatic("/", LittleFS, "/index.html");
+    server.serveStatic("/chartbulb-160.gif", LittleFS, "/chartbulb-160.gif");
     server.on(F("/power"), HTTP_GET, getPower);
     server.on(F("/index"), HTTP_GET, getIndex);
     server.on(F("/history"), HTTP_GET, getHistory);

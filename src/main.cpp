@@ -7,6 +7,8 @@
 #include <ArduinoOTA.h>
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager
 #include "Button2.h"
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 #include "data.h"
 #include "espteleinfo.h"
@@ -74,6 +76,9 @@ ESPTeleInfo ti = ESPTeleInfo();
 WebServer *web;
 Button2 button = Button2(PIN_BUTTON);
 WiFiManager wifiManager;
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
 // network configuration variables
 char mqtt_server[40];
@@ -233,7 +238,7 @@ void setup()
 
   WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
-  d->logPercent("Connecte a " + String(WiFi.SSID()), 80);
+  d->logPercent("Connecte a " + String(WiFi.SSID()), 70);
   delay(500); // just to see progress bar
 
   strcpy(mqtt_server, custom_mqtt_server.getValue());
@@ -244,7 +249,7 @@ void setup()
   //save the custom parameters to FS
   if (shouldSaveConfig)
   {
-    d->logPercent("Sauvegarde configuration", 60);
+    d->logPercent("Sauvegarde configuration", 73);
 
     File configFile = LittleFS.open(CONFIG_FILE, "w");
     if (!configFile)
@@ -258,7 +263,7 @@ void setup()
       strcpy(config.mqtt_server_username, custom_mqtt_username.getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
       configFile.write((byte *)&config, sizeof(config));
-      d->logPercent("Configuration sauvee", 70);
+      d->logPercent("Configuration sauvee", 78);
     }
 
     ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
@@ -269,7 +274,7 @@ void setup()
   // ================ OTA ================
   ArduinoOTA.setHostname("teleinfokit");
   ArduinoOTA.setPassword("admin4tele9Info");
-  d->logPercent("Demarrage OTA", 90);
+  d->logPercent("Demarrage OTA", 80);
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -317,6 +322,11 @@ void setup()
     }
   });
   ArduinoOTA.begin();
+
+  timeClient.begin();
+  timeClient.update();
+  d->logPercent("Connexion NTP", 85);
+  data->setNtp(&timeClient);
 
   web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
 
@@ -394,4 +404,5 @@ void loop()
   }
 
   ti.loop();
+  timeClient.update();
 }

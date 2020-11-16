@@ -19,18 +19,23 @@ paths:
                 description: ''
                 type: object
                 properties:
+                  historyStartupTime:
+                    type: number
+                    description: Timestamp (UTC) de départ des données de l'index 0.
                   history:
                     type: array
                     minItems: 24
-                    maxItems: 24
                     description: 'Historique des consommations sur les dernières 24h. Unités : Watt.heure (Wh)'
+                    maxItems: 24
                     items:
                       type: integer
                 required:
+                  - historyStartupTime
                   - history
               examples:
                 Example:
                   value:
+                    historyStartupTime: 1605564000
                     history:
                       - 270
                       - 338
@@ -58,13 +63,13 @@ paths:
                       - 342
       operationId: get-history
       description: |-
-        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h.
+        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h ainsi qu'un horodatage de la donnée de départ.
 
         L'index 0  contient la consommation de l'heure en cours. Les index suivants contiennent les consommations des heures précédentes. L'index 0 évolue constamment, à mesure que la consommation augmente sur l'heure courante.
 
         Les index 1 à 23 ne changent pas, sauf une fois que l'heure en cours est écoulée. Les index 0 à 22 sont décalés de 1, la précédente valeur de l'index 23 correspondant à la consommation il y a 24h est perdue. L'index 0 est remis à zéro et reprend son évolution.
 
-        **Note importante** : le firmware du module TeleInfoKit ne dispose pas de l'heure. Le temps écoulé démarre à la mise en route du module. Cela veut dire que les index d'historique ne vont pas se décaler à l'heure pile réelle (00 min), mais au bout d'une heure de fonctionnement.
+        **Note** : au démarrage du module, la valeur de `historyStartupTime` sera l'heure de l'initialisation de la collecte des données (quelques secondes après le démarrage). En fonctionnement nominal, l'index 0 est réinitialisé à l'heure pile. Le champ `historyStartupTime` sera à l'heure de début de la collecte pour l'heure en cours.
     parameters: []
   /power:
     get:
@@ -239,6 +244,9 @@ paths:
                     type: string
                     minLength: 1
                     description: 'Quantité de mémoire libre dans le heap (tas). Unité : octets'
+                  startupTime:
+                    type: integer
+                    description: Timestamp (UTC) de démarrage du module
                 required:
                   - ip
                   - gw
@@ -251,6 +259,7 @@ paths:
                   - flashChipSize
                   - flashChipRealSize
                   - freeHeap
+                  - startupTime
               examples:
                 Example:
                   value:
@@ -265,11 +274,14 @@ paths:
                     flashChipSize: '1048576'
                     flashChipRealSize: '1048576'
                     freeHeap: '33120'
+                    startupTime: 1605545601
       operationId: get-info
       description: |-
         Le endpoint `info` donne des informations sur la connection réseau wifi, et du chip ESP-01 utilisé dans le module TeleInfoKit.
 
         Tant que le module est connecté au réseau wifi, les valeurs ne changeront pas, à l'exception de `signalStrengh` et `freeHeap`.
+
+        Afin de connaitre l'heure de démarrage, le firmware se synchronise avec un serveur NTP. Si le réseau wifi auquel le module est connecté n'a pas accès à internet, cette valeur vaudra 0.
   /config:
     get:
       summary: config

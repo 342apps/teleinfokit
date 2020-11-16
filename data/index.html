@@ -64,36 +64,42 @@
             padding-left: 20px;
         }
 
-        a:link{
-        color:#333;
+        a:link {
+            color: #333;
         }
-        a:visited{
-        color:#333;
+
+        a:visited {
+            color: #333;
         }
-        a:hover{
-        color:#333;
+
+        a:hover {
+            color: #333;
         }
-        a:focus{
-        color:#333;
+
+        a:focus {
+            color: #333;
         }
-        a:active{
-        color:#333;
+
+        a:active {
+            color: #333;
         }
-    #logo {
-      width: 64px;
-      vertical-align: middle;
-    }
-    #title {
-      font-weight: bold;
-      font-size: xx-large;
-    }
+
+        #logo {
+            width: 64px;
+            vertical-align: middle;
+        }
+
+        #title {
+            font-weight: bold;
+            font-size: xx-large;
+        }
     </style>
 </head>
 
 <body>
     <p id="title">
-      <img id="logo" src="./chartbulb-160.gif" alt="logo" />
-      TeleInfoKit
+        <img id="logo" src="./chartbulb-160.gif" alt="logo" />
+        TeleInfoKit
     </p>
     <div id="chart-power" class="container"></div>
     <div id="chart-history" class="container"></div>
@@ -137,7 +143,8 @@
         </table>
 
         <p>
-            <a href="https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf" target="_blank" class="greyed">Information Enedis sur la télé-information (pdf)</a>
+            <a href="https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf" target="_blank"
+                class="greyed">Information Enedis sur la télé-information (pdf)</a>
         </p>
 
     </div>
@@ -191,32 +198,32 @@
         <table>
             <tr>
                 <td>Puissance</td>
-                <td><a href="/power" target="_blank" >/power</a></td>
+                <td><a href="/power" target="_blank">/power</a></td>
                 <td>Données de consommation instantannée (puissance apparente et intensité).</td>
             </tr>
             <tr>
                 <td>Index</td>
-                <td><a href="/index" target="_blank" >/index</a></td>
+                <td><a href="/index" target="_blank">/index</a></td>
                 <td>Index des compteurs heure pleine et heure creuse.</td>
             </tr>
             <tr>
                 <td>Compteur</td>
-                <td><a href="/meter" target="_blank" >/meter</a></td>
+                <td><a href="/meter" target="_blank">/meter</a></td>
                 <td>Informations sur le compteur, et période tarifaire en cours.</td>
             </tr>
             <tr>
                 <td>Historique</td>
-                <td><a href="/history" target="_blank" >/history</a></td>
+                <td><a href="/history" target="_blank">/history</a></td>
                 <td>Données de consommation sur 24h.</td>
             </tr>
             <tr>
                 <td>Configuration</td>
-                <td><a href="/config" target="_blank" >/config</a></td>
+                <td><a href="/config" target="_blank">/config</a></td>
                 <td>Configuration mqtt.</td>
             </tr>
             <tr>
                 <td>Informations générales</td>
-                <td><a href="/info" target="_blank" >/info</a></td>
+                <td><a href="/info" target="_blank">/info</a></td>
                 <td>Configuration réseau, et le status du chip.</td>
             </tr>
         </table>
@@ -242,14 +249,16 @@
             </tr>
         </table>
     </div>
-<p>
-    <a href="" target="_blank" class="greyed">Gitlab TeleInfoKit</a>
-</p>
-
+    <p>
+        <a href="" target="_blank" class="greyed">Gitlab TeleInfoKit</a>
+    </p>
 </body>
 <script>
     var chartPower = new Highcharts.Chart({
-        chart: { renderTo: 'chart-power' },
+        chart: {
+            renderTo: 'chart-power',
+            zoomType: 'x'
+        },
         title: { text: 'Données de consommation instantanées', align: 'left' },
         subtitle: {
             text: '',
@@ -322,14 +331,18 @@
     var indexData;
     const timezone = new Date().getTimezoneOffset();
     Highcharts.setOptions({
-    global: {
-        timezoneOffset: timezone
+        global: {
+            timezoneOffset: timezone
         }
     });
 
     var chartHistory = new Highcharts.Chart({
         chart: { renderTo: 'chart-history' },
         title: { text: 'Historique 24h', align: 'left' },
+        subtitle: {
+            text: 'Total consommé :  ',
+            align: 'left'
+        },
         xAxis: { categories: [] },
         yAxis: {
             id: 'conso_data',
@@ -388,12 +401,15 @@
                 var obj = JSON.parse(this.responseText);
                 var history = obj.history;
                 var hours = [];
+                var totalConsumption = 0;
                 var d = new Date(obj.historyStartupTime * 1000);
                 var h = d.getHours();
                 for (i = 0; i < 24; i++) {
                     hours.push((h + i + 1) % 24 + "h");
+                    totalConsumption += history[i];
                 }
-        
+
+                chartHistory.setTitle(null, { text: 'Total consommé :  ' + totalConsumption / 1000 + "kWh" });
                 chartHistory.xAxis[0].setCategories(hours);
                 chartHistory.series[0].setData(history.reverse());
             }

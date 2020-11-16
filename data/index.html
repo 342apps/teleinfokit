@@ -79,11 +79,22 @@
         a:active{
         color:#333;
         }
+    #logo {
+      width: 64px;
+      vertical-align: middle;
+    }
+    #title {
+      font-weight: bold;
+      font-size: xx-large;
+    }
     </style>
 </head>
 
 <body>
-    <h2>TeleInfoKit</h2>
+    <p id="title">
+      <img id="logo" src="./chartbulb-160.gif" alt="logo" />
+      TeleInfoKit
+    </p>
     <div id="chart-power" class="container"></div>
     <div id="chart-history" class="container"></div>
 
@@ -309,6 +320,12 @@
     var sysInfo;
     var meter;
     var indexData;
+    const timezone = new Date().getTimezoneOffset();
+    Highcharts.setOptions({
+    global: {
+        timezoneOffset: timezone
+        }
+    });
 
     var chartHistory = new Highcharts.Chart({
         chart: { renderTo: 'chart-history' },

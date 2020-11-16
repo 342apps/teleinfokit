@@ -9,6 +9,7 @@ Data::Data()
 void Data::init()
 {
     hourTimestamp = 0;
+    previousHour = -1;
     max = 1; // not 0 beause used to divide
     newHour = true;
     firstIndex = 0;
@@ -19,6 +20,12 @@ void Data::init()
         history[i] = 0;
         bargraph[i] = 0;
     }
+}
+
+void Data::setNtp(NTPClient *ntp){
+    ntpClient = ntp;
+    startupTime = ntpClient->getEpochTime();
+    previousHour = ntpClient->getHours();
 }
 
 void Data::calculateGraph()
@@ -36,12 +43,13 @@ void Data::calculateGraph()
 
 void Data::storeValue(long hp, long hc)
 {
-    if ((unsigned long)(millis() - hourTimestamp) >= HOUR_DELAY)
+    if ((unsigned long)(millis() - hourTimestamp) >= HOUR_DELAY || previousHour != ntpClient->getHours())
     {
         // each hour
         decaleIndex();
         hourTimestamp = millis();
         newHour = true;
+        previousHour = ntpClient->getHours();
     }
 
     if (newHour)
@@ -51,6 +59,8 @@ void Data::storeValue(long hp, long hc)
             firstIndex = hp + hc;
             newHour = false;
         }
+
+        historyStartTime = ntpClient->getEpochTime();
     }
     else
     {

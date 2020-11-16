@@ -21,6 +21,7 @@ void Display::loop(void)
 
 void Display::log(String text, int16_t displayTime)
 {
+  oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
@@ -32,6 +33,7 @@ void Display::log(String text, int16_t displayTime)
 
 void Display::logPercent(String text, int percentage)
 {
+  oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);

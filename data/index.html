@@ -1,0 +1,516 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="chartbulb-160.gif">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        body {
+            min-width: 310px;
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: Arial;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        .greyed {
+            color: #888;
+            font-size: smaller;
+        }
+
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            font-size: small;
+        }
+
+        .tabcontent tr td {
+            padding-left: 20px;
+        }
+
+        a:link {
+            color: #333;
+        }
+
+        a:visited {
+            color: #333;
+        }
+
+        a:hover {
+            color: #333;
+        }
+
+        a:focus {
+            color: #333;
+        }
+
+        a:active {
+            color: #333;
+        }
+
+        #logo {
+            width: 64px;
+            vertical-align: middle;
+        }
+
+        #title {
+            font-weight: bold;
+            font-size: xx-large;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="title">
+        <img id="logo" src="./chartbulb-160.gif" alt="logo" />
+        TeleInfoKit
+    </p>
+    <div id="chart-power" class="container"></div>
+    <div id="chart-history" class="container"></div>
+
+    <!-- Tab links -->
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'meter')" id="defaultOpen">Compteur</button>
+        <button class="tablinks" onclick="openTab(event, 'network')">Réseau</button>
+        <button class="tablinks" onclick="openTab(event, 'api')">API</button>
+        <button class="tablinks" onclick="openTab(event, 'system')">Système</button>
+    </div>
+
+    <!-- Tab content -->
+    <div id="meter" class="tabcontent active">
+        <table>
+            <tr>
+                <td>Adresse compteur</td>
+                <td id="adc0"></td>
+                <td class="greyed">[ADC0]</td>
+            </tr>
+            <tr>
+                <td>Intensité souscrite</td>
+                <td id="isousc"></td>
+                <td class="greyed">[ISOUSC]</td>
+            </tr>
+            <tr>
+                <td>Période tarifaire en cours</td>
+                <td id="ptec"></td>
+                <td class="greyed">[PTEC]</td>
+            </tr>
+            <tr>
+                <td>Index Heures Pleines</td>
+                <td id="hp"></td>
+                <td class="greyed">[HPHP]</td>
+            </tr>
+            <tr>
+                <td>Index Heures Creuses</td>
+                <td id="hc"></td>
+                <td class="greyed">[HCHC]</td>
+            </tr>
+        </table>
+
+        <p>
+            <a href="https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf" target="_blank"
+                class="greyed">Information Enedis sur la télé-information (pdf)</a>
+        </p>
+
+    </div>
+
+    <div id="network" class="tabcontent">
+        <p><b>Connection wifi</b></p>
+        <table>
+            <tr>
+                <td>Réseau wifi (ssid)</td>
+                <td id="ssid"></td>
+            </tr>
+            <tr>
+                <td>Adresse IP</td>
+                <td id="ip"></td>
+            </tr>
+            <tr>
+                <td>Passerelle</td>
+                <td id="gw"></td>
+            </tr>
+            <tr>
+                <td>Masque</td>
+                <td id="nm"></td>
+            </tr>
+            <tr>
+                <td>Adresse MAC</td>
+                <td id="mac"></td>
+            </tr>
+            <tr>
+                <td>RSSI</td>
+                <td id="signalStrengh"></td>
+            </tr>
+        </table>
+        <p><b>Configuration MQTT</b></p>
+        <table>
+            <tr>
+                <td>Serveur MQTT</td>
+                <td id="mqttServer"></td>
+            </tr>
+            <tr>
+                <td>Port MQTT</td>
+                <td id="mqttPort"></td>
+            </tr>
+            <tr>
+                <td>User MQTT</td>
+                <td id="mqttUsername"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="api" class="tabcontent">
+        <table>
+            <tr>
+                <td>Puissance</td>
+                <td><a href="/power" target="_blank">/power</a></td>
+                <td>Données de consommation instantannée (puissance apparente et intensité).</td>
+            </tr>
+            <tr>
+                <td>Index</td>
+                <td><a href="/index" target="_blank">/index</a></td>
+                <td>Index des compteurs heure pleine et heure creuse.</td>
+            </tr>
+            <tr>
+                <td>Compteur</td>
+                <td><a href="/meter" target="_blank">/meter</a></td>
+                <td>Informations sur le compteur, et période tarifaire en cours.</td>
+            </tr>
+            <tr>
+                <td>Historique</td>
+                <td><a href="/history" target="_blank">/history</a></td>
+                <td>Données de consommation sur 24h.</td>
+            </tr>
+            <tr>
+                <td>Configuration</td>
+                <td><a href="/config" target="_blank">/config</a></td>
+                <td>Configuration mqtt.</td>
+            </tr>
+            <tr>
+                <td>Informations générales</td>
+                <td><a href="/info" target="_blank">/info</a></td>
+                <td>Configuration réseau, et le status du chip.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="system" class="tabcontent">
+        <table>
+            <tr>
+                <td>Chip ID</td>
+                <td id="chipId"></td>
+            </tr>
+            <tr>
+                <td>Flash Chip ID</td>
+                <td id="flashChipId"></td>
+            </tr>
+            <tr>
+                <td>Flash Chip size</td>
+                <td id="flashChipSize"></td>
+            </tr>
+            <tr>
+                <td>Free Heap</td>
+                <td id="freeHeap"></td>
+            </tr>
+        </table>
+    </div>
+    <p>
+        <a href="https://github.com/342apps/teleinfokit" target="_blank" class="greyed">Gitlab TeleInfoKit</a>
+    </p>
+</body>
+<script>
+    var chartPower = new Highcharts.Chart({
+        chart: {
+            renderTo: 'chart-power',
+            zoomType: 'x'
+        },
+        title: { text: 'Données de consommation instantanées', align: 'left' },
+        subtitle: {
+            text: '',
+            align: 'left'
+        },
+        plotOptions: {
+            line: {
+                animation: false,
+                dataLabels: { enabled: true }
+            },
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { second: '%H:%M:%S' }
+        },
+        yAxis: [{
+            id: 'papp_data',
+            labels: {
+                format: '{value} VA',
+                style: {
+                    color: Highcharts.getOptions().colors[5]
+                }
+            },
+            title: { text: 'Puissance' },
+            min: 0
+        },
+        {
+            id: 'iinst_data',
+            labels: {
+                format: '{value} A',
+                style: {
+                    color: Highcharts.getOptions().colors[4]
+                }
+            },
+            title: { text: 'Intensité' },
+            opposite: true,
+            min: 0
+        }],
+        series: [{
+            name: 'Puissance',
+            type: 'spline',
+            color: Highcharts.getOptions().colors[5],
+            yAxis: 0,
+            tooltip: {
+                valueSuffix: ' VA'
+            }
+
+        }, {
+            name: 'Intensité',
+            type: 'spline',
+            color: Highcharts.getOptions().colors[4],
+            yAxis: 1,
+            marker: {
+                enabled: false
+            },
+            dashStyle: 'shortdot',
+            tooltip: {
+                valueSuffix: ' A'
+            }
+
+        }],
+        tooltip: {
+            shared: true
+        },
+        credits: { enabled: false }
+    });
+
+    var sysInfo;
+    var meter;
+    var indexData;
+    const timezone = new Date().getTimezoneOffset();
+    Highcharts.setOptions({
+        global: {
+            timezoneOffset: timezone
+        }
+    });
+
+    var chartHistory = new Highcharts.Chart({
+        chart: { renderTo: 'chart-history' },
+        title: { text: 'Historique 24h', align: 'left' },
+        subtitle: {
+            text: 'Total consommé :  ',
+            align: 'left'
+        },
+        xAxis: { categories: [] },
+        yAxis: {
+            id: 'conso_data',
+            labels: {
+                format: '{value} Wh',
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            },
+            title: { text: 'Consommation' },
+            min: 0
+        },
+        series: [{
+            name: 'Consommation ',
+            type: 'column',
+            color: Highcharts.getOptions().colors[0],
+            yAxis: 0,
+            tooltip: {
+                valueSuffix: ' Wh'
+            }
+
+        }],
+        credits: { enabled: false }
+    });
+
+    function getPower() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var obj = JSON.parse(this.responseText);
+                var x = (new Date()).getTime(),
+                    papp = obj.papp,
+                    iinst = obj.iinst,
+                    ptec = obj.ptec;
+                chartPower.setTitle(null, { text: 'Période tarifaire : ' + ptec.replace(/\./g, "") });
+                if (chartPower.series[0].data.length > 720) {
+                    chartPower.series[0].addPoint([x, papp], true, true, true);
+                } else {
+                    chartPower.series[0].addPoint([x, papp], true, false, true);
+                }
+                if (chartPower.series[1].data.length > 720) {
+                    chartPower.series[1].addPoint([x, iinst], true, true, true);
+                } else {
+                    chartPower.series[1].addPoint([x, iinst], true, false, true);
+                }
+            }
+        };
+        xhttp.open("GET", "/power", true);
+        xhttp.send();
+    }
+
+    function getHistory() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var obj = JSON.parse(this.responseText);
+                var history = obj.history;
+                var hours = [];
+                var totalConsumption = 0;
+                var d = new Date(obj.historyStartupTime * 1000);
+                var h = d.getHours();
+                for (i = 0; i < 24; i++) {
+                    hours.push((h + i + 1) % 24 + "h");
+                    totalConsumption += history[i];
+                }
+
+                chartHistory.setTitle(null, { text: 'Total consommé :  ' + totalConsumption / 1000 + "kWh" });
+                chartHistory.xAxis[0].setCategories(hours);
+                chartHistory.series[0].setData(history.reverse());
+            }
+        };
+        xhttpHistory.open("GET", "/history", true);
+        xhttpHistory.send();
+    }
+    getHistory();
+    getPower();
+
+    setInterval(getPower, 5000);
+    setInterval(getHistory, 60000);
+
+    function getSysInfo() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                sysInfo = JSON.parse(this.responseText);
+                document.getElementById("ip").innerHTML = sysInfo.ip;
+                document.getElementById("gw").innerHTML = sysInfo.gw;
+                document.getElementById("nm").innerHTML = sysInfo.nm;
+                document.getElementById("ssid").innerHTML = sysInfo.ssid;
+                document.getElementById("mac").innerHTML = sysInfo.mac;
+                document.getElementById("signalStrengh").innerHTML = sysInfo.signalStrengh;
+                document.getElementById("chipId").innerHTML = sysInfo.chipId;
+                document.getElementById("flashChipId").innerHTML = sysInfo.flashChipId;
+                document.getElementById("flashChipSize").innerHTML = sysInfo.flashChipSize;
+                document.getElementById("freeHeap").innerHTML = sysInfo.freeHeap;
+            }
+        };
+        xhttpHistory.open("GET", "/info", true);
+        xhttpHistory.send();
+    }
+    getSysInfo();
+
+    function getMeterInfo() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                meter = JSON.parse(this.responseText);
+                document.getElementById("adc0").innerHTML = meter.adc0;
+                document.getElementById("isousc").innerHTML = meter.isousc;
+                document.getElementById("ptec").innerHTML = meter.ptec;
+            }
+        };
+        xhttpHistory.open("GET", "/meter", true);
+        xhttpHistory.send();
+    }
+    getMeterInfo();
+
+    function getIndexInfo() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                indexData = JSON.parse(this.responseText);
+                document.getElementById("hp").innerHTML = indexData.hp;
+                document.getElementById("hc").innerHTML = indexData.hc;
+            }
+        };
+        xhttpHistory.open("GET", "/index", true);
+        xhttpHistory.send();
+    }
+    getIndexInfo();
+
+    function getConfigInfo() {
+        var xhttpHistory = new XMLHttpRequest();
+        xhttpHistory.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                config = JSON.parse(this.responseText);
+                document.getElementById("mqttServer").innerHTML = config.mqttServer;
+                document.getElementById("mqttPort").innerHTML = config.mqttPort;
+                document.getElementById("mqttUsername").innerHTML = config.mqttUsername;
+            }
+        };
+        xhttpHistory.open("GET", "/config", true);
+        xhttpHistory.send();
+    }
+    getConfigInfo();
+
+    function openTab(evt, tabName) {
+        getIndexInfo();
+        getMeterInfo();
+        getSysInfo();
+
+        var i, tabcontent, tablinks;
+
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    document.getElementById("defaultOpen").click();
+</script>
+
+</html>

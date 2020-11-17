@@ -355,16 +355,31 @@
             title: { text: 'Consommation' },
             min: 0
         },
-        series: [{
-            name: 'Consommation ',
-            type: 'column',
-            color: Highcharts.getOptions().colors[0],
-            yAxis: 0,
-            tooltip: {
-                valueSuffix: ' Wh'
+        plotOptions: {
+            column: {
+                stacking: 'normal',
             }
+        },
+        series: [{
+      name: 'Consommation HP',
+      type: 'column',
+      color: '#3491CD',
+      yAxis: 0,
+      tooltip: {
+        valueSuffix: ' Wh'
+      }
 
-        }],
+    },
+    {
+      name: 'Consommation HC',
+      type: 'column',
+      color: '#bcd2e8',
+      yAxis: 0,
+      tooltip: {
+        valueSuffix: ' Wh'
+      }
+
+    }],
         credits: { enabled: false }
     });
 
@@ -395,24 +410,28 @@
     }
 
     function getHistory() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                var obj = JSON.parse(this.responseText);
-                var history = obj.history;
-                var hours = [];
-                var totalConsumption = 0;
-                var d = new Date(obj.historyStartupTime * 1000);
-                var h = d.getHours();
-                for (i = 0; i < 24; i++) {
-                    hours.push((h + i + 1) % 24 + "h");
-                    totalConsumption += history[i];
-                }
+    var xhttpHistory = new XMLHttpRequest();
+    xhttpHistory.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var obj = JSON.parse(this.responseText);
+        var history_hp = obj.history_hp;
+        var history_hc = obj.history_hc;
+        var hours = [];
+        var totalConsumption_hp = 0;
+        var totalConsumption_hc = 0;
+        var d = new Date(obj.historyStartupTime * 1000);
+        var h = d.getHours();
+        for (i = 0; i < 24; i++) {
+          hours.push((h + i + 1) % 24 + "h");
+          totalConsumption_hp += history_hp[i];
+          totalConsumption_hc += history_hc[i];
+        }
 
-                chartHistory.setTitle(null, { text: 'Total consommé :  ' + totalConsumption / 1000 + "kWh" });
-                chartHistory.xAxis[0].setCategories(hours);
-                chartHistory.series[0].setData(history.reverse());
-            }
+        chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
+        chartHistory.xAxis[0].setCategories(hours);
+        chartHistory.series[0].setData(history_hp.reverse());
+        chartHistory.series[1].setData(history_hc.reverse());
+      }
         };
         xhttpHistory.open("GET", "/history", true);
         xhttpHistory.send();

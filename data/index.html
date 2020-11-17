@@ -199,34 +199,39 @@
             <tr>
                 <td>Puissance</td>
                 <td><a href="/power" target="_blank">/power</a></td>
-                <td>Données de consommation instantannée (puissance apparente et intensité).</td>
+                <td class="greyed">Données de consommation instantannée (puissance apparente et intensité).</td>
             </tr>
             <tr>
                 <td>Index</td>
                 <td><a href="/index" target="_blank">/index</a></td>
-                <td>Index des compteurs heure pleine et heure creuse.</td>
+                <td class="greyed">Index des compteurs heure pleine et heure creuse.</td>
             </tr>
             <tr>
                 <td>Compteur</td>
                 <td><a href="/meter" target="_blank">/meter</a></td>
-                <td>Informations sur le compteur, et période tarifaire en cours.</td>
+                <td class="greyed">Informations sur le compteur, et période tarifaire en cours.</td>
             </tr>
             <tr>
                 <td>Historique</td>
                 <td><a href="/history" target="_blank">/history</a></td>
-                <td>Données de consommation sur 24h.</td>
+                <td class="greyed">Données de consommation sur 24h.</td>
             </tr>
             <tr>
                 <td>Configuration</td>
                 <td><a href="/config" target="_blank">/config</a></td>
-                <td>Configuration mqtt.</td>
+                <td class="greyed">Configuration mqtt.</td>
             </tr>
             <tr>
                 <td>Informations générales</td>
                 <td><a href="/info" target="_blank">/info</a></td>
-                <td>Configuration réseau, et le status du chip.</td>
+                <td class="greyed">Configuration réseau, et le status du chip.</td>
             </tr>
         </table>
+
+        <p>
+            <a href="" target="_blank"
+                class="greyed">Spécifications API au format OpenAPI</a>
+        </p>
     </div>
 
     <div id="system" class="tabcontent">
@@ -290,7 +295,7 @@
             labels: {
                 format: '{value} A',
                 style: {
-                    color: Highcharts.getOptions().colors[4]
+                    color: '#3491CD'
                 }
             },
             title: { text: 'Intensité' },
@@ -309,7 +314,7 @@
         }, {
             name: 'Intensité',
             type: 'spline',
-            color: Highcharts.getOptions().colors[4],
+            color: '#3491CD',
             yAxis: 1,
             marker: {
                 enabled: false

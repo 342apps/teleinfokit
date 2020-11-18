@@ -20,6 +20,7 @@
 #define CONFIG_FILE "/config.dat"
 #define RESET_CONFIRM_DELAY 10000
 #define SCREEN_OFF_MESSAGE_DELAY 5000
+#define SCREENSAVER_DELAY 60000
 #define AP_NAME "TeleInfoKit"
 #define AP_PWD "givememylinkydata"
 
@@ -69,6 +70,7 @@ unsigned long resetTs = 0;
 
 // timestamp for message before screen off
 unsigned long offTs = 0;
+bool screensaver = false;
 
 Data *data;
 Display *d;
@@ -151,6 +153,7 @@ void handlerBtn(Button2 &btn)
     mode = (mode + 1) % 7; // cycle through 7 screens
     resetTs = 0;
     offTs = millis();
+    screensaver = false;
     break;
   case DOUBLE_CLICK:
     break;
@@ -354,50 +357,57 @@ void loop()
     d->displayReset();
   }
 
+  if(millis() - offTs > SCREENSAVER_DELAY){
+    screensaver = true;
+    d->displayOff();
+  }
+
   if (millis() - refreshTime > REFRESH_DELAY)
   {
     data->storeValue(ti.hp, ti.hc);
 
-    switch (mode)
-    {
-    case GRAPH:
-      reset = IDLE;
-      d->drawGraph(ti.papp);
-      break;
-    case DATA1:
-      reset = IDLE;
-      d->displayData1(ti.papp, ti.iinst_old);
-      break;
-    case DATA2:
-      reset = IDLE;
-      d->displayData2(ti.hp, ti.hc);
-      break;
-    case DATA3:
-      reset = IDLE;
-      d->displayData3(ti.adc0, ti.isousc, ti.ptec);
-      break;
-    case NETWORK:
-      reset = IDLE;
-      d->displayNetwork();
-      break;
-    case RESET:
-      if (reset != RST_REQ && reset != RST_ACK)
+    if(!screensaver){
+      switch (mode)
       {
-        reset = RST_PAGE;
-        d->displayReset();
+      case GRAPH:
+        reset = IDLE;
+        d->drawGraph(ti.papp);
+        break;
+      case DATA1:
+        reset = IDLE;
+        d->displayData1(ti.papp, ti.iinst_old);
+        break;
+      case DATA2:
+        reset = IDLE;
+        d->displayData2(ti.hp, ti.hc);
+        break;
+      case DATA3:
+        reset = IDLE;
+        d->displayData3(ti.adc0, ti.isousc, ti.ptec);
+        break;
+      case NETWORK:
+        reset = IDLE;
+        d->displayNetwork();
+        break;
+      case RESET:
+        if (reset != RST_REQ && reset != RST_ACK)
+        {
+          reset = RST_PAGE;
+          d->displayReset();
+        }
+        break;
+      case OFF:
+        reset = IDLE;
+        if (millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
+        {
+          d->displayOff();
+        }
+        else
+        {
+          d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
+        }
+        break;
       }
-      break;
-    case OFF:
-      reset = IDLE;
-      if (millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
-      {
-        d->displayOff();
-      }
-      else
-      {
-        d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
-      }
-      break;
     }
 
     refreshTime = millis();

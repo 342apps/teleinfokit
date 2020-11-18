@@ -7,6 +7,7 @@
 #include "LittleFS.h"
 #include "espteleinfo.h"
 #include "data.h"
+#include "version.h"
 
 class WebServer
 {

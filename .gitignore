@@ -14,3 +14,6 @@
 .pio
 
 .DS_Store
+
+# build number data file
+versioning

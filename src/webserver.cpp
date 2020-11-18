@@ -55,7 +55,9 @@ void getConfigInfo()
 void getSysInfo()
 {
     String response = "{";
-    response += "\"ip\": \"" + WiFi.localIP().toString() + "\"";
+    response += "\"version\": \"" + String(VERSION) + "\"";
+    response += ",\"buildTime\": \"" + String(BUILD_TIME) + "\"";
+    response += ",\"ip\": \"" + WiFi.localIP().toString() + "\"";
     response += ",\"gw\": \"" + WiFi.gatewayIP().toString() + "\"";
     response += ",\"nm\": \"" + WiFi.subnetMask().toString() + "\"";
     response += ",\"ssid\": \"" + WiFi.SSID() + "\"";

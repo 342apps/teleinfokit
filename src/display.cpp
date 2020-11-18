@@ -122,6 +122,7 @@ void Display::displayReset()
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, "Reinitialisation ?");
   oled.drawString(0, 10, "Appui long pour reset...");
+  oled.drawString(0, 20, VERSION);
   oled.display();
 }
 

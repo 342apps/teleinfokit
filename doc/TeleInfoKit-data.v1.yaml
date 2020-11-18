@@ -22,21 +22,29 @@ paths:
                   historyStartupTime:
                     type: number
                     description: Timestamp (UTC) de départ des données de l'index 0.
-                  history:
+                  history_hp:
                     type: array
                     minItems: 24
-                    description: 'Historique des consommations sur les dernières 24h. Unités : Watt.heure (Wh)'
+                    description: 'Historique des consommations en heures pleines sur les dernières 24h. Unités : Watt.heure (Wh)'
+                    maxItems: 24
+                    items:
+                      type: integer
+                  history_hc:
+                    type: array
+                    minItems: 24
+                    description: 'Historique des consommations en heures creuses sur les dernières 24h. Unités : Watt.heure (Wh)'
                     maxItems: 24
                     items:
                       type: integer
                 required:
                   - historyStartupTime
-                  - history
+                  - history_hp
+                  - history_hc
               examples:
                 Example:
                   value:
                     historyStartupTime: 1605564000
-                    history:
+                    history_hp:
                       - 270
                       - 338
                       - 486
@@ -46,9 +54,34 @@ paths:
                       - 704
                       - 857
                       - 123
-                      - 165
-                      - 310
-                      - 256
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 569
+                      - 458
+                      - 342
+                    history_hc:
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 74
                       - 189
                       - 236
                       - 418
@@ -58,16 +91,16 @@ paths:
                       - 419
                       - 324
                       - 358
-                      - 569
-                      - 458
-                      - 342
+                      - 36
+                      - 0
+                      - 0
       operationId: get-history
       description: |-
-        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h ainsi qu'un horodatage de la donnée de départ.
+        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h ainsi qu'un horodatage de la donnée de départ. Les consommations 'heures pleines' / 'heures creuses' sont dissociées.
 
-        L'index 0  contient la consommation de l'heure en cours. Les index suivants contiennent les consommations des heures précédentes. L'index 0 évolue constamment, à mesure que la consommation augmente sur l'heure courante.
+        L'index 0 des tableaux `history_hp` et `history_hc` contient la consommation de l'heure en cours. Les index suivants contiennent les consommations des heures précédentes. L'index 0 évolue constamment, à mesure que la consommation augmente sur l'heure courante.
 
-        Les index 1 à 23 ne changent pas, sauf une fois que l'heure en cours est écoulée. Les index 0 à 22 sont décalés de 1, la précédente valeur de l'index 23 correspondant à la consommation il y a 24h est perdue. L'index 0 est remis à zéro et reprend son évolution.
+        Les index 1 à 23 ne changent pas, sauf une fois que l'heure en cours est écoulée. Les valeurs des index 0 à 22 sont décalés de 1, la précédente valeur de l'index 23 correspondant à la consommation il y a 24h est perdue. L'index 0 est remis à zéro et reprend son évolution.
 
         **Note** : au démarrage du module, la valeur de `historyStartupTime` sera l'heure de l'initialisation de la collecte des données (quelques secondes après le démarrage). En fonctionnement nominal, l'index 0 est réinitialisé à l'heure pile. Le champ `historyStartupTime` sera à l'heure de début de la collecte pour l'heure en cours.
     parameters: []
@@ -200,6 +233,14 @@ paths:
                 description: ''
                 type: object
                 properties:
+                  version:
+                    type: string
+                    minLength: 1
+                    description: Version du firmware installé
+                  buildTime:
+                    type: string
+                    minLength: 1
+                    description: Date et heure au format texte de la compilation du firmware installé
                   ip:
                     type: string
                     minLength: 1
@@ -248,6 +289,8 @@ paths:
                     type: integer
                     description: Timestamp (UTC) de démarrage du module
                 required:
+                  - version
+                  - buildTime
                   - ip
                   - gw
                   - nm
@@ -263,6 +306,8 @@ paths:
               examples:
                 Example:
                   value:
+                    version: v0.1.0.04bf42
+                    buildTime: '2020-11-18 23:46:56.881970'
                     ip: 192.168.3.62
                     gw: 192.168.3.1
                     nm: 255.255.255.0

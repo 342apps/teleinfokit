@@ -201,8 +201,8 @@ void setup()
 
   d->log(VERSION);
 
-  d->logPercent("Demarrage", 5);
-  delay(350); // just to see progress bar
+  d->logPercent("Demarrage " + String(VERSION), 5);
+  delay(1000); // just to see progress bar
 
   readConfig();
   uint16_t port = 1883;
@@ -213,7 +213,7 @@ void setup()
   }
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
 
-  d->logPercent("Connexion au reseau wifi...", 50);
+  d->logPercent("Connexion au reseau wifi...", 25);
   delay(350); // just to see progress bar
 
   // ========= WIFI MANAGER =========
@@ -244,7 +244,7 @@ void setup()
 
   WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
-  d->logPercent("Connecte a " + String(WiFi.SSID()), 70);
+  d->logPercent("Connecte a " + String(WiFi.SSID()), 40);
   delay(500); // just to see progress bar
 
   strcpy(mqtt_server, custom_mqtt_server.getValue());
@@ -255,7 +255,7 @@ void setup()
   //save the custom parameters to FS
   if (shouldSaveConfig)
   {
-    d->logPercent("Sauvegarde configuration", 73);
+    d->logPercent("Sauvegarde configuration", 45);
 
     File configFile = LittleFS.open(CONFIG_FILE, "w");
     if (!configFile)
@@ -269,7 +269,7 @@ void setup()
       strcpy(config.mqtt_server_username, custom_mqtt_username.getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
       configFile.write((byte *)&config, sizeof(config));
-      d->logPercent("Configuration sauvee", 78);
+      d->logPercent("Configuration sauvee", 50);
     }
 
     ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
@@ -280,7 +280,7 @@ void setup()
   // ================ OTA ================
   ArduinoOTA.setHostname("teleinfokit");
   ArduinoOTA.setPassword("admin4tele9Info");
-  d->logPercent("Demarrage OTA", 80);
+  d->logPercent("Demarrage OTA", 60);
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -331,7 +331,7 @@ void setup()
 
   timeClient.begin();
   timeClient.update();
-  d->logPercent("Connexion NTP", 85);
+  d->logPercent("Connexion NTP", 75);
   data->setNtp(&timeClient);
 
   web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);

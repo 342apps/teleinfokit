@@ -14,6 +14,7 @@
 #include "espteleinfo.h"
 #include "display.h"
 #include "webserver.h"
+#include <version.h>
 
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
@@ -197,6 +198,8 @@ void setup()
   //pinMode(PIN_OPTO, INPUT_PULLUP);
   button.setClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
+
+  d->log(VERSION);
 
   d->logPercent("Demarrage", 5);
   delay(350); // just to see progress bar

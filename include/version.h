@@ -1,13 +1,13 @@
 //  DO NOT EDIT MANUALLY THIS FILE - IT IS DELETED AND RECREATED AT EACH BUILD !!!! 
 #ifndef BUILD_NUMBER
-  #define BUILD_NUMBER "49"
+  #define BUILD_NUMBER "4"
 #endif
 #ifndef BUILD_HASH
-  #define BUILD_HASH "04bf42"
+  #define BUILD_HASH "c49935"
 #endif
 #ifndef BUILD_TIME
-  #define BUILD_TIME "2020-11-18 23:46:56.881970"
+  #define BUILD_TIME "2020-11-19 09:04:42.307823"
 #endif
 #ifndef VERSION
-  #define VERSION "v0.1.0.04bf42"
+  #define VERSION "v0.1.c49935"
 #endif

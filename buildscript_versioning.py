@@ -11,7 +11,7 @@ tm = datetime.datetime.today()
 FILENAME_BUILDNO = 'versioning'
 FILENAME_VERSION_H = 'include/version.h'
 compileTime =  datetime.datetime.now()
-version_root = 'v0.1.0.'
+version_root = 'v0.1.'
 
 
 def cheaphash(string,length=6):

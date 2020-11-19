@@ -30,6 +30,10 @@
             font-size: smaller;
         }
 
+        #version_bottom {
+            float: right;
+        }
+
         /* Style the buttons that are used to open the tab content */
         .tab button {
             background-color: inherit;
@@ -237,6 +241,14 @@
     <div id="system" class="tabcontent">
         <table>
             <tr>
+                <td>Firmware version</td>
+                <td id="version"></td>
+            </tr>
+            <tr>
+                <td>Build time</td>
+                <td id="buildTime"></td>
+            </tr>
+            <tr>
                 <td>Chip ID</td>
                 <td id="chipId"></td>
             </tr>
@@ -256,6 +268,7 @@
     </div>
     <p>
         <a href="https://github.com/342apps/teleinfokit" target="_blank" class="greyed">Gitlab TeleInfoKit</a>
+        <span id="version_bottom" class="greyed"></span>
     </p>
 </body>
 <script>
@@ -452,6 +465,9 @@
         xhttpHistory.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 sysInfo = JSON.parse(this.responseText);
+                document.getElementById("version").innerHTML = sysInfo.version;
+                document.getElementById("version_bottom").innerHTML = sysInfo.version;
+                document.getElementById("buildTime").innerHTML = sysInfo.buildTime;
                 document.getElementById("ip").innerHTML = sysInfo.ip;
                 document.getElementById("gw").innerHTML = sysInfo.gw;
                 document.getElementById("nm").innerHTML = sysInfo.nm;

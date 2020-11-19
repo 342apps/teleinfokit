@@ -23,7 +23,7 @@
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define SCREENSAVER_DELAY 60000
 #define AP_NAME "TeleInfoKit"
-#define AP_PWD "givememylinkydata"
+#define AP_PWD "givememydata"
 
 #define REFRESH_DELAY 1000
 
@@ -199,10 +199,8 @@ void setup()
   button.setClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
-  d->log(VERSION);
-
   d->logPercent("Demarrage " + String(VERSION), 5);
-  delay(1000); // just to see progress bar
+  delay(750); // just to see progress bar
 
   readConfig();
   uint16_t port = 1883;
@@ -245,7 +243,7 @@ void setup()
   WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
   d->logPercent("Connecte a " + String(WiFi.SSID()), 40);
-  delay(500); // just to see progress bar
+  delay(750); // just to see progress bar
 
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
@@ -270,6 +268,7 @@ void setup()
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
       configFile.write((byte *)&config, sizeof(config));
       d->logPercent("Configuration sauvee", 50);
+      delay(750);
     }
 
     ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
@@ -281,6 +280,7 @@ void setup()
   ArduinoOTA.setHostname("teleinfokit");
   ArduinoOTA.setPassword("admin4tele9Info");
   d->logPercent("Demarrage OTA", 60);
+  delay(750);
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -332,6 +332,7 @@ void setup()
   timeClient.begin();
   timeClient.update();
   d->logPercent("Connexion NTP", 75);
+  delay(750);
   data->setNtp(&timeClient);
 
   web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
@@ -339,12 +340,15 @@ void setup()
   if (!ti.LogStartup())
   {
     d->logPercent("Demarrage termine", 100);
+    delay(500);
     d->log("Erreur config MQTT \nReinitialiser les reglages", 5000);
   }
 
   d->logPercent("Demarrage termine", 100);
-  delay(300);
+  delay(500);
   d->displayReset();
+
+  offTs = millis();
 }
 
 void loop()
@@ -378,7 +382,7 @@ void loop()
         break;
       case DATA1:
         reset = IDLE;
-        d->displayData1(ti.papp, ti.iinst_old);
+        d->displayData1(ti.papp, ti.iinst);
         break;
       case DATA2:
         reset = IDLE;

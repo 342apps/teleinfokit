@@ -187,6 +187,7 @@ void handlerBtn(Button2 &btn)
 
 void setup()
 {
+  // pinMode(PIN_OPTO, INPUT_PULLUP);
   data = new Data();
   d = new Display();
   data->init();
@@ -195,7 +196,6 @@ void setup()
   web = new WebServer();
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
-  //pinMode(PIN_OPTO, INPUT_PULLUP);
   button.setClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 

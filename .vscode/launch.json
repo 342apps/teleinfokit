@@ -13,10 +13,11 @@
             "request": "launch",
             "name": "PIO Debug",
             "executable": "/Users/nicolas/Documents/Developpement/Platformio/teleinfokit/.pio/build/esp01_1m/firmware.elf",
+            "projectEnvName": "esp01_1m",
             "toolchainBinDir": "/Users/nicolas/.platformio/packages/toolchain-xtensa/bin",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug"
+                "task": "Pre-Debug (esp01_1m)"
             },
             "internalConsoleOptions": "openOnSessionStart"
         },
@@ -25,6 +26,7 @@
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
             "executable": "/Users/nicolas/Documents/Developpement/Platformio/teleinfokit/.pio/build/esp01_1m/firmware.elf",
+            "projectEnvName": "esp01_1m",
             "toolchainBinDir": "/Users/nicolas/.platformio/packages/toolchain-xtensa/bin",
             "internalConsoleOptions": "openOnSessionStart"
         }

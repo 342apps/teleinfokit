@@ -337,6 +337,8 @@ void setup()
 
   web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
 
+  d->logPercent("Connexion MQTT", 75);
+  delay(500);
   if (!ti.LogStartup())
   {
     d->logPercent("Demarrage termine", 100);

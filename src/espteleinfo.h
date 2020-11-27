@@ -35,6 +35,8 @@ private:
     char mqtt_user[20];
     char mqtt_pwd[20];
 
+    char CHIP_ID[7] = {0};
+
     bool connectMqtt();
 };
 

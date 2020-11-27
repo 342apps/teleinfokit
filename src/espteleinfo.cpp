@@ -1,6 +1,5 @@
 #include "espteleinfo.h"
 
-#define CLIENT_ID "EdfTeleinfoKit"
 #define INTERVAL 3000 // 3 sec delay between publishing
 
 #define IINST "IINST"
@@ -49,6 +48,11 @@ void ESPTeleInfo::init()
     Serial.begin(1200, SERIAL_8N1);
     // Init teleinfo
     teleinfo.begin();
+
+
+    sprintf(CHIP_ID, "%06X", ESP.getChipId());
+
+
 }
 
 void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password)
@@ -63,17 +67,18 @@ bool ESPTeleInfo::connectMqtt()
 {
     if (mqtt_user[0] == '\0')
     {
-        return mqttClient.connect(CLIENT_ID);
+        return mqttClient.connect(CHIP_ID);
     }
     else
     {
-        return mqttClient.connect(CLIENT_ID, mqtt_user, mqtt_pwd);
+        return mqttClient.connect(CHIP_ID, mqtt_user, mqtt_pwd);
     }
 }
 
 void ESPTeleInfo::loop(void)
 {
     teleinfo.process();
+    
     if (teleinfo.available())
     {
         iinst = teleinfo.getLongVal(IINST);

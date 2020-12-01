@@ -13,9 +13,9 @@ Hotspot Wifi: TeleInfoKit
 
 Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est `givememydata`. Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
 
-**TODO** captures d'écran du portail
+![Captive portal](./captive-portal.png)
 
-* Cliquer sur le bouton "Scan networks" pour faire apparaître la liste des réseaux wifi à portée (l'ESP-01 est compatible wifi 2.4GHz seulement).
+* Cliquer sur le bouton "Configure Wifi" pour faire apparaître la liste des réseaux wifi à portée (l'ESP-01 est compatible wifi 2.4GHz seulement).
 * Taper le nom du réseau dans le champ SSID ou le sélectionner dans la liste.
 * Saisir le mot de passe du réseau wifi
 * Saisir l'adresse du serveur mqtt (ip ou alias dns)
@@ -25,7 +25,7 @@ Cliquer sur `Save`. Le module va afficher un message de confirmation puis contin
 
 Le point d'accès wifi se désactive.
 
-**TODO** procédure depuis un ordinateur
+**TODO** procédure depuis un PC
 
 ### En cas de mauvais paramétrage MQTT
 
@@ -35,11 +35,11 @@ Pour corriger la configuration MQTT, [réinitialiser le module](#Réinitialisati
 
 ### En cas d'erreur de paramétrage wifi
 
-Si le paramétrage wifi est incorrect, le module ne poursuit pas son démarrage. Le point d'accès reste actif et la procédure est à recommencer. Si le point d'accès wifi `TeleInfoKit`ne réapparaît pas, il peut être nécessaire de redémarrer le module.
+Si le paramétrage wifi est incorrect, le module ne poursuit pas son démarrage. Le point d'accès reste actif et la procédure est à recommencer. Si le point d'accès wifi `TeleInfoKit` ne réapparaît pas, il peut être nécessaire de redémarrer le module.
 
 ## Messages MQTT
 
-### Structure des topics
+Se référer au document [Messages MQTT](./mqtt.md) pour toutes les informations sur la structure des topics et le contenu des messages.
 
 ## Écrans
 
@@ -51,6 +51,20 @@ L'écran s'éteindra de lui même au bout d'une minute afin de limiter l'usure d
 
 ### Écran #1 : Historique
 
+Ce premier écran rassemble un grand nombre d'informations. La zone principale est occupée par un graphe de la consommation sur les dernières 24h. 
+
+A chaque barre correspond 1 heure. Les barres à gauche sont les plus anciennes, la barre la plus à droite est l'heure courante. La hauteur de la barre indique le nombre de Wh consommés sur cette période d'une heure (HC + HP).
+
+La barre horizontale à droite indique la hauteur maximale des barres du graphe. Le nombre indiqué sous cette barre (2453Wh sur l'exemple ci-dessous) indique la consommation max sur une période d'une heure au cours des dernières 24h. Cela sert donc d'échelle pour le graphe, cette valeur étant la consommation associée à la barre la plus haute du graphe.
+
+![Historique](./history-screen.png)
+
+Le graphe est optimisé pour occuper le maximum de hauteur possible à l'écran. L'échelle (la plus grande consommation par tranche d'une heure) s'adapte donc au fur et a mesure du temps.
+
+Au fil des heures, le graphe se décale vers la gauche, les nouvelles valeurs de consommation poussant les anciennes.
+
+Dans le coin supérieur droit, la puissance consommée à l'instant t est affichée (ici 2610VA). Sa valeur est mise à jour en continu, environ toutes les 2 secondes.
+
 ### Écran #2 : Puissance / Intensite
 
 Cet écran affiche la puissance consommée actuelle, remontée par le compteur.
@@ -61,6 +75,8 @@ Puissance/Intensite
 8A
 ```
 
+Ces valeur sont mises à jour en continu, environ toutes les 2 secondes.
+
 ### Écran #3 : Index compteurs
 
 Cet écran affiche les index courants des heure creuse et heure pleine, remontés par le compteur.
@@ -70,6 +86,8 @@ Index compteurs
 HC 211485
 HP 415443
 ```
+
+Ces valeur sont mises à jour en continu, environ toutes les 2 secondes.
 
 ### Écran #4 : Informations compteur
 

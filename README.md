@@ -24,13 +24,13 @@ Un afficheur intégré au module TeleInfoKit restitue un historique de consommat
 
 Un dashboard sous la forme d'une page web est également accessible depuis un navigateur en se connectant au module via son adresse IP.
 
-**TODO Image**
+[![dashboard](./doc/dashboard.png)](./doc/dashboard_big.png)
 
 Un graphe de la consommation instantanée et l'historique sur 24 est affiché. Des informations complémentaires sont disponibles au bas du dashboard.
 
 ## APIs
 
-Une série d'APIs est mise à disposition pour accéder aux données autrement que par MQTT. Le dashboard utilise ces APIs dans son fonctionnement. Les [spécifications au format OpenAPI](./doc/TeleInfoKit-data.v1.yaml) sont disponibles dans les sources.
+Une série d'APIs est mise à disposition pour accéder aux données autrement que par MQTT. Le dashboard utilise ces APIs dans son fonctionnement. Les [spécifications au format OpenAPI](./doc/TeleInfoKit-openapi.v1.yaml) sont disponibles dans les sources.
 
 ## Mises à jour OTA
 

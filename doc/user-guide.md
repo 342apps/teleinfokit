@@ -6,7 +6,7 @@ Lors du premier démarrage du module il est nécessaire de saisir les informatio
 
 Brancher le connecteur micro USB à une source d'alimentation 5V (chargeur USB classique), puis attendre jusqu'à l'affichage de l'écran suivant :
 
-```
+```text
 Hotspot Wifi: TeleInfoKit
 192.168.4.1
 ```
@@ -25,7 +25,7 @@ Cliquer sur `Save`. Le module va afficher un message de confirmation puis contin
 
 Le point d'accès wifi se désactive.
 
-**TODO** procédure depuis un PC
+**Note:** Le réseau wifi utilisé doit avoir accès à internet pour que l'heure puisse être obtenue depuis un serveur NTP.
 
 ### En cas de mauvais paramétrage MQTT
 
@@ -172,3 +172,9 @@ Redemarrage
 Le module a supprimé ses informations de connexion et va démarrer avec sa configuration d'origine, c'est à dire sans identifiants Wifi ni configuration MQTT enregistrés.
 
 Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarrage et Configuration](#démarrage-et-configuration).
+
+## API
+
+Le firmware expose une API pour exploiter les données fournies par le module TeleInfoKit. Cette API est accessible par HTTP directement via l'adresse IP du module.
+
+L'API est décrite entièrement au format OpenAPI V3 par le fichier [TeleInfoKit-openapi.v1.yaml](./TeleInfoKit-openapi.v1.yaml). Pour une lecture plus simple [l'éditeur de swagger.io](https://editor.swagger.io/) peut être utilisé.

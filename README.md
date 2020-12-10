@@ -39,3 +39,14 @@ Le firmware peut être mis à jour en mode OTA (Over The Air). Cela passe par la
 ## Hardware
 
 Le module TeleInfoKit s'architecture autour du module ESP-01 basé sur le chip [ESP8266 d'Espressif](https://www.espressif.com/en/products/socs/esp8266). Le firmware disponible ici est prévu pour être compilé pour cette plateforme.
+
+## Documentation
+
+Se référer au dossier [doc](/doc) pour les documents suivants:
+
+* [Guide utilisateur](./doc/user-guide.md)
+  * [Démarrage et configuration](./doc/user-guide.md#Démarrage-et-configuration)
+  * [Écrans](./doc/user-guide.md#Écrans)
+  * [Réinitialisation de la configuration](./doc/user-guide.md#Réinitialisation-de-la-configuration)
+  * [APIs](./doc/user-guide.md#API)
+* [Messages MQTT](./doc/mqtt.md)

@@ -7,17 +7,23 @@
 #include <ArduinoOTA.h>
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager
 #include "Button2.h"
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 #include "data.h"
 #include "espteleinfo.h"
 #include "display.h"
+#include "webserver.h"
+#include <version.h>
 
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
 #define CONFIG_FILE "/config.dat"
 #define RESET_CONFIRM_DELAY 10000
+#define SCREEN_OFF_MESSAGE_DELAY 5000
+#define SCREENSAVER_DELAY 60000
 #define AP_NAME "TeleInfoKit"
-#define AP_PWD  "givememylinkydata"
+#define AP_PWD "givememydata"
 
 #define REFRESH_DELAY 1000
 
@@ -63,11 +69,19 @@ uint8_t reset = IDLE;
 // timestamp for reset request auto-cancellation
 unsigned long resetTs = 0;
 
+// timestamp for message before screen off
+unsigned long offTs = 0;
+bool screensaver = false;
+
 Data *data;
 Display *d;
 ESPTeleInfo ti = ESPTeleInfo();
+WebServer *web;
 Button2 button = Button2(PIN_BUTTON);
 WiFiManager wifiManager;
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
 // network configuration variables
 char mqtt_server[40];
@@ -139,6 +153,8 @@ void handlerBtn(Button2 &btn)
   case SINGLE_CLICK:
     mode = (mode + 1) % 7; // cycle through 7 screens
     resetTs = 0;
+    offTs = millis();
+    screensaver = false;
     break;
   case DOUBLE_CLICK:
     break;
@@ -171,31 +187,31 @@ void handlerBtn(Button2 &btn)
 
 void setup()
 {
+  // pinMode(PIN_OPTO, INPUT_PULLUP);
   data = new Data();
   d = new Display();
-  delay(5000);
   data->init();
   ti.init();
   d->init(data);
+  web = new WebServer();
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
-  //pinMode(PIN_OPTO, INPUT_PULLUP);
   button.setClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
-  d->logPercent("Demarrage", 5);
-  delay(350); // just to see progress bar
+  d->logPercent("Demarrage " + String(VERSION), 5);
+  delay(750); // just to see progress bar
 
   readConfig();
   uint16_t port = 1883;
-  if(config.mqtt_port[0] != '\0')
+  if (config.mqtt_port[0] != '\0')
   {
     port = atoi(config.mqtt_port);
     delay(1000);
   }
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
 
-  d->logPercent("Connexion au wifi...", 50);
+  d->logPercent("Connexion au reseau wifi...", 25);
   delay(350); // just to see progress bar
 
   // ========= WIFI MANAGER =========
@@ -224,10 +240,11 @@ void setup()
     delay(1000);
   }
 
-  d->logPercent("Connecte a " + String(WiFi.SSID()), 80);
-  delay(500); // just to see progress bar
+  WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
-// TODO issue on load here ??
+  d->logPercent("Connecte a " + String(WiFi.SSID()), 40);
+  delay(750); // just to see progress bar
+
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_server_username, custom_mqtt_username.getValue());
@@ -236,7 +253,7 @@ void setup()
   //save the custom parameters to FS
   if (shouldSaveConfig)
   {
-    d->logPercent("Sauvegarde configuration", 60);
+    d->logPercent("Sauvegarde configuration", 45);
 
     File configFile = LittleFS.open(CONFIG_FILE, "w");
     if (!configFile)
@@ -250,7 +267,8 @@ void setup()
       strcpy(config.mqtt_server_username, custom_mqtt_username.getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
       configFile.write((byte *)&config, sizeof(config));
-      d->logPercent("Configuration sauvee", 70);
+      d->logPercent("Configuration sauvee", 50);
+      delay(750);
     }
 
     ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
@@ -261,7 +279,8 @@ void setup()
   // ================ OTA ================
   ArduinoOTA.setHostname("teleinfokit");
   ArduinoOTA.setPassword("admin4tele9Info");
-  d->logPercent("Demarrage OTA", 90);
+  d->logPercent("Demarrage OTA", 60);
+  delay(750);
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -274,7 +293,6 @@ void setup()
       type = "filesystem";
     }
 
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
     d->log("Demarrage MAJ " + type);
   });
   ArduinoOTA.onEnd([]() {
@@ -311,20 +329,35 @@ void setup()
   });
   ArduinoOTA.begin();
 
-  if(!ti.LogStartup()){
+  timeClient.begin();
+  timeClient.update();
+  d->logPercent("Connexion NTP", 75);
+  delay(750);
+  data->setNtp(&timeClient);
+
+  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
+
+  d->logPercent("Connexion MQTT", 75);
+  delay(500);
+  if (!ti.LogStartup())
+  {
     d->logPercent("Demarrage termine", 100);
-    d->log("Erreur config MQTT \nReinitialiser les reglages",5000);
+    delay(500);
+    d->log("Erreur config MQTT \nReinitialiser les reglages", 5000);
   }
 
   d->logPercent("Demarrage termine", 100);
-  delay(300);
+  delay(500);
   d->displayReset();
+
+  offTs = millis();
 }
 
 void loop()
 {
   ArduinoOTA.handle();
   button.loop();
+  web->loop();
 
   // for cancelling reset settings requests automatically
   if (resetTs != 0 && (millis() - resetTs > RESET_CONFIRM_DELAY))
@@ -333,47 +366,62 @@ void loop()
     d->displayReset();
   }
 
+  if(millis() - offTs > SCREENSAVER_DELAY){
+    screensaver = true;
+    d->displayOff();
+  }
+
   if (millis() - refreshTime > REFRESH_DELAY)
   {
-    // data.storeValue(ti.hp, ti.hc);
+    data->storeValue(ti.hp, ti.hc);
 
-    switch (mode)
-    {
-    case GRAPH:
-      reset = IDLE;
-      d->drawGraph();
-      break;
-    case DATA1:
-      reset = IDLE;
-      d->displayData1(ti.papp, ti.iinst_old);
-      break;
-    case DATA2:
-      reset = IDLE;
-      d->displayData2(ti.hp, ti.hc);
-      break;
-    case DATA3:
-      reset = IDLE;
-      d->displayData3(ti.adc0, ti.isousc, ti.ptec);
-      break;
-    case NETWORK:
-      reset = IDLE;
-      d->displayNetwork();
-      break;
-    case RESET:
-      if (reset != RST_REQ && reset != RST_ACK)
+    if(!screensaver){
+      switch (mode)
       {
-        reset = RST_PAGE;
-        d->displayReset();
+      case GRAPH:
+        reset = IDLE;
+        d->drawGraph(ti.papp);
+        break;
+      case DATA1:
+        reset = IDLE;
+        d->displayData1(ti.papp, ti.iinst);
+        break;
+      case DATA2:
+        reset = IDLE;
+        d->displayData2(ti.hp, ti.hc);
+        break;
+      case DATA3:
+        reset = IDLE;
+        d->displayData3(ti.adc0, ti.isousc, ti.ptec);
+        break;
+      case NETWORK:
+        reset = IDLE;
+        d->displayNetwork();
+        break;
+      case RESET:
+        if (reset != RST_REQ && reset != RST_ACK)
+        {
+          reset = RST_PAGE;
+          d->displayReset();
+        }
+        break;
+      case OFF:
+        reset = IDLE;
+        if (millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
+        {
+          d->displayOff();
+        }
+        else
+        {
+          d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
+        }
+        break;
       }
-      break;
-    case OFF:
-      reset = IDLE;
-      d->displayOff();
-      break;
     }
 
     refreshTime = millis();
   }
 
   ti.loop();
+  timeClient.update();
 }

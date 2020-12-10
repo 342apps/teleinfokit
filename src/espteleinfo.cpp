@@ -1,6 +1,5 @@
 #include "espteleinfo.h"
 
-#define CLIENT_ID "EdfTeleinfoKit"
 #define INTERVAL 3000 // 3 sec delay between publishing
 
 #define IINST "IINST"
@@ -13,7 +12,7 @@
 #define IMAX "IMAX"
 #define PTEC "PTEC"
 
-#define NBTRY   5
+#define NBTRY 5
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -45,10 +44,15 @@ void ESPTeleInfo::init()
     adc0[0] = '\0';
     ptec[0] = '\0';
     ptec_old[0] = '_';
-    
+
     Serial.begin(1200, SERIAL_8N1);
     // Init teleinfo
     teleinfo.begin();
+
+
+    sprintf(CHIP_ID, "%06X", ESP.getChipId());
+
+
 }
 
 void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password)
@@ -59,19 +63,22 @@ void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *pa
     mqttClient.setServer(server, port);
 }
 
-bool ESPTeleInfo::connectMqtt(){
-    if(mqtt_user[0] == '\0')
+bool ESPTeleInfo::connectMqtt()
+{
+    if (mqtt_user[0] == '\0')
     {
-        return mqttClient.connect(CLIENT_ID);
+        return mqttClient.connect(CHIP_ID);
     }
-    else{
-        return mqttClient.connect(CLIENT_ID, mqtt_user, mqtt_pwd);
+    else
+    {
+        return mqttClient.connect(CHIP_ID, mqtt_user, mqtt_pwd);
     }
 }
 
 void ESPTeleInfo::loop(void)
 {
     teleinfo.process();
+    
     if (teleinfo.available())
     {
         iinst = teleinfo.getLongVal(IINST);
@@ -144,11 +151,13 @@ bool ESPTeleInfo::LogStartup()
         delay(250);
         nbTry++;
     }
-    if(nbTry < NBTRY){
+    if (nbTry < NBTRY)
+    {
         mqttClient.publish("edf/log", "Startup");
         return true;
     }
-    else{
+    else
+    {
         return false;
     }
 }
@@ -162,7 +171,8 @@ void ESPTeleInfo::Log(String s)
         delay(250);
         nbTry++;
     }
-    if(nbTry < NBTRY){
+    if (nbTry < NBTRY)
+    {
         s.toCharArray(buffer, 30);
         mqttClient.publish("edf/log", buffer);
     }

@@ -5,16 +5,14 @@ SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY
 
 Display::Display()
 {
-    oled.init();
-    oled.flipScreenVertically();
-    oled.setFont(ArialMT_Plain_10);
-    oled.drawRect(0,0,128,32);
-    oled.display();
+  oled.init();
+  oled.flipScreenVertically();
+  oled.setFont(ArialMT_Plain_10);
 }
 
-void Display::init(Data * d)
+void Display::init(Data *d)
 {
-    data = d;
+  data = d;
 }
 
 void Display::loop(void)
@@ -23,6 +21,7 @@ void Display::loop(void)
 
 void Display::log(String text, int16_t displayTime)
 {
+  oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
@@ -34,6 +33,7 @@ void Display::log(String text, int16_t displayTime)
 
 void Display::logPercent(String text, int percentage)
 {
+  oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
@@ -42,7 +42,7 @@ void Display::logPercent(String text, int percentage)
   oled.display();
 }
 
-void Display::drawGraph()
+void Display::drawGraph(long papp)
 {
   oled.displayOn();
   oled.clear();
@@ -58,7 +58,7 @@ void Display::drawGraph()
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
   oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->max));
   oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
-  oled.drawString(128, 0, "Max");
+  oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.drawString(0, 0, "Historique 24h");
   oled.display();
@@ -90,7 +90,7 @@ void Display::displayData2(long hp, long hc)
   oled.display();
 }
 
-void Display::displayData3(char* adc0, long isousc, char* ptec)
+void Display::displayData3(char *adc0, long isousc, char *ptec)
 {
   oled.displayOn();
   oled.clear();
@@ -122,6 +122,7 @@ void Display::displayReset()
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, "Reinitialisation ?");
   oled.drawString(0, 10, "Appui long pour reset...");
+  oled.drawString(0, 20, VERSION);
   oled.display();
 }
 

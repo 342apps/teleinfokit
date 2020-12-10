@@ -2,6 +2,7 @@
 #define DATA_H
 
 #include <Arduino.h>
+#include <NTPClient.h>
 
 #define NB_BARS 24
 #define BAR_WIDTH 3
@@ -16,20 +17,27 @@ public:
     void loop(void);
 
     // les données de consommation
-    long history[NB_BARS];
+    long history_hp[NB_BARS];
+    long history_hc[NB_BARS];
     long max;
     uint8_t bargraph[NB_BARS];
+    unsigned long startupTime;
+    unsigned long historyStartTime;
 
     void calculateGraph();
     void storeValue(long hp, long hc);
+    void setNtp(NTPClient *ntp);
 
 private:
     void calculeMax();
     void decaleIndex();
     bool newHour;
     unsigned long hourTimestamp;
-    long firstIndex;
+    long firstIndex_hp;
+    long firstIndex_hc;
     float bargraph_float;
+    NTPClient *ntpClient;
+    int previousHour;
 };
 
 #endif /* DATA_H */

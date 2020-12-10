@@ -11,7 +11,7 @@ public:
     ESPTeleInfo();
 
     void init();
-    void initMqtt(char *server, uint16_t port, char *username, char * password);
+    void initMqtt(char *server, uint16_t port, char *username, char *password);
     void loop(void);
 
     // les données de consommation
@@ -34,6 +34,8 @@ private:
     char buffer[30];
     char mqtt_user[20];
     char mqtt_pwd[20];
+
+    char CHIP_ID[7] = {0};
 
     bool connectMqtt();
 };

@@ -10,7 +10,7 @@ Le firmware proposé ici est prévu pour fonctionner sur le module TeleInfoKit q
 
 Les données sont également envoyées en temps réel sur un serveur MQTT pour être exploitées ensuite par un système domotique tel [Home Assistant](https://www.home-assistant.io/) ou un logiciel de monitoring comme [Grafana](https://www.home-assistant.io/).
 
-Un [guide d'utilisation détaillé](./doc/user-guide.md) du module et son firmware est disponible dans les sources du projet.
+Un [guide d'utilisation détaillé](./doc/user-guide.md) du module et son firmware sont disponible dans les sources du projet.
 
 ## Envoi des données en temps réel vers un serveur MQTT
 
@@ -26,7 +26,7 @@ Un dashboard sous la forme d'une page web est également accessible depuis un na
 
 [![dashboard](./doc/dashboard.png)](./doc/dashboard_big.png)
 
-Un graphe de la consommation instantanée et l'historique sur 24 est affiché. Des informations complémentaires sont disponibles au bas du dashboard.
+Un graphe de la consommation instantanée et l'historique sur 24h est affiché. Des informations complémentaires sont disponibles au bas du dashboard.
 
 ## APIs
 

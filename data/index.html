@@ -404,11 +404,12 @@
         credits: { enabled: false }
     });
 
+    const baseUrl = '';
+
     function getPower() {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                var obj = JSON.parse(this.responseText);
+        fetch(`${baseUrl}/power`)
+            .then(response => response.json())
+            .then(obj => {
                 var x = (new Date()).getTime(),
                     papp = obj.papp,
                     iinst = obj.iinst,
@@ -424,38 +425,31 @@
                 } else {
                     chartPower.series[1].addPoint([x, iinst], true, false, true);
                 }
-            }
-        };
-        xhttp.open("GET", "/power", true);
-        xhttp.send();
+            });
     }
 
     function getHistory() {
-    var xhttpHistory = new XMLHttpRequest();
-    xhttpHistory.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        var obj = JSON.parse(this.responseText);
-        var history_hp = obj.history_hp;
-        var history_hc = obj.history_hc;
-        var hours = [];
-        var totalConsumption_hp = 0;
-        var totalConsumption_hc = 0;
-        var d = new Date(obj.historyStartupTime * 1000);
-        var h = d.getHours();
-        for (i = 0; i < 24; i++) {
-          hours.push((h + i + 1) % 24 + "h");
-          totalConsumption_hp += history_hp[i];
-          totalConsumption_hc += history_hc[i];
-        }
+        fetch(`${baseUrl}/history`)
+            .then(response => response.json())
+            .then(obj => {
+                var history_hp = obj.history_hp;
+                var history_hc = obj.history_hc;
+                var hours = [];
+                var totalConsumption_hp = 0;
+                var totalConsumption_hc = 0;
+                var d = new Date(obj.historyStartupTime * 1000);
+                var h = d.getHours();
+                for (i = 0; i < 24; i++) {
+                    hours.push((h + i + 1) % 24 + "h");
+                    totalConsumption_hp += history_hp[i];
+                    totalConsumption_hc += history_hc[i];
+                }
 
-        chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
-        chartHistory.xAxis[0].setCategories(hours);
-        chartHistory.series[0].setData(history_hp.reverse());
-        chartHistory.series[1].setData(history_hc.reverse());
-      }
-        };
-        xhttpHistory.open("GET", "/history", true);
-        xhttpHistory.send();
+                chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
+                chartHistory.xAxis[0].setCategories(hours);
+                chartHistory.series[0].setData(history_hp.reverse());
+                chartHistory.series[1].setData(history_hc.reverse());
+            });
     }
     getHistory();
     getPower();
@@ -464,10 +458,9 @@
     setInterval(getHistory, 60000);
 
     function getSysInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                sysInfo = JSON.parse(this.responseText);
+        fetch(`${baseUrl}/info`)
+            .then(response => response.json())
+            .then(sysInfo => {
                 document.getElementById("version").innerHTML = sysInfo.version;
                 document.getElementById("version_bottom").innerHTML = sysInfo.version;
                 document.getElementById("buildTime").innerHTML = sysInfo.buildTime;
@@ -481,54 +474,39 @@
                 document.getElementById("flashChipId").innerHTML = sysInfo.flashChipId;
                 document.getElementById("flashChipSize").innerHTML = sysInfo.flashChipSize;
                 document.getElementById("freeHeap").innerHTML = sysInfo.freeHeap;
-            }
-        };
-        xhttpHistory.open("GET", "/info", true);
-        xhttpHistory.send();
+            });
     }
     getSysInfo();
 
     function getMeterInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                meter = JSON.parse(this.responseText);
+        fetch(`${baseUrl}/meter`)
+            .then(response => response.json())
+            .then(meter => {
                 document.getElementById("adc0").innerHTML = meter.adc0;
                 document.getElementById("isousc").innerHTML = meter.isousc;
                 document.getElementById("ptec").innerHTML = meter.ptec;
-            }
-        };
-        xhttpHistory.open("GET", "/meter", true);
-        xhttpHistory.send();
+            });
     }
     getMeterInfo();
 
     function getIndexInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                indexData = JSON.parse(this.responseText);
+        fetch(`${baseUrl}/index`)
+            .then(response => response.json())
+            .then(indexData => {
                 document.getElementById("hp").innerHTML = indexData.hp;
                 document.getElementById("hc").innerHTML = indexData.hc;
-            }
-        };
-        xhttpHistory.open("GET", "/index", true);
-        xhttpHistory.send();
+            });
     }
     getIndexInfo();
 
     function getConfigInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                config = JSON.parse(this.responseText);
+        fetch(`${baseUrl}/config`)
+            .then(response => response.json())
+            .then(config => {
                 document.getElementById("mqttServer").innerHTML = config.mqttServer;
                 document.getElementById("mqttPort").innerHTML = config.mqttPort;
                 document.getElementById("mqttUsername").innerHTML = config.mqttUsername;
-            }
-        };
-        xhttpHistory.open("GET", "/config", true);
-        xhttpHistory.send();
+            });
     }
     getConfigInfo();
 

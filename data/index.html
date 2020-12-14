@@ -537,20 +537,14 @@
         getMeterInfo();
         getSysInfo();
 
-        var i, tabcontent, tablinks;
+        document.querySelectorAll(".tabcontent")
+            .forEach(content => content.style.display = "none");
 
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
+        document.querySelectorAll(".tablinks")
+            .forEach(tabLink => tabLink.classList.remove('active'));
 
         document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
+        evt.currentTarget.classList.add('active');
     }
 
     document.getElementById("defaultOpen").click();

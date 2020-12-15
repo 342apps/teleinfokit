@@ -92,27 +92,27 @@ void ESPTeleInfo::loop(void)
         {
             if (iinst != iinst_old)
             {
-                mqttClient.publish("edf/iinst", teleinfo.getStringVal(IINST));
+                mqttClient.publish("teleinfokit/iinst", teleinfo.getStringVal(IINST));
             }
             if (papp != papp_old)
             {
-                mqttClient.publish("edf/papp", teleinfo.getStringVal(PAPP));
+                mqttClient.publish("teleinfokit/papp", teleinfo.getStringVal(PAPP));
             }
             if (hc != hc_old && hc != 0)
             {
-                mqttClient.publish("edf/hc", teleinfo.getStringVal(HC));
+                mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC));
             }
             if (hp != hp_old && hp != 0)
             {
-                mqttClient.publish("edf/hp", teleinfo.getStringVal(HP));
+                mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP));
             }
             if (imax != imax_old)
             {
-                mqttClient.publish("edf/imax", teleinfo.getStringVal(IMAX));
+                mqttClient.publish("teleinfokit/imax", teleinfo.getStringVal(IMAX));
             }
             if (strcmp(ptec, ptec_old) != 0)
             {
-                mqttClient.publish("edf/ptec", teleinfo.getStringVal(PTEC));
+                mqttClient.publish("teleinfokit/ptec", teleinfo.getStringVal(PTEC));
             }
         }
 
@@ -128,12 +128,12 @@ void ESPTeleInfo::loop(void)
             if (teleinfo.getStringVal(ADCO)[0] != '\n')
             {
                 strncpy(adc0, teleinfo.getStringVal(ADCO), 20);
-                mqttClient.publish("edf/adc0", teleinfo.getStringVal(ADCO), true);
+                mqttClient.publish("teleinfokit/adc0", teleinfo.getStringVal(ADCO), true);
             }
             if (teleinfo.getStringVal(ISOUSC)[0] != '\n')
             {
                 isousc = teleinfo.getLongVal(ISOUSC);
-                mqttClient.publish("edf/isousc", teleinfo.getStringVal(ISOUSC), true);
+                mqttClient.publish("teleinfokit/isousc", teleinfo.getStringVal(ISOUSC), true);
             }
 
             staticInfoSsent = true;
@@ -153,7 +153,7 @@ bool ESPTeleInfo::LogStartup()
     }
     if (nbTry < NBTRY)
     {
-        mqttClient.publish("edf/log", "Startup");
+        mqttClient.publish("teleinfokit/log", "Startup");
         return true;
     }
     else
@@ -174,6 +174,6 @@ void ESPTeleInfo::Log(String s)
     if (nbTry < NBTRY)
     {
         s.toCharArray(buffer, 30);
-        mqttClient.publish("edf/log", buffer);
+        mqttClient.publish("teleinfokit/log", buffer);
     }
 }

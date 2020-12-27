@@ -151,12 +151,19 @@ void handlerBtn(Button2 &btn)
   switch (btn.getClickType())
   {
   case SINGLE_CLICK:
-    mode = (mode + 1) % 7; // cycle through 7 screens
+    if (screensaver == false)
+    {
+      mode = (mode + 1) % 7; // cycle through 7 screens
+    }
     resetTs = 0;
     offTs = millis();
     screensaver = false;
     break;
   case DOUBLE_CLICK:
+    mode = GRAPH;
+    resetTs = 0;
+    offTs = millis();
+    screensaver = false;
     break;
   case TRIPLE_CLICK:
     break;
@@ -197,6 +204,7 @@ void setup()
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
   button.setClickHandler(handlerBtn);
+  button.setDoubleClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
   d->logPercent("Demarrage " + String(VERSION), 5);
@@ -366,7 +374,8 @@ void loop()
     d->displayReset();
   }
 
-  if(millis() - offTs > SCREENSAVER_DELAY){
+  if (millis() - offTs > SCREENSAVER_DELAY)
+  {
     screensaver = true;
     d->displayOff();
   }
@@ -375,7 +384,8 @@ void loop()
   {
     data->storeValue(ti.hp, ti.hc);
 
-    if(!screensaver){
+    if (!screensaver)
+    {
       switch (mode)
       {
       case GRAPH:

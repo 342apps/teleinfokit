@@ -45,6 +45,8 @@ Se référer au document [Messages MQTT](./mqtt.md) pour toutes les informations
 
 L'écran affiche différentes informations à travers plusieurs "pages". Pour passer d'une page à la suivante, effectuer un appui court le bouton du module. Les écrans vont défiler en boucle.
 
+Un double clic permet de revenir au premier écran (Historique) depuis n'importe quel écran.
+
 L'écran s'éteindra de lui même au bout d'une minute afin de limiter l'usure des pixels et éviter les effets de marquage. Pour réactiver l'écran, appuyer sur le bouton.
 
 ### Navigation

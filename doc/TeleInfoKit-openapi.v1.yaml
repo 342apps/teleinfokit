@@ -237,6 +237,10 @@ paths:
                     type: string
                     minLength: 1
                     description: Version du firmware installé
+                  hw_version:
+                    type: string
+                    example: '2'
+                    description: Version hardware board TeleInfoKit
                   buildTime:
                     type: string
                     minLength: 1
@@ -290,6 +294,7 @@ paths:
                     description: Timestamp (UTC) de démarrage du module
                 required:
                   - version
+                  - hw_version
                   - buildTime
                   - ip
                   - gw
@@ -307,6 +312,7 @@ paths:
                 Example:
                   value:
                     version: v0.1.0.04bf42
+                    hw_version: '2'
                     buildTime: '2020-11-18 23:46:56.881970'
                     ip: 192.168.3.62
                     gw: 192.168.3.1

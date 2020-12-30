@@ -153,7 +153,21 @@ bool ESPTeleInfo::LogStartup()
     }
     if (nbTry < NBTRY)
     {
+        char str[80];
         mqttClient.publish("teleinfokit/log", "Startup");
+        strcpy (str,"Version: ");
+        strcat (str, VERSION);
+        mqttClient.publish("teleinfokit/log", str);
+    #ifdef _HW_VER
+        sprintf(str, "HW Version: %d", _HW_VER);
+        mqttClient.publish("teleinfokit/log", str);
+    #endif
+        strcpy (str,"IP: ");
+        strcat (str, WiFi.localIP().toString().c_str());
+        mqttClient.publish("teleinfokit/log", str);
+        strcpy (str,"MAC: ");
+        strcat (str, WiFi.macAddress().c_str());
+        mqttClient.publish("teleinfokit/log", str);
         return true;
     }
     else

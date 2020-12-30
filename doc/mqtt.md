@@ -6,13 +6,17 @@ Le topic de base pour tous les messages envoyés par le module est `teleinfokit/
 
 ## Démarrage
 
-Au démarrage du module, une fois la connexion wifi effectuée, un message de log est envoyé. Cela permet de s'assurer que le paramétrage est correct et que le module fonctionne.
+Au démarrage du module, une fois la connexion wifi effectuée, des messages de log sont envoyés. Cela permet de s'assurer que le paramétrage est correct et que le module fonctionne.
 
 Le topic et la payload sont les suivants :
 
-|Topic|Payload|
-|--|--|
-|`teleinfokit/log`|`Startup`|
+|Topic|Payload|Description|
+|--|--|--|
+|`teleinfokit/log`|`Startup`||
+|`teleinfokit/log`|`Version: v0.x.xxxxx`|Version du firmware|
+|`teleinfokit/log`|`HW Version: x`|Révision matérielle de la board TeleInfoKit|
+|`teleinfokit/log`|`IP: xxx.xxx.xxx.xxx`|Adresse IP du module|
+|`teleinfokit/log`|`MAC: XX:XX:XX:XX:XX:XX`|Adresse MAC du module|
 
 ## Informations statiques
 

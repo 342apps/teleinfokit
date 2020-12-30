@@ -4,6 +4,7 @@
 #include <TeleInfo.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
+#include "version.h"
 
 class ESPTeleInfo
 {

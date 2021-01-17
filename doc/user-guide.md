@@ -2,7 +2,7 @@
 
 ## Démarrage et configuration
 
-Lors du premier démarrage du module il est nécessaire de saisir les informations de connexion au réseau Wifi et au serveur MQTT.
+Lors du premier démarrage du module il est nécessaire de saisir les informations de connexion au réseau Wifi, au serveur MQTT et à l'authentification.
 
 Brancher le connecteur micro USB à une source d'alimentation 5V (chargeur USB classique), puis attendre jusqu'à l'affichage de l'écran suivant :
 
@@ -20,12 +20,21 @@ Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smar
 * Saisir le mot de passe du réseau wifi
 * Saisir l'adresse du serveur mqtt (ip ou alias dns)
 * Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
+* Choisir un identifiant et un mot de passe pour protéger l'accès aux données par mot de passe.
 
 Cliquer sur `Save`. Le module va afficher un message de confirmation puis continuer le démarrage avec un message `Configuration reseau ok`.
 
 Le point d'accès wifi se désactive.
 
 **Note:** Le réseau wifi utilisé doit avoir accès à internet pour que l'heure puisse être obtenue depuis un serveur NTP.
+
+### Authentification
+
+Lors de la configuration initiale il est possible de saisir un login/password pour protéger l'accès aux données. Ces identifiants sont utilisés pour activer une authentification HTTP Basic sur la page dashboard et l'accès aux APIs. Le navigateur demandera automatiquement ces identifiants.
+
+![Authentication](./authentication.png)
+
+Si les deux champs sont laissés vides, l'authentification est désactivée.
 
 ### En cas de mauvais paramétrage MQTT
 
@@ -140,7 +149,7 @@ Sans appui supplémentaire sur le bouton, l'écran va s'éteindre au bout de 5s 
 
 ## Réinitialisation de la configuration
 
-Pour modifier ou supprimer les paramètres de connexion (Wifi et serveur MQTT), les étapes sont les suivantes :
+Pour modifier ou supprimer les paramètres de connexion (Wifi, serveur MQTT et authentification), les étapes sont les suivantes :
 
 * Naviguer jusqu'à l'écran 6
 

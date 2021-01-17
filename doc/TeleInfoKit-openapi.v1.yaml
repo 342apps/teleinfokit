@@ -358,16 +358,22 @@ paths:
                     type: string
                     minLength: 1
                     description: Nom d'utilisateur pour la connexion au serveur MQTT configuré à l'initialisation
+                  httpUsername:
+                    type: string
+                    minLength: 1
+                    description: Username de l'autentification basic HTTP
                 required:
                   - mqttServer
                   - mqttPort
                   - mqttUsername
+                  - httpUsername
               examples:
                 Example:
                   value:
                     mqttServer: 192.168.3.3
                     mqttPort: '1883'
                     mqttUsername: mqttUser
+                    httpUsername: admin
       operationId: get-config
       description: |-
         Le endpoint `config` permet de visualiser la configuration MQTT enregistrée à l'initialisation. Le mot de passe n'est pas connu du serveur HTTP donc n'est pas renvoyé.
@@ -375,3 +381,8 @@ paths:
         Il n'est pas possible de modifier ces valeurs en dehors de la réinitialisation via l'écran du module TeleInfoKit pour des raisons de sécurité des données.
 components:
   schemas: {}
+  securitySchemes:
+    Basic HTTP:
+      type: http
+      scheme: basic
+      description: Basic HTTP authentication for all endpoints

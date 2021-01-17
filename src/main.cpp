@@ -34,6 +34,8 @@ typedef struct
   char mqtt_port[6];
   char mqtt_server_username[20];
   char mqtt_server_password[20];
+  char http_username[20];
+  char http_password[20];
 } ConfStruct;
 
 ConfStruct config;
@@ -88,6 +90,8 @@ char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_server_username[20];
 char mqtt_server_password[20];
+char http_username[20];
+char http_password[20];
 
 // flag for saving network configuration
 bool shouldSaveConfig = false;
@@ -126,6 +130,8 @@ void readConfig()
         strcpy(mqtt_port, config.mqtt_port);
         strcpy(mqtt_server_username, config.mqtt_server_username);
         strcpy(mqtt_server_password, config.mqtt_server_password);
+        strcpy(http_username, config.http_username);
+        strcpy(http_password, config.http_password);
         configFile.close();
 
         d->logPercent("Configuration chargée", 30);
@@ -225,8 +231,10 @@ void setup()
   // ========= WIFI MANAGER =========
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_server_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_server_password, 40);
+  WiFiManagerParameter custom_mqtt_username("username", "MQTT username", mqtt_server_username, 40);
+  WiFiManagerParameter custom_mqtt_password("password", "MQTT password", mqtt_server_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_http_username("http_username", "HTTP username", http_username, 40);
+  WiFiManagerParameter custom_http_password("http_password", "HTTP password", http_password, 40, "type=\"password\"");
 
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
@@ -236,6 +244,8 @@ void setup()
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_username);
   wifiManager.addParameter(&custom_mqtt_password);
+  wifiManager.addParameter(&custom_http_username);
+  wifiManager.addParameter(&custom_http_password);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
@@ -257,6 +267,8 @@ void setup()
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_server_username, custom_mqtt_username.getValue());
   strcpy(mqtt_server_password, custom_mqtt_password.getValue());
+  strcpy(http_username, custom_http_username.getValue());
+  strcpy(http_password, custom_http_password.getValue());
 
   //save the custom parameters to FS
   if (shouldSaveConfig)
@@ -274,6 +286,8 @@ void setup()
       strcpy(config.mqtt_port, custom_mqtt_port.getValue());
       strcpy(config.mqtt_server_username, custom_mqtt_username.getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
+      strcpy(config.http_username, custom_http_username.getValue());
+      strcpy(config.http_password, custom_http_password.getValue());
       configFile.write((byte *)&config, sizeof(config));
       d->logPercent("Configuration sauvee", 50);
       delay(750);
@@ -343,7 +357,7 @@ void setup()
   delay(750);
   data->setNtp(&timeClient);
 
-  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
+  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password);
 
   d->logPercent("Connexion MQTT", 75);
   delay(500);

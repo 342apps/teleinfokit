@@ -6,23 +6,37 @@ Data *history_data;
 char *config_mqtt_server;
 char *config_mqtt_port;
 char *config_mqtt_username;
+char *config_http_username;
+char *config_http_password;
 
 WebServer::WebServer()
 {
 }
 
+void authenticate()
+{
+    if (strlen(config_http_username)!=0 && strlen(config_http_password)!=0 
+    && !server.authenticate(config_http_username, config_http_password))
+    {
+        return server.requestAuthentication();
+    }
+}
+
 void getPower()
 {
+    authenticate();
     server.send(200, "application/json", "{\"papp\": " + String(teleinfows->papp) + ", \"iinst\": " + String(teleinfows->iinst) + ", \"ptec\": \"" + String(teleinfows->ptec) + "\"}");
 }
 
 void getIndex()
 {
+    authenticate();
     server.send(200, "application/json", "{\"hp\": " + String(teleinfows->hp) + ", \"hc\": " + String(teleinfows->hc) + "}");
 }
 
 void getHistory()
 {
+    authenticate();
 
     String response = "{";
     response += "\"historyStartupTime\": " + String(history_data->historyStartTime) + ",";
@@ -44,16 +58,23 @@ void getHistory()
 
 void getMeterInfo()
 {
+    authenticate();
     server.send(200, "application/json", "{\"adc0\": \"" + String(teleinfows->adc0) + "\", \"isousc\": " + String(teleinfows->isousc) + ", \"ptec\": \"" + String(teleinfows->ptec) + "\"}");
 }
 
 void getConfigInfo()
 {
-    server.send(200, "application/json", "{\"mqttServer\": \"" + String(config_mqtt_server) + "\", \"mqttPort\": \"" + String(config_mqtt_port) + "\", \"mqttUsername\": \"" + String(config_mqtt_username) + "\"}");
+    authenticate();
+    server.send(200, "application/json", "{\"mqttServer\": \"" + String(config_mqtt_server) 
+    + "\", \"mqttPort\": \"" + String(config_mqtt_port) 
+    + "\", \"mqttUsername\": \"" + String(config_mqtt_username) 
+    + "\", \"httpUsername\": \"" + String(config_http_username) 
+    + "\"}");
 }
 
 void getSysInfo()
 {
+    authenticate();
     String response = "{";
     response += "\"version\": \"" + String(VERSION) + "\"";
     #ifdef _HW_VER
@@ -77,6 +98,15 @@ void getSysInfo()
     server.send(200, "application/json", response);
 }
 
+void serveIndex()
+{
+    authenticate();
+
+    File file = LittleFS.open("/index.html", "r");
+    server.streamFile(file, "text/html");
+    file.close();
+}
+
 // Manage not found URL
 void handleNotFound()
 {
@@ -98,7 +128,7 @@ void handleNotFound()
 // Define routing
 void restServerRouting()
 {
-    server.serveStatic("/", LittleFS, "/index.html");
+    server.on(F("/"), HTTP_GET, serveIndex);
     server.serveStatic("/chartbulb-160.gif", LittleFS, "/chartbulb-160.gif");
     server.on(F("/power"), HTTP_GET, getPower);
     server.on(F("/index"), HTTP_GET, getIndex);
@@ -113,13 +143,15 @@ void WebServer::loop()
     server.handleClient();
 }
 
-void WebServer::init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username)
+void WebServer::init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username, char *conf_http_username, char *conf_http_password)
 {
     teleinfows = ti;
     history_data = d;
     config_mqtt_port = conf_mqtt_port;
     config_mqtt_server = conf_mqtt_server;
     config_mqtt_username = conf_mqtt_username;
+    config_http_username = conf_http_username;
+    config_http_password = conf_http_password;
 
     // Set server routing
     restServerRouting();

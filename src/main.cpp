@@ -27,7 +27,7 @@
 
 #define REFRESH_DELAY 1000
 
-// The structure that stores network configuration
+// The structure that stores configuration
 typedef struct
 {
   char mqtt_server[40];
@@ -36,6 +36,8 @@ typedef struct
   char mqtt_server_password[20];
   char http_username[20];
   char http_password[20];
+  char period_data_power[10];
+  char period_data_index[10];
 } ConfStruct;
 
 ConfStruct config;
@@ -92,6 +94,8 @@ char mqtt_server_username[20];
 char mqtt_server_password[20];
 char http_username[20];
 char http_password[20];
+char period_data_power[10] = "0";
+char period_data_index[10] = "0";
 
 // flag for saving network configuration
 bool shouldSaveConfig = false;
@@ -132,6 +136,8 @@ void readConfig()
         strcpy(mqtt_server_password, config.mqtt_server_password);
         strcpy(http_username, config.http_username);
         strcpy(http_password, config.http_password);
+        strcpy(period_data_index, config.period_data_index);
+        strcpy(period_data_power, config.period_data_power);
         configFile.close();
 
         d->logPercent("Configuration chargée", 30);
@@ -223,19 +229,23 @@ void setup()
     port = atoi(config.mqtt_port);
     delay(1000);
   }
-  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
+  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
   d->logPercent("Connexion au reseau wifi...", 25);
   delay(350); // just to see progress bar
 
   // ========= WIFI MANAGER =========
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "MQTT username", mqtt_server_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "MQTT password", mqtt_server_password, 40, "type=\"password\"");
-  WiFiManagerParameter custom_http_username("http_username", "HTTP username", http_username, 40);
-  WiFiManagerParameter custom_http_password("http_password", "HTTP password", http_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
+  WiFiManagerParameter custom_mqtt_port("port", "Port MQTT", mqtt_port, 6);
+  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 40);
+  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 40);
+  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_period_data_power("period_data_power", "Fréquence envoi puissance (secondes)", period_data_power, 10);
+  WiFiManagerParameter custom_period_data_index("period_data_index", "Fréquence envoi index (secondes)", period_data_index, 10);
 
+  d->logPercent("Connexion au reseau wifi... 1", 25);
+  delay(1000); // just to see progress bar
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
 
@@ -246,7 +256,11 @@ void setup()
   wifiManager.addParameter(&custom_mqtt_password);
   wifiManager.addParameter(&custom_http_username);
   wifiManager.addParameter(&custom_http_password);
+  wifiManager.addParameter(&custom_period_data_power);
+  wifiManager.addParameter(&custom_period_data_index);
 
+  d->logPercent("Connexion au reseau wifi... 2", 25);
+  delay(1000); // just to see progress bar
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //and goes into a blocking loop awaiting configuration
@@ -269,6 +283,8 @@ void setup()
   strcpy(mqtt_server_password, custom_mqtt_password.getValue());
   strcpy(http_username, custom_http_username.getValue());
   strcpy(http_password, custom_http_password.getValue());
+  strcpy(period_data_index, custom_period_data_index.getValue());
+  strcpy(period_data_power, custom_period_data_power.getValue());
 
   //save the custom parameters to FS
   if (shouldSaveConfig)
@@ -288,12 +304,14 @@ void setup()
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
       strcpy(config.http_username, custom_http_username.getValue());
       strcpy(config.http_password, custom_http_password.getValue());
+      strcpy(config.period_data_index, custom_period_data_index.getValue());
+      strcpy(config.period_data_power, custom_period_data_power.getValue());
       configFile.write((byte *)&config, sizeof(config));
       d->logPercent("Configuration sauvee", 50);
       delay(750);
     }
 
-    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
+    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
     configFile.close();
     //end save
   }

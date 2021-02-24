@@ -55,10 +55,13 @@ void ESPTeleInfo::init()
 
 }
 
-void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password)
+void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password, int period_data_power, int period_data_index)
 {
     strcpy(mqtt_user, username);
     strcpy(mqtt_pwd, password);
+
+    delay_index = period_data_index;
+    delay_power = period_data_power;
 
     mqttClient.setServer(server, port);
 }
@@ -81,28 +84,39 @@ void ESPTeleInfo::loop(void)
     
     if (teleinfo.available())
     {
-        iinst = teleinfo.getLongVal(IINST);
-        papp = teleinfo.getLongVal(PAPP);
-        hc = teleinfo.getLongVal(HC);
-        hp = teleinfo.getLongVal(HP);
+        sendPower = sendPowerData();
+        sendIndex = sendIndexData();
+        
+        if(sendPower)
+        {
+            iinst = teleinfo.getLongVal(IINST);
+            papp = teleinfo.getLongVal(PAPP);
+        }
+
+        if(sendIndex)
+        {
+            hc = teleinfo.getLongVal(HC);
+            hp = teleinfo.getLongVal(HP);
+        }
+
         imax = teleinfo.getLongVal(IMAX);
         strncpy(ptec, teleinfo.getStringVal(PTEC), 20);
 
         if (connectMqtt())
         {
-            if (iinst != iinst_old)
+            if (iinst != iinst_old && sendPower)
             {
                 mqttClient.publish("teleinfokit/iinst", teleinfo.getStringVal(IINST));
             }
-            if (papp != papp_old)
+            if (papp != papp_old && sendPower)
             {
                 mqttClient.publish("teleinfokit/papp", teleinfo.getStringVal(PAPP));
             }
-            if (hc != hc_old && hc != 0)
+            if (hc != hc_old && hc != 0 && sendIndex)
             {
                 mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC));
             }
-            if (hp != hp_old && hp != 0)
+            if (hp != hp_old && hp != 0 && sendIndex)
             {
                 mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP));
             }
@@ -116,10 +130,19 @@ void ESPTeleInfo::loop(void)
             }
         }
 
-        iinst_old = iinst;
-        papp_old = papp;
-        hc_old = hc;
-        hp_old = hp;
+        if(sendPower)
+        {
+            iinst_old = iinst;
+            papp_old = papp;
+            ts_power = millis();
+        }
+
+        if(sendIndex){
+            hc_old = hc;
+            hp_old = hp;
+            ts_index = millis();
+        }
+
         imax_old = imax;
         strncpy(ptec_old, ptec, 20);
 
@@ -174,6 +197,16 @@ bool ESPTeleInfo::LogStartup()
     {
         return false;
     }
+}
+
+bool ESPTeleInfo::sendPowerData()
+{
+    return (delay_power <= 0 ) || (millis() - ts_power > (delay_power));
+}
+
+bool ESPTeleInfo::sendIndexData()
+{
+    return (delay_index <= 0 ) || (millis() - ts_index > (delay_index));
 }
 
 // 30 char max !

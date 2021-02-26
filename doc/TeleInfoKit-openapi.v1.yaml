@@ -362,11 +362,21 @@ paths:
                     type: string
                     minLength: 1
                     description: Username de l'autentification basic HTTP
+                  delayPower:
+                    type: integer
+                    minimum: 0
+                    description: Delai en secondes entre les envois des données de puissance (PAPP et IINST)
+                  delayIndex:
+                    type: integer
+                    minimum: 0
+                    description: Delai en secondes entre les envois des données d'index (HPHP et HCHC)
                 required:
                   - mqttServer
                   - mqttPort
                   - mqttUsername
                   - httpUsername
+                  - delayPower
+                  - delayIndex
               examples:
                 Example:
                   value:
@@ -374,6 +384,8 @@ paths:
                     mqttPort: '1883'
                     mqttUsername: mqttUser
                     httpUsername: admin
+                    delayPower: 15
+                    delayIndex: 60
       operationId: get-config
       description: |-
         Le endpoint `config` permet de visualiser la configuration MQTT enregistrée à l'initialisation. Le mot de passe n'est pas connu du serveur HTTP donc n'est pas renvoyé.

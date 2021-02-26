@@ -196,6 +196,17 @@
                 <td id="mqttUsername"></td>
             </tr>
         </table>
+        <p><b>Fréquences envoi données</b></p>
+        <table>
+            <tr>
+                <td>Données puissance</td>
+                <td id="delayPower"></td>
+            </tr>
+            <tr>
+                <td>Données index</td>
+                <td id="delayIndex"></td>
+            </tr>
+        </table>
     </div>
 
     <div id="api" class="tabcontent">
@@ -506,6 +517,8 @@
                 document.getElementById("mqttServer").innerHTML = config.mqttServer;
                 document.getElementById("mqttPort").innerHTML = config.mqttPort;
                 document.getElementById("mqttUsername").innerHTML = config.mqttUsername;
+                document.getElementById("delayPower").innerHTML = config.delayPower + "s";
+                document.getElementById("delayIndex").innerHTML = config.delayIndex + "s";
             });
     }
     getConfigInfo();

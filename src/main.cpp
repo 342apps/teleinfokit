@@ -94,8 +94,8 @@ char mqtt_server_username[20];
 char mqtt_server_password[20];
 char http_username[20];
 char http_password[20];
-char period_data_power[10] = "0";
-char period_data_index[10] = "0";
+char period_data_power[10];
+char period_data_index[10];
 
 // flag for saving network configuration
 bool shouldSaveConfig = false;

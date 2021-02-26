@@ -60,8 +60,8 @@ void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *pa
     strcpy(mqtt_user, username);
     strcpy(mqtt_pwd, password);
 
-    delay_index = period_data_index;
-    delay_power = period_data_power;
+    delay_index = period_data_index * 1000;
+    delay_power = period_data_power * 1000;
 
     mqttClient.setServer(server, port);
 }
@@ -87,11 +87,8 @@ void ESPTeleInfo::loop(void)
         sendPower = sendPowerData();
         sendIndex = sendIndexData();
         
-        if(sendPower)
-        {
-            iinst = teleinfo.getLongVal(IINST);
-            papp = teleinfo.getLongVal(PAPP);
-        }
+        iinst = teleinfo.getLongVal(IINST);
+        papp = teleinfo.getLongVal(PAPP);
 
         if(sendIndex)
         {

@@ -14,7 +14,7 @@ class WebServer
 public:
     WebServer();
 
-    void init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username, char *conf_http_username, char *conf_http_password);
+    void init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username, char *conf_http_username, char *conf_http_password, unsigned int delay_power, unsigned int delay_index);
     void loop();
 
 private:

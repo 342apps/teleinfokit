@@ -36,8 +36,8 @@ private:
     char mqtt_user[20];
     char mqtt_pwd[20];
 
-    int delay_power;
-    int delay_index;
+    unsigned int delay_power;
+    unsigned int delay_index;
     bool sendPower;
     bool sendIndex;
     // timestamp for the last power data send

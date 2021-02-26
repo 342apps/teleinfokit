@@ -8,6 +8,8 @@ char *config_mqtt_port;
 char *config_mqtt_username;
 char *config_http_username;
 char *config_http_password;
+unsigned int config_delay_power;
+unsigned int config_delay_index;
 
 WebServer::WebServer()
 {
@@ -69,7 +71,9 @@ void getConfigInfo()
     + "\", \"mqttPort\": \"" + String(config_mqtt_port) 
     + "\", \"mqttUsername\": \"" + String(config_mqtt_username) 
     + "\", \"httpUsername\": \"" + String(config_http_username) 
-    + "\"}");
+    + "\", \"delayPower\": " + String(config_delay_power) 
+    + ", \"delayIndex\": " + String(config_delay_index) 
+    + "}");
 }
 
 void getSysInfo()
@@ -143,7 +147,7 @@ void WebServer::loop()
     server.handleClient();
 }
 
-void WebServer::init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username, char *conf_http_username, char *conf_http_password)
+void WebServer::init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *conf_mqtt_port, char *conf_mqtt_username, char *conf_http_username, char *conf_http_password, unsigned int delay_power, unsigned int delay_index)
 {
     teleinfows = ti;
     history_data = d;
@@ -152,6 +156,8 @@ void WebServer::init(ESPTeleInfo *ti, Data *d, char *conf_mqtt_server, char *con
     config_mqtt_username = conf_mqtt_username;
     config_http_username = conf_http_username;
     config_http_password = conf_http_password;
+    config_delay_index = delay_index;
+    config_delay_power = delay_power;
 
     // Set server routing
     restServerRouting();

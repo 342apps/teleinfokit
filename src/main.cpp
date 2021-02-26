@@ -375,7 +375,7 @@ void setup()
   delay(750);
   data->setNtp(&timeClient);
 
-  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password);
+  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
   d->logPercent("Connexion MQTT", 75);
   delay(500);

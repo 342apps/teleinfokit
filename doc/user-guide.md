@@ -21,6 +21,9 @@ Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smar
 * Saisir l'adresse du serveur mqtt (ip ou alias dns)
 * Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
 * Choisir un identifiant et un mot de passe pour protéger l'accès aux données par mot de passe.
+* Pour limiter la fréquence d'envoi des données via MQTT, saisir un délai (en secondes). La valeur `0` signifie un envoi en temps réel.
+    * Pour les données de puissance (PAPP et IINST)
+    * Pour les données d'index (HCHC et HPHP)
 
 Cliquer sur `Save`. Le module va afficher un message de confirmation puis continuer le démarrage avec un message `Configuration reseau ok`.
 
@@ -76,7 +79,7 @@ Au fil des heures, le graphe se décale vers la gauche, les nouvelles valeurs de
 
 Dans le coin supérieur droit, la puissance consommée à l'instant t est affichée (ici 2610VA). Sa valeur est mise à jour en continu, environ toutes les 2 secondes.
 
-### Écran #2 : Puissance / Intensite
+### Écran #2 : Puissance / Intensité
 
 Cet écran affiche la puissance consommée actuelle, remontée par le compteur.
 

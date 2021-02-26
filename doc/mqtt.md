@@ -42,6 +42,12 @@ Une fois le module démarré, les informations de consommation et les index sont
 
 *Note* L’intensité maximale «IMAX» est toujours égale à 90A dans le cas de ce compteur monophasé ([voir informations Enedis](https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf)).
 
+
+### Remarques sur les fréquences d'envoi
+
+Les fréquences d'envoi sont paramétrables pour limiter la quantité de données envoyées au système qui les consomme. Il possible de configurer des fréquences différentes pour les données de puissance et les données d'index (voir [Démarrage et configuration](./user-guide.md#Demarrage-et-configuration) du guide d'utilisation).
+
+Lorsque des valeurs différentes de 0 sont définies, les données ne seront envoyées que toutes les `x` secondes
 ## Identifiant client MQTT
 
 L'identifiant de client MQTT utilisé par le module correspond à l'ID du chip ESP8266 du module TeleInfoKit.

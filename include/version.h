@@ -3,8 +3,8 @@
   #define BUILD_HASH "9d8996"
 #endif
 #ifndef BUILD_TIME
-  #define BUILD_TIME "2021-02-27 00:02:11.869497"
+  #define BUILD_TIME "2021-03-02 18:11:54.393399"
 #endif
 #ifndef VERSION
-  #define VERSION "v0.2.9d8996"
+  #define VERSION "v0.3.9d8996"
 #endif

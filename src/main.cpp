@@ -230,7 +230,6 @@ void setup()
   button.setLongClickHandler(handlerBtn);
 
   d->logPercent("Demarrage " + String(VERSION), 5);
-  delay(1000); // To let time to launch reset process
 
   unsigned long reset_start = millis();
 
@@ -244,6 +243,7 @@ void setup()
       while(millis() - now < RESET_CONFIRM_DELAY)
       {
         button.loop();
+        delay(10);
       }
       delay(10);
     }

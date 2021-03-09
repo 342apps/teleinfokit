@@ -77,6 +77,9 @@ unsigned long resetTs = 0;
 unsigned long offTs = 0;
 bool screensaver = false;
 
+bool reset_possible = true;
+bool reset_pending = false;
+
 Data *data;
 Display *d;
 ESPTeleInfo ti = ESPTeleInfo();
@@ -163,6 +166,12 @@ void handlerBtn(Button2 &btn)
   switch (btn.getClickType())
   {
   case SINGLE_CLICK:
+    
+    // reset management at startup
+    if(reset_possible){
+      reset_pending = true;
+    }
+
     if (screensaver == false)
     {
       mode = (mode + 1) % 7; // cycle through 7 screens
@@ -215,12 +224,30 @@ void setup()
   web = new WebServer();
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
+
   button.setClickHandler(handlerBtn);
   button.setDoubleClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
   d->logPercent("Demarrage " + String(VERSION), 5);
-  delay(750); // just to see progress bar
+
+  unsigned long reset_start = millis();
+
+  while(millis() - reset_start < 1000)
+  {
+    // if button is pressed, reset management
+    if(!digitalRead(PIN_BUTTON)){   // no use of click handler because not called yet in a loop
+      d->displayReset();
+      reset = RST_PAGE;
+      unsigned long now = millis();
+      while(millis() - now < RESET_CONFIRM_DELAY)
+      {
+        button.loop();
+        delay(10);
+      }
+      delay(10);
+    }
+  }
 
   readConfig();
   uint16_t port = 1883;
@@ -377,7 +404,7 @@ void setup()
 
   web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
-  d->logPercent("Connexion MQTT", 75);
+  d->logPercent("Connexion MQTT", 90);
   delay(500);
   if (!ti.LogStartup())
   {
@@ -388,7 +415,6 @@ void setup()
 
   d->logPercent("Demarrage termine", 100);
   delay(500);
-  d->displayReset();
 
   offTs = millis();
 }

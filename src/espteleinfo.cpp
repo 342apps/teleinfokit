@@ -90,11 +90,8 @@ void ESPTeleInfo::loop(void)
         iinst = teleinfo.getLongVal(IINST);
         papp = teleinfo.getLongVal(PAPP);
 
-        if(sendIndex)
-        {
-            hc = teleinfo.getLongVal(HC);
-            hp = teleinfo.getLongVal(HP);
-        }
+        hc = teleinfo.getLongVal(HC);
+        hp = teleinfo.getLongVal(HP);
 
         imax = teleinfo.getLongVal(IMAX);
         strncpy(ptec, teleinfo.getStringVal(PTEC), 20);

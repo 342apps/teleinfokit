@@ -204,10 +204,12 @@ void handlerBtn(Button2 &btn)
       d->log("Reinitialisation en cours");
       // reset
       wifiManager.resetSettings();
+      ESP.eraseConfig();
+      LittleFS.remove(CONFIG_FILE);
       // display restart
-      d->log("Redemarrage", 2000);
+      d->log("Redemarrage", 1000);
       // restart
-      ESP.restart();
+      ESP.reset();
     }
     break;
   }
@@ -271,8 +273,6 @@ void setup()
   WiFiManagerParameter custom_period_data_power("period_data_power", "Fréquence envoi puissance (secondes)", period_data_power, 10);
   WiFiManagerParameter custom_period_data_index("period_data_index", "Fréquence envoi index (secondes)", period_data_index, 10);
 
-  d->logPercent("Connexion au reseau wifi... 1", 25);
-  delay(1000); // just to see progress bar
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
 
@@ -286,14 +286,13 @@ void setup()
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
 
-  d->logPercent("Connexion au reseau wifi... 2", 25);
-  delay(1000); // just to see progress bar
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //and goes into a blocking loop awaiting configuration
   if (!wifiManager.autoConnect(AP_NAME, AP_PWD))
   {
-    d->log("Could not connect");
+    d->log("Connexion impossible\n Reset...");
+    delay(1000);
     //reset and try again
     ESP.reset();
     delay(1000);

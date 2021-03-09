@@ -132,7 +132,7 @@ L'écran est le suivant :
 ```text
 Reinitialisation ?
 Appui long pour reset...
-v0.1.xxxxxx
+v0.x.xxxxxx
 ```
 
 La version de firmware est affichée sur la dernière ligne.
@@ -150,15 +150,18 @@ Appui court pour rallumer.
 
 Sans appui supplémentaire sur le bouton, l'écran va s'éteindre au bout de 5s au lieu d'une minute pour les autres écrans. Un nouvel appui sur le bouton réactive l'écran et passe à la page suivante.
 
-## Réinitialisation de la configuration
+## Réinitialisation de la configuration (Factory reset)
 
-Pour modifier ou supprimer les paramètres de connexion (Wifi, serveur MQTT et authentification), les étapes sont les suivantes :
+### Depuis les menus à l'écran
+
+Pour modifier ou supprimer les paramètres (Réseau Wifi, serveur MQTT, authentification, fréquences d'envoi), les étapes sont les suivantes :
 
 * Naviguer jusqu'à l'écran 6
 
 ```text
 Reinitialisation ?
 Appui long pour reset...
+v0.x.xxxxx
 ```
 
 * Effectuer un appui long
@@ -183,7 +186,48 @@ puis
 Redemarrage
 ```
 
-Le module a supprimé ses informations de connexion et va démarrer avec sa configuration d'origine, c'est à dire sans identifiants Wifi ni configuration MQTT enregistrés.
+Le module a supprimé toutes ses informations de connexion et va démarrer avec sa configuration d'origine, c'est à dire sans identifiants Wifi ni configuration enregistrée.
+
+Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarrage et Configuration](#démarrage-et-configuration).
+
+### Au démarrage du module (Crash loop)
+
+Si le module ne démarre plus du tout, il est également possible d'effectuer une remise à zéro complète, avant que celui-ci ne commence sa phase d'initialisation. Cela peut être utile en cas de crash en boucle si une mauvaise configuration a été effectuée, en cas de corruption du fichier de configuration interne, ou tout autre cas de figure non prévu.
+
+Il suffit de presser le bouton frontal **une fois durant la première seconde du démarrage** du module. Le module peut être redémarré grâce à un appui sur le bouton reset, ou en débranchant et rebranchant sa prise usb.
+
+**Attention à ne PAS appuyer sur le bouton AVANT le démarrage du module, celui-ci ne démarrera pas.**
+
+Si la demande de réinitialisation est bien prise en compte, l'écran va afficher : 
+
+```text
+Reinitialisation ?
+Appui long pour reset...
+v0.x.xxxxx
+```
+
+* Effectuer un appui long
+* L'écran va afficher
+
+```text
+Appui long pour confirmer
+Appui court pour annuler
+```
+* Dans ce mode de réinitialisation, un appui court n'annulera pas, mais la procédure de reset sera abandonnée au bout de 10s et le module poursuivra son démarrage.
+* Pour confirmer la réinitialisation, effectuer un nouveau clic long.
+* L'écran va afficher successivement
+
+```text
+Reinitialisation en cours
+```
+
+puis
+
+```text
+Redemarrage
+```
+
+Comme lors de la réinitialisation classique, le module a supprimé toutes ses informations de connexion et va démarrer avec sa configuration d'origine, c'est à dire sans identifiants Wifi ni configuration enregistrée.
 
 Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarrage et Configuration](#démarrage-et-configuration).
 

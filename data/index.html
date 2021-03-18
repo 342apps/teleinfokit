@@ -417,6 +417,7 @@
     });
 
     const baseUrl = '';
+    const add = (a, b) => a + b;
 
     function getPower() {
         fetch(`${baseUrl}/power`)
@@ -446,17 +447,13 @@
             .then(obj => {
                 var history_hp = obj.history_hp;
                 var history_hc = obj.history_hc;
-                var hours = [];
-                var totalConsumption_hp = 0;
-                var totalConsumption_hc = 0;
                 var d = new Date(obj.historyStartupTime * 1000);
+                
                 var h = d.getHours();
-                for (i = 0; i < 24; i++) {
-                    hours.push((h + i + 1) % 24 + "h");
-                    totalConsumption_hp += history_hp[i];
-                    totalConsumption_hc += history_hc[i];
-                }
-
+                const hours = [...Array(24).keys()].map(i => (h + i + 1) % 24 + "h");
+                const totalConsumption_hp = history_hp.reduce(add);
+                const totalConsumption_hc = history_hc.reduce(add);
+                
                 chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
                 chartHistory.xAxis[0].setCategories(hours);
                 chartHistory.series[0].setData(history_hp.reverse());

@@ -417,6 +417,7 @@
     });
 
     const baseUrl = '';
+    const realTimeLabel = 'à chaque changement';
     const add = (a, b) => a + b;
 
     function getPower() {
@@ -514,11 +515,15 @@
         fetch(`${baseUrl}/config`)
             .then(response => response.json())
             .then(config => {
-                document.getElementById("delayPower").innerHTML = config.delayPower + "s";
-                document.getElementById("delayIndex").innerHTML = config.delayIndex + "s";
                 $("mqttServer").innerHTML = config.mqttServer;
                 $("mqttPort").innerHTML = config.mqttPort;
                 $("mqttUsername").innerHTML = config.mqttUsername;
+                $("delayPower").innerHTML = config.delayPower === 0
+                    ? realTimeLabel
+                    : config.delayPower + "s";
+                $("delayIndex").innerHTML = config.delayIndex === 0
+                    ? realTimeLabel
+                    : config.delayIndex + "s";
             });
     }
     getConfigInfo();

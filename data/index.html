@@ -466,23 +466,25 @@
     setInterval(getPower, 5000);
     setInterval(getHistory, 60000);
 
+    var $ = (id) => document.getElementById(id);
+
     function getSysInfo() {
         fetch(`${baseUrl}/info`)
             .then(response => response.json())
             .then(sysInfo => {
-                document.getElementById("version").innerHTML = sysInfo.version;
-                document.getElementById("version_bottom").innerHTML = sysInfo.version;
-                document.getElementById("buildTime").innerHTML = sysInfo.buildTime;
-                document.getElementById("ip").innerHTML = sysInfo.ip;
-                document.getElementById("gw").innerHTML = sysInfo.gw;
-                document.getElementById("nm").innerHTML = sysInfo.nm;
-                document.getElementById("ssid").innerHTML = sysInfo.ssid;
-                document.getElementById("mac").innerHTML = sysInfo.mac;
-                document.getElementById("signalStrengh").innerHTML = sysInfo.signalStrengh;
-                document.getElementById("chipId").innerHTML = sysInfo.chipId;
-                document.getElementById("flashChipId").innerHTML = sysInfo.flashChipId;
-                document.getElementById("flashChipSize").innerHTML = sysInfo.flashChipSize;
-                document.getElementById("freeHeap").innerHTML = sysInfo.freeHeap;
+                $("version").innerHTML = sysInfo.version;
+                $("version_bottom").innerHTML = sysInfo.version;
+                $("buildTime").innerHTML = sysInfo.buildTime;
+                $("ip").innerHTML = sysInfo.ip;
+                $("gw").innerHTML = sysInfo.gw;
+                $("nm").innerHTML = sysInfo.nm;
+                $("ssid").innerHTML = sysInfo.ssid;
+                $("mac").innerHTML = sysInfo.mac;
+                $("signalStrengh").innerHTML = sysInfo.signalStrengh;
+                $("chipId").innerHTML = sysInfo.chipId;
+                $("flashChipId").innerHTML = sysInfo.flashChipId;
+                $("flashChipSize").innerHTML = sysInfo.flashChipSize;
+                $("freeHeap").innerHTML = sysInfo.freeHeap;
             });
     }
     getSysInfo();
@@ -491,9 +493,9 @@
         fetch(`${baseUrl}/meter`)
             .then(response => response.json())
             .then(meter => {
-                document.getElementById("adc0").innerHTML = meter.adc0;
-                document.getElementById("isousc").innerHTML = meter.isousc;
-                document.getElementById("ptec").innerHTML = meter.ptec;
+                $("adc0").innerHTML = meter.adc0;
+                $("isousc").innerHTML = meter.isousc;
+                $("ptec").innerHTML = meter.ptec;
             });
     }
     getMeterInfo();
@@ -502,8 +504,8 @@
         fetch(`${baseUrl}/index`)
             .then(response => response.json())
             .then(indexData => {
-                document.getElementById("hp").innerHTML = indexData.hp;
-                document.getElementById("hc").innerHTML = indexData.hc;
+                $("hp").innerHTML = indexData.hp;
+                $("hc").innerHTML = indexData.hc;
             });
     }
     getIndexInfo();
@@ -512,11 +514,11 @@
         fetch(`${baseUrl}/config`)
             .then(response => response.json())
             .then(config => {
-                document.getElementById("mqttServer").innerHTML = config.mqttServer;
-                document.getElementById("mqttPort").innerHTML = config.mqttPort;
-                document.getElementById("mqttUsername").innerHTML = config.mqttUsername;
                 document.getElementById("delayPower").innerHTML = config.delayPower + "s";
                 document.getElementById("delayIndex").innerHTML = config.delayIndex + "s";
+                $("mqttServer").innerHTML = config.mqttServer;
+                $("mqttPort").innerHTML = config.mqttPort;
+                $("mqttUsername").innerHTML = config.mqttUsername;
             });
     }
     getConfigInfo();

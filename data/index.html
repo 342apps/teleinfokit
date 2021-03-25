@@ -466,6 +466,13 @@
     setInterval(getPower, 5000);
     setInterval(getHistory, 60000);
 
+    document.addEventListener("visibilitychange", function() {
+        // Reload history when tab gets visible again
+        if (document.visibilityState !== 'visible') {
+            getHistory();
+        }
+    });
+
     var $ = (id) => document.getElementById(id);
 
     function getSysInfo() {

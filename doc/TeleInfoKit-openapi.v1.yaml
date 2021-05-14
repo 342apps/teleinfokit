@@ -237,6 +237,10 @@ paths:
                     type: string
                     minLength: 1
                     description: Version du firmware installé
+                  hw_version:
+                    type: string
+                    example: '2'
+                    description: Version hardware board TeleInfoKit
                   buildTime:
                     type: string
                     minLength: 1
@@ -290,6 +294,7 @@ paths:
                     description: Timestamp (UTC) de démarrage du module
                 required:
                   - version
+                  - hw_version
                   - buildTime
                   - ip
                   - gw
@@ -307,6 +312,7 @@ paths:
                 Example:
                   value:
                     version: v0.1.0.04bf42
+                    hw_version: '2'
                     buildTime: '2020-11-18 23:46:56.881970'
                     ip: 192.168.3.62
                     gw: 192.168.3.1
@@ -352,16 +358,34 @@ paths:
                     type: string
                     minLength: 1
                     description: Nom d'utilisateur pour la connexion au serveur MQTT configuré à l'initialisation
+                  httpUsername:
+                    type: string
+                    minLength: 1
+                    description: Username de l'autentification basic HTTP
+                  delayPower:
+                    type: integer
+                    minimum: 0
+                    description: Delai en secondes entre les envois des données de puissance (PAPP et IINST)
+                  delayIndex:
+                    type: integer
+                    minimum: 0
+                    description: Delai en secondes entre les envois des données d'index (HPHP et HCHC)
                 required:
                   - mqttServer
                   - mqttPort
                   - mqttUsername
+                  - httpUsername
+                  - delayPower
+                  - delayIndex
               examples:
                 Example:
                   value:
                     mqttServer: 192.168.3.3
                     mqttPort: '1883'
                     mqttUsername: mqttUser
+                    httpUsername: admin
+                    delayPower: 15
+                    delayIndex: 60
       operationId: get-config
       description: |-
         Le endpoint `config` permet de visualiser la configuration MQTT enregistrée à l'initialisation. Le mot de passe n'est pas connu du serveur HTTP donc n'est pas renvoyé.
@@ -369,3 +393,8 @@ paths:
         Il n'est pas possible de modifier ces valeurs en dehors de la réinitialisation via l'écran du module TeleInfoKit pour des raisons de sécurité des données.
 components:
   schemas: {}
+  securitySchemes:
+    Basic HTTP:
+      type: http
+      scheme: basic
+      description: Basic HTTP authentication for all endpoints

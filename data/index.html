@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <title>TeleInfoKit</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="chartbulb-160.gif">
@@ -196,6 +197,17 @@
                 <td id="mqttUsername"></td>
             </tr>
         </table>
+        <p><b>Fréquences envoi données</b></p>
+        <table>
+            <tr>
+                <td>Données puissance</td>
+                <td id="delayPower"></td>
+            </tr>
+            <tr>
+                <td>Données index</td>
+                <td id="delayIndex"></td>
+            </tr>
+        </table>
     </div>
 
     <div id="api" class="tabcontent">
@@ -267,7 +279,7 @@
         </table>
     </div>
     <p>
-        <a href="https://github.com/342apps/teleinfokit" target="_blank" class="greyed">Gitlab TeleInfoKit</a>
+        <a href="https://github.com/342apps/teleinfokit" target="_blank" class="greyed">Github TeleInfoKit</a>
         <span id="version_bottom" class="greyed"></span>
     </p>
 </body>
@@ -378,37 +390,39 @@
                 stacking: 'normal',
             }
         },
-        series: [{
-      name: 'Consommation HP',
-      type: 'column',
-      color: '#3491CD',
-      yAxis: 0,
-      tooltip: {
-        valueSuffix: ' Wh'
-      }
-
-    },
-    {
-      name: 'Consommation HC',
-      type: 'column',
-      color: '#bcd2e8',
-      yAxis: 0,
-      tooltip: {
-        valueSuffix: ' Wh'
-      }
-
-    }],
+        series: [
+            {
+                name: 'Consommation HP',
+                type: 'column',
+                color: '#3491CD',
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' Wh'
+                }
+            },
+            {
+                name: 'Consommation HC',
+                type: 'column',
+                color: '#bcd2e8',
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' Wh'
+                }
+            }],
         tooltip: {
             shared: true
         },
         credits: { enabled: false }
     });
 
+    const baseUrl = '';
+    const realTimeLabel = 'à chaque changement';
+    const add = (a, b) => a + b;
+
     function getPower() {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                var obj = JSON.parse(this.responseText);
+        fetch(`${baseUrl}/power`)
+            .then(response => response.json())
+            .then(obj => {
                 var x = (new Date()).getTime(),
                     papp = obj.papp,
                     iinst = obj.iinst,
@@ -424,38 +438,27 @@
                 } else {
                     chartPower.series[1].addPoint([x, iinst], true, false, true);
                 }
-            }
-        };
-        xhttp.open("GET", "/power", true);
-        xhttp.send();
+            });
     }
 
     function getHistory() {
-    var xhttpHistory = new XMLHttpRequest();
-    xhttpHistory.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        var obj = JSON.parse(this.responseText);
-        var history_hp = obj.history_hp;
-        var history_hc = obj.history_hc;
-        var hours = [];
-        var totalConsumption_hp = 0;
-        var totalConsumption_hc = 0;
-        var d = new Date(obj.historyStartupTime * 1000);
-        var h = d.getHours();
-        for (i = 0; i < 24; i++) {
-          hours.push((h + i + 1) % 24 + "h");
-          totalConsumption_hp += history_hp[i];
-          totalConsumption_hc += history_hc[i];
-        }
-
-        chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
-        chartHistory.xAxis[0].setCategories(hours);
-        chartHistory.series[0].setData(history_hp.reverse());
-        chartHistory.series[1].setData(history_hc.reverse());
-      }
-        };
-        xhttpHistory.open("GET", "/history", true);
-        xhttpHistory.send();
+        fetch(`${baseUrl}/history`)
+            .then(response => response.json())
+            .then(obj => {
+                var history_hp = obj.history_hp;
+                var history_hc = obj.history_hc;
+                var d = new Date(obj.historyStartupTime * 1000);
+                
+                var h = d.getHours();
+                const hours = [...Array(24).keys()].map(i => (h + i + 1) % 24 + "h");
+                const totalConsumption_hp = history_hp.reduce(add);
+                const totalConsumption_hc = history_hc.reduce(add);
+                
+                chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
+                chartHistory.xAxis[0].setCategories(hours);
+                chartHistory.series[0].setData(history_hp.reverse());
+                chartHistory.series[1].setData(history_hc.reverse());
+            });
     }
     getHistory();
     getPower();
@@ -463,72 +466,71 @@
     setInterval(getPower, 5000);
     setInterval(getHistory, 60000);
 
+    document.addEventListener("visibilitychange", function() {
+        // Reload history when tab gets visible again
+        if (document.visibilityState !== 'visible') {
+            getHistory();
+        }
+    });
+
+    var $ = (id) => document.getElementById(id);
+
     function getSysInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                sysInfo = JSON.parse(this.responseText);
-                document.getElementById("version").innerHTML = sysInfo.version;
-                document.getElementById("version_bottom").innerHTML = sysInfo.version;
-                document.getElementById("buildTime").innerHTML = sysInfo.buildTime;
-                document.getElementById("ip").innerHTML = sysInfo.ip;
-                document.getElementById("gw").innerHTML = sysInfo.gw;
-                document.getElementById("nm").innerHTML = sysInfo.nm;
-                document.getElementById("ssid").innerHTML = sysInfo.ssid;
-                document.getElementById("mac").innerHTML = sysInfo.mac;
-                document.getElementById("signalStrengh").innerHTML = sysInfo.signalStrengh;
-                document.getElementById("chipId").innerHTML = sysInfo.chipId;
-                document.getElementById("flashChipId").innerHTML = sysInfo.flashChipId;
-                document.getElementById("flashChipSize").innerHTML = sysInfo.flashChipSize;
-                document.getElementById("freeHeap").innerHTML = sysInfo.freeHeap;
-            }
-        };
-        xhttpHistory.open("GET", "/info", true);
-        xhttpHistory.send();
+        fetch(`${baseUrl}/info`)
+            .then(response => response.json())
+            .then(sysInfo => {
+                $("version").innerHTML = sysInfo.version;
+                $("version_bottom").innerHTML = sysInfo.version;
+                $("buildTime").innerHTML = sysInfo.buildTime;
+                $("ip").innerHTML = sysInfo.ip;
+                $("gw").innerHTML = sysInfo.gw;
+                $("nm").innerHTML = sysInfo.nm;
+                $("ssid").innerHTML = sysInfo.ssid;
+                $("mac").innerHTML = sysInfo.mac;
+                $("signalStrengh").innerHTML = sysInfo.signalStrengh;
+                $("chipId").innerHTML = sysInfo.chipId;
+                $("flashChipId").innerHTML = sysInfo.flashChipId;
+                $("flashChipSize").innerHTML = sysInfo.flashChipSize;
+                $("freeHeap").innerHTML = sysInfo.freeHeap;
+            });
     }
     getSysInfo();
 
     function getMeterInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                meter = JSON.parse(this.responseText);
-                document.getElementById("adc0").innerHTML = meter.adc0;
-                document.getElementById("isousc").innerHTML = meter.isousc;
-                document.getElementById("ptec").innerHTML = meter.ptec;
-            }
-        };
-        xhttpHistory.open("GET", "/meter", true);
-        xhttpHistory.send();
+        fetch(`${baseUrl}/meter`)
+            .then(response => response.json())
+            .then(meter => {
+                $("adc0").innerHTML = meter.adc0;
+                $("isousc").innerHTML = meter.isousc;
+                $("ptec").innerHTML = meter.ptec;
+            });
     }
     getMeterInfo();
 
     function getIndexInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                indexData = JSON.parse(this.responseText);
-                document.getElementById("hp").innerHTML = indexData.hp;
-                document.getElementById("hc").innerHTML = indexData.hc;
-            }
-        };
-        xhttpHistory.open("GET", "/index", true);
-        xhttpHistory.send();
+        fetch(`${baseUrl}/index`)
+            .then(response => response.json())
+            .then(indexData => {
+                $("hp").innerHTML = indexData.hp;
+                $("hc").innerHTML = indexData.hc;
+            });
     }
     getIndexInfo();
 
     function getConfigInfo() {
-        var xhttpHistory = new XMLHttpRequest();
-        xhttpHistory.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                config = JSON.parse(this.responseText);
-                document.getElementById("mqttServer").innerHTML = config.mqttServer;
-                document.getElementById("mqttPort").innerHTML = config.mqttPort;
-                document.getElementById("mqttUsername").innerHTML = config.mqttUsername;
-            }
-        };
-        xhttpHistory.open("GET", "/config", true);
-        xhttpHistory.send();
+        fetch(`${baseUrl}/config`)
+            .then(response => response.json())
+            .then(config => {
+                $("mqttServer").innerHTML = config.mqttServer;
+                $("mqttPort").innerHTML = config.mqttPort;
+                $("mqttUsername").innerHTML = config.mqttUsername;
+                $("delayPower").innerHTML = config.delayPower === 0
+                    ? realTimeLabel
+                    : config.delayPower + "s";
+                $("delayIndex").innerHTML = config.delayIndex === 0
+                    ? realTimeLabel
+                    : config.delayIndex + "s";
+            });
     }
     getConfigInfo();
 
@@ -537,20 +539,14 @@
         getMeterInfo();
         getSysInfo();
 
-        var i, tabcontent, tablinks;
+        document.querySelectorAll(".tabcontent")
+            .forEach(content => content.style.display = "none");
 
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
+        document.querySelectorAll(".tablinks")
+            .forEach(tabLink => tabLink.classList.remove('active'));
 
         document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
+        evt.currentTarget.classList.add('active');
     }
 
     document.getElementById("defaultOpen").click();

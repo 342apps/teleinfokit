@@ -27,13 +27,17 @@
 
 #define REFRESH_DELAY 1000
 
-// The structure that stores network configuration
+// The structure that stores configuration
 typedef struct
 {
   char mqtt_server[40];
   char mqtt_port[6];
   char mqtt_server_username[20];
   char mqtt_server_password[20];
+  char http_username[20];
+  char http_password[20];
+  char period_data_power[10];
+  char period_data_index[10];
 } ConfStruct;
 
 ConfStruct config;
@@ -73,6 +77,9 @@ unsigned long resetTs = 0;
 unsigned long offTs = 0;
 bool screensaver = false;
 
+bool reset_possible = true;
+bool reset_pending = false;
+
 Data *data;
 Display *d;
 ESPTeleInfo ti = ESPTeleInfo();
@@ -88,6 +95,10 @@ char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_server_username[20];
 char mqtt_server_password[20];
+char http_username[20];
+char http_password[20];
+char period_data_power[10];
+char period_data_index[10];
 
 // flag for saving network configuration
 bool shouldSaveConfig = false;
@@ -126,6 +137,10 @@ void readConfig()
         strcpy(mqtt_port, config.mqtt_port);
         strcpy(mqtt_server_username, config.mqtt_server_username);
         strcpy(mqtt_server_password, config.mqtt_server_password);
+        strcpy(http_username, config.http_username);
+        strcpy(http_password, config.http_password);
+        strcpy(period_data_index, config.period_data_index);
+        strcpy(period_data_power, config.period_data_power);
         configFile.close();
 
         d->logPercent("Configuration chargée", 30);
@@ -151,12 +166,25 @@ void handlerBtn(Button2 &btn)
   switch (btn.getClickType())
   {
   case SINGLE_CLICK:
-    mode = (mode + 1) % 7; // cycle through 7 screens
+    
+    // reset management at startup
+    if(reset_possible){
+      reset_pending = true;
+    }
+
+    if (screensaver == false)
+    {
+      mode = (mode + 1) % 7; // cycle through 7 screens
+    }
     resetTs = 0;
     offTs = millis();
     screensaver = false;
     break;
   case DOUBLE_CLICK:
+    mode = GRAPH;
+    resetTs = 0;
+    offTs = millis();
+    screensaver = false;
     break;
   case TRIPLE_CLICK:
     break;
@@ -176,10 +204,12 @@ void handlerBtn(Button2 &btn)
       d->log("Reinitialisation en cours");
       // reset
       wifiManager.resetSettings();
+      ESP.eraseConfig();
+      LittleFS.remove(CONFIG_FILE);
       // display restart
-      d->log("Redemarrage", 2000);
+      d->log("Redemarrage", 1000);
       // restart
-      ESP.restart();
+      ESP.reset();
     }
     break;
   }
@@ -196,11 +226,30 @@ void setup()
   web = new WebServer();
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
+
   button.setClickHandler(handlerBtn);
+  button.setDoubleClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
   d->logPercent("Demarrage " + String(VERSION), 5);
-  delay(750); // just to see progress bar
+
+  unsigned long reset_start = millis();
+
+  while(millis() - reset_start < 1000)
+  {
+    // if button is pressed, reset management
+    if(!digitalRead(PIN_BUTTON)){   // no use of click handler because not called yet in a loop
+      d->displayReset();
+      reset = RST_PAGE;
+      unsigned long now = millis();
+      while(millis() - now < RESET_CONFIRM_DELAY)
+      {
+        button.loop();
+        delay(10);
+      }
+      delay(10);
+    }
+  }
 
   readConfig();
   uint16_t port = 1883;
@@ -209,16 +258,20 @@ void setup()
     port = atoi(config.mqtt_port);
     delay(1000);
   }
-  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
+  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
   d->logPercent("Connexion au reseau wifi...", 25);
   delay(350); // just to see progress bar
 
   // ========= WIFI MANAGER =========
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_server_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_server_password, 40);
+  WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
+  WiFiManagerParameter custom_mqtt_port("port", "Port MQTT", mqtt_port, 6);
+  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 40);
+  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 40);
+  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_period_data_power("period_data_power", "Fréquence envoi puissance (secondes)", period_data_power, 10);
+  WiFiManagerParameter custom_period_data_index("period_data_index", "Fréquence envoi index (secondes)", period_data_index, 10);
 
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
@@ -228,13 +281,18 @@ void setup()
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_username);
   wifiManager.addParameter(&custom_mqtt_password);
+  wifiManager.addParameter(&custom_http_username);
+  wifiManager.addParameter(&custom_http_password);
+  wifiManager.addParameter(&custom_period_data_power);
+  wifiManager.addParameter(&custom_period_data_index);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //and goes into a blocking loop awaiting configuration
   if (!wifiManager.autoConnect(AP_NAME, AP_PWD))
   {
-    d->log("Could not connect");
+    d->log("Connexion impossible\n Reset...");
+    delay(1000);
     //reset and try again
     ESP.reset();
     delay(1000);
@@ -249,6 +307,10 @@ void setup()
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_server_username, custom_mqtt_username.getValue());
   strcpy(mqtt_server_password, custom_mqtt_password.getValue());
+  strcpy(http_username, custom_http_username.getValue());
+  strcpy(http_password, custom_http_password.getValue());
+  strcpy(period_data_index, custom_period_data_index.getValue());
+  strcpy(period_data_power, custom_period_data_power.getValue());
 
   //save the custom parameters to FS
   if (shouldSaveConfig)
@@ -266,12 +328,16 @@ void setup()
       strcpy(config.mqtt_port, custom_mqtt_port.getValue());
       strcpy(config.mqtt_server_username, custom_mqtt_username.getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
+      strcpy(config.http_username, custom_http_username.getValue());
+      strcpy(config.http_password, custom_http_password.getValue());
+      strcpy(config.period_data_index, custom_period_data_index.getValue());
+      strcpy(config.period_data_power, custom_period_data_power.getValue());
       configFile.write((byte *)&config, sizeof(config));
       d->logPercent("Configuration sauvee", 50);
       delay(750);
     }
 
-    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password);
+    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
     configFile.close();
     //end save
   }
@@ -335,9 +401,9 @@ void setup()
   delay(750);
   data->setNtp(&timeClient);
 
-  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username);
+  web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
-  d->logPercent("Connexion MQTT", 75);
+  d->logPercent("Connexion MQTT", 90);
   delay(500);
   if (!ti.LogStartup())
   {
@@ -348,7 +414,6 @@ void setup()
 
   d->logPercent("Demarrage termine", 100);
   delay(500);
-  d->displayReset();
 
   offTs = millis();
 }
@@ -366,7 +431,8 @@ void loop()
     d->displayReset();
   }
 
-  if(millis() - offTs > SCREENSAVER_DELAY){
+  if (millis() - offTs > SCREENSAVER_DELAY)
+  {
     screensaver = true;
     d->displayOff();
   }
@@ -375,7 +441,8 @@ void loop()
   {
     data->storeValue(ti.hp, ti.hc);
 
-    if(!screensaver){
+    if (!screensaver)
+    {
       switch (mode)
       {
       case GRAPH:

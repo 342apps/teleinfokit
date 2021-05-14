@@ -4,6 +4,7 @@
 #include <TeleInfo.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
+#include "version.h"
 
 class ESPTeleInfo
 {
@@ -11,7 +12,7 @@ public:
     ESPTeleInfo();
 
     void init();
-    void initMqtt(char *server, uint16_t port, char *username, char *password);
+    void initMqtt(char *server, uint16_t port, char *username, char *password, int period_data_power, int period_data_index);
     void loop(void);
 
     // les données de consommation
@@ -35,8 +36,19 @@ private:
     char mqtt_user[20];
     char mqtt_pwd[20];
 
+    unsigned int delay_power;
+    unsigned int delay_index;
+    bool sendPower;
+    bool sendIndex;
+    // timestamp for the last power data send
+    unsigned long ts_power;
+    // timestamp for the last index data send
+    unsigned long ts_index;
+
     char CHIP_ID[7] = {0};
 
+    bool sendPowerData();
+    bool sendIndexData();
     bool connectMqtt();
 };
 

@@ -11,7 +11,7 @@ tm = datetime.datetime.today()
 FILENAME_BUILDNO = 'versioning'
 FILENAME_VERSION_H = 'include/version.h'
 compileTime =  datetime.datetime.now()
-version_root = 'v0.1.'
+version_root = 'v0.3.'
 
 
 def cheaphash(string,length=6):
@@ -65,23 +65,14 @@ hashdata = GetHashofDirs('data', 1)
 globalhash = cheaphash(hashsrc + hashdata)
 print("==> Hash of source files: "+globalhash)
 
-try:
-    with open(FILENAME_BUILDNO) as f:
-        build_no = int(f.readline()) + 1
-except:
-    print('Starting build number from 1..')
-    build_no = 1
 with open(FILENAME_BUILDNO, 'w+') as f:
-    f.write(str(build_no))
+    f.write(str(globalhash))
     print('Build number: {}'.format(build_no))
     print('Build hash: {}'.format(globalhash))
     print('Build time: {}'.format(compileTime))
     print('Version: {}'.format(version_root+str(globalhash)))
 
 hf = """//  DO NOT EDIT MANUALLY THIS FILE - IT IS DELETED AND RECREATED AT EACH BUILD !!!! 
-#ifndef BUILD_NUMBER
-  #define BUILD_NUMBER "{}"
-#endif
 #ifndef BUILD_HASH
   #define BUILD_HASH "{}"
 #endif
@@ -91,6 +82,6 @@ hf = """//  DO NOT EDIT MANUALLY THIS FILE - IT IS DELETED AND RECREATED AT EACH
 #ifndef VERSION
   #define VERSION "{}"
 #endif
-""".format(build_no, globalhash, compileTime, version_root+str(globalhash))
+""".format(globalhash, compileTime, version_root+str(globalhash))
 with open(FILENAME_VERSION_H, 'w+') as f:
     f.write(hf)

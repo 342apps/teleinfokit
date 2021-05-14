@@ -6,7 +6,9 @@ SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY
 Display::Display()
 {
   oled.init();
+  #if _HW_VER == 1
   oled.flipScreenVertically();
+  #endif
   oled.setFont(ArialMT_Plain_10);
 }
 
@@ -26,7 +28,6 @@ void Display::log(String text, int16_t displayTime)
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, text);
-  // Serial.println(text);
   oled.display();
   delay(displayTime);
 }

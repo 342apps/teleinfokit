@@ -36,7 +36,7 @@ void Data::calculateGraph()
 
     for (uint8_t i = 0; i < NB_BARS; i++)
     {
-        // convert to float to avoir precision loss (result in values = 0)
+        // convert to float to avoid precision loss (result in values = 0)
         bargraph_float = ((float)(history_hp[i] + history_hc[i]) / (float)max) * (float)BAR_HEIGHT;
         // invert positions to ease the graph generation
         bargraph[NB_BARS - i - 1] = (int8_t)bargraph_float;
@@ -45,7 +45,7 @@ void Data::calculateGraph()
 
 void Data::storeValue(long hp, long hc)
 {
-    if ((unsigned long)(millis() - hourTimestamp) >= HOUR_DELAY || previousHour != ntpClient->getHours())
+    if (previousHour != ntpClient->getHours())
     {
         // each hour
         decaleIndex();

@@ -6,11 +6,11 @@ As this is mainly intended for french people, the rest of this file will be in f
 
 ## Description
 
-Le firmware proposé ici est prévu pour fonctionner sur le module TeleInfoKit qui permet de collecter les données de télé-information émises par un compteur électrique de type Linky ou non-communicant. Les données sont disponibles via l'écran du module et depuis un dashboard accessible depuis un navigateur internet.
+Le firmware proposé ici est prévu pour fonctionner sur le [module TeleInfoKit](https://342apps.net) qui permet de collecter les données de télé-information émises par un compteur électrique de type Linky ou non-communicant. Les données sont disponibles via l'écran du module et depuis un dashboard accessible depuis un navigateur internet.
 
 Les données sont également envoyées en temps réel sur un serveur MQTT pour être exploitées ensuite par un système domotique tel [Home Assistant](https://www.home-assistant.io/) ou un logiciel de monitoring comme [Grafana](https://www.home-assistant.io/).
 
-Un [guide d'utilisation détaillé](./doc/user-guide.md) du module et son firmware est disponible dans les sources du projet.
+Un [guide d'utilisation détaillé](./doc/user-guide.md) du module et son firmware sont disponible dans les sources du projet.
 
 ## Envoi des données en temps réel vers un serveur MQTT
 
@@ -26,7 +26,7 @@ Un dashboard sous la forme d'une page web est également accessible depuis un na
 
 [![dashboard](./doc/dashboard.png)](./doc/dashboard_big.png)
 
-Un graphe de la consommation instantanée et l'historique sur 24 est affiché. Des informations complémentaires sont disponibles au bas du dashboard.
+Un graphe de la consommation instantanée et l'historique sur 24h est affiché. Des informations complémentaires sont disponibles au bas du dashboard.
 
 ## APIs
 
@@ -50,3 +50,7 @@ Se référer au dossier [doc](/doc) pour les documents suivants:
   * [Réinitialisation de la configuration](./doc/user-guide.md#Réinitialisation-de-la-configuration)
   * [APIs](./doc/user-guide.md#API)
 * [Messages MQTT](./doc/mqtt.md)
+
+## Ressources
+
+La présentation du boitier TeleInfoKit est disponible sur [342apps.net](https://342apps.net) et les sources hardware sont disponibles sur le repo [teleinfokit-board](https://github.com/342apps/teleinfokit-board)

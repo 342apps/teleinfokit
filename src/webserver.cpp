@@ -33,7 +33,7 @@ void getPower()
 void getIndex()
 {
     authenticate();
-    server.send(200, "application/json", "{\"hp\": " + String(teleinfows->hp) + ", \"hc\": " + String(teleinfows->hc) + "}");
+    server.send(200, "application/json", "{\"hp\": " + String(teleinfows->hp) + ", \"hc\": " + String(teleinfows->hc) + ", \"base\": " + String(teleinfows->base) + "}");
 }
 
 void getHistory()
@@ -42,18 +42,27 @@ void getHistory()
 
     String response = "{";
     response += "\"historyStartupTime\": " + String(history_data->historyStartTime) + ",";
+    
     response += "\"history_hp\": [" ;
     for (uint8_t i = 0; i < NB_BARS-1; i++)
     {
         response += String(history_data->history_hp[i]) + ",";
     }
     response += String(history_data->history_hp[NB_BARS - 1]) + "],";
+    
     response += "\"history_hc\": [" ;
     for (uint8_t i = 0; i < NB_BARS-1; i++)
     {
         response += String(history_data->history_hc[i]) + ",";
     }
-    response += String(history_data->history_hc[NB_BARS - 1]) + "]}";
+    response += String(history_data->history_hc[NB_BARS - 1]) + "],";
+    
+    response += "\"history_base\": [" ;
+    for (uint8_t i = 0; i < NB_BARS-1; i++)
+    {
+        response += String(history_data->history_base[i]) + ",";
+    }
+    response += String(history_data->history_base[NB_BARS - 1]) + "]}";
 
     server.send(200, "application/json", response);
 }

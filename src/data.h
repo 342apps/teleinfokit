@@ -19,6 +19,7 @@ public:
     // les données de consommation
     long history_hp[NB_BARS];
     long history_hc[NB_BARS];
+    long history_base[NB_BARS];
     long max;
     uint8_t bargraph[NB_BARS];
     unsigned long startupTime;
@@ -26,15 +27,17 @@ public:
 
     void calculateGraph();
     void storeValue(long hp, long hc);
+    void storeValueBase(long base);
     void setNtp(NTPClient *ntp);
 
 private:
-    void calculeMax();
-    void decaleIndex();
+    void calculateMax();
+    void shiftIndex();
     bool newHour;
     unsigned long hourTimestamp;
     long firstIndex_hp;
     long firstIndex_hc;
+    long firstIndex_base;
     float bargraph_float;
     NTPClient *ntpClient;
     int previousHour;

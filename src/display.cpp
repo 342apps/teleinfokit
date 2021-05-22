@@ -91,6 +91,18 @@ void Display::displayData2(long hp, long hc)
   oled.display();
 }
 
+void Display::displayData2Base(long base)
+{
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Index compteur");
+  oled.drawString(0, 10, "BASE");
+  oled.drawString(20, 10, String(base));
+  oled.display();
+}
+
 void Display::displayData3(char *adc0, long isousc, char *ptec)
 {
   oled.displayOn();

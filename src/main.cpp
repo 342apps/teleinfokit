@@ -260,8 +260,8 @@ void setup()
   }
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
-  d->logPercent("Connexion au reseau wifi...", 25);
-  delay(350); // just to see progress bar
+  d->logPercent("Connexion au reseau wifi.", 25);
+  delay(200); // just to see progress bar
 
   // ========= WIFI MANAGER =========
   WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
@@ -286,6 +286,9 @@ void setup()
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
 
+  d->logPercent("Connexion au reseau wifi..", 30);
+  delay(200); // just to see progress bar
+
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //and goes into a blocking loop awaiting configuration
@@ -297,6 +300,9 @@ void setup()
     ESP.reset();
     delay(1000);
   }
+
+  d->logPercent("Connexion au reseau wifi...", 35);
+  delay(200); // just to see progress bar
 
   WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
@@ -416,6 +422,7 @@ void setup()
   delay(500);
 
   offTs = millis();
+  ti.loop();
 }
 
 void loop()
@@ -439,7 +446,14 @@ void loop()
 
   if (millis() - refreshTime > REFRESH_DELAY)
   {
-    data->storeValue(ti.hp, ti.hc);
+    if(ti.modeBase)
+    {
+      data->storeValueBase(ti.base);
+    }
+    else
+    {
+      data->storeValue(ti.hp, ti.hc);
+    }
 
     if (!screensaver)
     {
@@ -455,7 +469,14 @@ void loop()
         break;
       case DATA2:
         reset = IDLE;
-        d->displayData2(ti.hp, ti.hc);
+        if(ti.modeBase)
+        {
+          d->displayData2Base(ti.base);
+        }
+        else
+        {
+          d->displayData2(ti.hp, ti.hc);
+        }
         break;
       case DATA3:
         reset = IDLE;

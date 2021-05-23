@@ -25,14 +25,21 @@ paths:
                   history_hp:
                     type: array
                     minItems: 24
-                    description: 'Historique des consommations en heures pleines sur les dernières 24h. Unités : Watt.heure (Wh)'
+                    description: 'Historique des consommations en heures pleines sur les dernières 24h. Unités : Watt.heure (Wh). Seulement avec abonnement HP/HC, valeurs à 0 sinon.'
                     maxItems: 24
                     items:
                       type: integer
                   history_hc:
                     type: array
                     minItems: 24
-                    description: 'Historique des consommations en heures creuses sur les dernières 24h. Unités : Watt.heure (Wh)'
+                    description: 'Historique des consommations en heures creuses sur les dernières 24h. Unités : Watt.heure (Wh). Seulement avec abonnement HP/HC, valeurs à 0 sinon.'
+                    maxItems: 24
+                    items:
+                      type: integer
+                  history_base:
+                    type: array
+                    minItems: 24
+                    description: 'Historique des consommations de l''index BASE sur les dernières 24h. Unités : Watt.heure (Wh). Seulement avec abonnement simple tarif, valeurs à 0 sinon.'
                     maxItems: 24
                     items:
                       type: integer
@@ -94,11 +101,36 @@ paths:
                       - 36
                       - 0
                       - 0
+                    history_base:
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
+                      - 0
       operationId: get-history
       description: |-
-        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h ainsi qu'un horodatage de la donnée de départ. Les consommations 'heures pleines' / 'heures creuses' sont dissociées.
+        Le endpoint `history` donne un tableau de l'historique de la consommation enregistrée par le module TeleInfoKit sur une période de 24h ainsi qu'un horodatage de la donnée de départ. Les consommations 'heures pleines' / 'heures creuses' sont dissociées. En cas d'abonnement simple tarif seuls les index BASE sont renseignés.
 
-        L'index 0 des tableaux `history_hp` et `history_hc` contient la consommation de l'heure en cours. Les index suivants contiennent les consommations des heures précédentes. L'index 0 évolue constamment, à mesure que la consommation augmente sur l'heure courante.
+        L'index 0 des tableaux `history_hp` et `history_hc` (et `history_base` pour le simple tarif) contient la consommation de l'heure en cours. Les index suivants contiennent les consommations des heures précédentes. L'index 0 évolue constamment, à mesure que la consommation augmente sur l'heure courante.
 
         Les index 1 à 23 ne changent pas, sauf une fois que l'heure en cours est écoulée. Les valeurs des index 0 à 22 sont décalés de 1, la précédente valeur de l'index 23 correspondant à la consommation il y a 24h est perdue. L'index 0 est remis à zéro et reprend son évolution.
 
@@ -210,16 +242,21 @@ paths:
                   hc:
                     type: number
                     description: 'Valeur de l''index "Heures Creuses". Unité : Watt.heure (Wh)'
+                  base:
+                    type: number
+                    description: 'Valeur de l''index "Base". Unité : Watt.heure (Wh). Vaut -1 si pas de valeur dans cet index'
                 required:
                   - hp
                   - hc
+                  - base
               examples:
                 Example:
                   value:
                     hp: 12808037
                     hc: 9587586
+                    base: -1
       operationId: get-index
-      description: Le endpoint `index` donne les valeurs des index "Heures creuses" et "Heures Pleines" du compteur.
+      description: Le endpoint `index` donne les valeurs des index "Heures creuses", "Heures Pleines" et "Base" du compteur.
   /info:
     get:
       summary: info

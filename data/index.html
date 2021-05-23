@@ -138,12 +138,17 @@
             <tr>
                 <td>Index Heures Pleines</td>
                 <td id="hp"></td>
-                <td class="greyed">[HPHP]</td>
+                <td class="greyed">[HCHP]</td>
             </tr>
             <tr>
                 <td>Index Heures Creuses</td>
                 <td id="hc"></td>
                 <td class="greyed">[HCHC]</td>
+            </tr>
+            <tr>
+                <td>Index Base</td>
+                <td id="base"></td>
+                <td class="greyed">[BASE]</td>
             </tr>
         </table>
 
@@ -390,25 +395,6 @@
                 stacking: 'normal',
             }
         },
-        series: [
-            {
-                name: 'Consommation HP',
-                type: 'column',
-                color: '#3491CD',
-                yAxis: 0,
-                tooltip: {
-                    valueSuffix: ' Wh'
-                }
-            },
-            {
-                name: 'Consommation HC',
-                type: 'column',
-                color: '#bcd2e8',
-                yAxis: 0,
-                tooltip: {
-                    valueSuffix: ' Wh'
-                }
-            }],
         tooltip: {
             shared: true
         },
@@ -416,6 +402,46 @@
     });
 
     const baseUrl = '';
+    var modeBase = false;
+    fetch(`${baseUrl}/index`)
+            .then(response => response.json())
+            .then(indexData => {
+                modeBase = indexData.base > 0;
+            });
+    console.log("mode base " + modeBase);
+
+    if(modeBase) {
+        chartHistory.addSeries({
+            name: 'Consommation BASE',
+            type: 'column',
+            color: '#3491CD',
+            yAxis: 0,
+            tooltip: {
+                valueSuffix: ' Wh'
+            }
+        });
+    }
+    else {
+        chartHistory.addSeries({
+            name: 'Consommation HP',
+                type: 'column',
+                color: '#3491CD',
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' Wh'
+                }
+        });
+        chartHistory.addSeries({
+            name: 'Consommation HC',
+                type: 'column',
+                color: '#bcd2e8',
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' Wh'
+                }
+        });
+    }
+
     const realTimeLabel = 'à chaque changement';
     const add = (a, b) => a + b;
 
@@ -447,17 +473,25 @@
             .then(obj => {
                 var history_hp = obj.history_hp;
                 var history_hc = obj.history_hc;
+                var history_base = obj.history_base;
                 var d = new Date(obj.historyStartupTime * 1000);
                 
                 var h = d.getHours();
                 const hours = [...Array(24).keys()].map(i => (h + i + 1) % 24 + "h");
                 const totalConsumption_hp = history_hp.reduce(add);
                 const totalConsumption_hc = history_hc.reduce(add);
+                const totalConsumption_base = history_base.reduce(add);
                 
-                chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
+                if(modeBase) {
+                    chartHistory.setTitle(null, { text: "Total consommé BASE :  " + totalConsumption_base / 1000 + "kWh" });
+                }
+                else {
+                    chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
+                }
                 chartHistory.xAxis[0].setCategories(hours);
                 chartHistory.series[0].setData(history_hp.reverse());
                 chartHistory.series[1].setData(history_hc.reverse());
+                chartHistory.series[2].setData(history_base.reverse());
             });
     }
     getHistory();
@@ -507,12 +541,18 @@
     }
     getMeterInfo();
 
+    function printIndex(index)
+    {
+        return index == "-1" ? "N/A" : index;
+    }   
+
     function getIndexInfo() {
         fetch(`${baseUrl}/index`)
             .then(response => response.json())
             .then(indexData => {
-                $("hp").innerHTML = indexData.hp;
-                $("hc").innerHTML = indexData.hc;
+                $("hp").innerHTML = printIndex(indexData.hp);
+                $("hc").innerHTML = printIndex(indexData.hc);
+                $("base").innerHTML = printIndex(indexData.base);
             });
     }
     getIndexInfo();

@@ -20,11 +20,15 @@ public:
     long papp, papp_old;
     long hc, hc_old;
     long hp, hp_old;
+    long base, base_old;
     long imax, imax_old;
     long isousc, isousc_old;
     char adc0[20];
     char ptec[20];
     char ptec_old[20];
+
+    bool modeBase;
+
     bool LogStartup();
     // 30 char max !
     void Log(String s);

@@ -36,8 +36,9 @@ Une fois le module démarré, les informations de consommation et les index sont
 |`teleinfokit/iinst`|Intensité instantanée : Courant efficace (en A)|`7`|IINST|
 |`teleinfokit/papp`|Puissance apparente (en VA)|`1580`|PAPP|
 |`teleinfokit/imax`|Intensité maximale appelée *|`90`|IMAX|
-|`teleinfokit/hp`|Index heures pleines|`24784235`|HPHP|
-|`teleinfokit/hc`|Index heures creuses|`14582447`|HCHC|
+|`teleinfokit/hp`|Index heures pleines (si double tarif)|`24784235`|HCHP|
+|`teleinfokit/hc`|Index heures creuses (si double tarif)|`14582447`|HCHC|
+|`teleinfokit/base`|Index base (si simple tarif)|`46578`|BASE|
 |`teleinfokit/ptec`|Période tarifaire en cours|`HC..`|PTEC|
 
 *Note* L’intensité maximale «IMAX» est toujours égale à 90A dans le cas de ce compteur monophasé ([voir informations Enedis](https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf)).

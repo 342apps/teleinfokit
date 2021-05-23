@@ -23,6 +23,7 @@ public:
     void drawGraph(long papp);
     void displayData1(long papp, long iinst);
     void displayData2(long hp, long hc);
+    void displayData2Base(long base);
     void displayData3(char *adc0, long isousc, char *ptec);
     void displayNetwork();
     void displayReset();

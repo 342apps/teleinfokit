@@ -37,8 +37,8 @@ private:
     long previousMillis;
     bool staticInfoSsent;
     char buffer[30];
-    char mqtt_user[20];
-    char mqtt_pwd[20];
+    char mqtt_user[32];
+    char mqtt_pwd[32];
 
     unsigned int delay_power;
     unsigned int delay_index;

@@ -32,10 +32,10 @@ typedef struct
 {
   char mqtt_server[40];
   char mqtt_port[6];
-  char mqtt_server_username[20];
-  char mqtt_server_password[20];
-  char http_username[20];
-  char http_password[20];
+  char mqtt_server_username[32];
+  char mqtt_server_password[32];
+  char http_username[32];
+  char http_password[32];
   char period_data_power[10];
   char period_data_index[10];
 } ConfStruct;
@@ -93,10 +93,10 @@ NTPClient timeClient(ntpUDP);
 // network configuration variables
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
-char mqtt_server_username[20];
-char mqtt_server_password[20];
-char http_username[20];
-char http_password[20];
+char mqtt_server_username[32];
+char mqtt_server_password[32];
+char http_username[32];
+char http_password[32];
 char period_data_power[10];
 char period_data_index[10];
 
@@ -266,10 +266,10 @@ void setup()
   // ========= WIFI MANAGER =========
   WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "Port MQTT", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 40, "type=\"password\"");
-  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 40);
-  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 32);
+  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
+  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 32);
+  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 32, "type=\"password\"");
   WiFiManagerParameter custom_period_data_power("period_data_power", "Fréquence envoi puissance (secondes)", period_data_power, 10);
   WiFiManagerParameter custom_period_data_index("period_data_index", "Fréquence envoi index (secondes)", period_data_index, 10);
 

@@ -32,10 +32,10 @@ typedef struct
 {
   char mqtt_server[40];
   char mqtt_port[6];
-  char mqtt_server_username[20];
-  char mqtt_server_password[20];
-  char http_username[20];
-  char http_password[20];
+  char mqtt_server_username[32];
+  char mqtt_server_password[32];
+  char http_username[32];
+  char http_password[32];
   char period_data_power[10];
   char period_data_index[10];
 } ConfStruct;
@@ -93,10 +93,10 @@ NTPClient timeClient(ntpUDP);
 // network configuration variables
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
-char mqtt_server_username[20];
-char mqtt_server_password[20];
-char http_username[20];
-char http_password[20];
+char mqtt_server_username[32];
+char mqtt_server_password[32];
+char http_username[32];
+char http_password[32];
 char period_data_power[10];
 char period_data_index[10];
 
@@ -260,16 +260,16 @@ void setup()
   }
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
-  d->logPercent("Connexion au reseau wifi...", 25);
-  delay(350); // just to see progress bar
+  d->logPercent("Connexion au reseau wifi.", 25);
+  delay(200); // just to see progress bar
 
   // ========= WIFI MANAGER =========
   WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "Port MQTT", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 40, "type=\"password\"");
-  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 40);
-  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 40, "type=\"password\"");
+  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 32);
+  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
+  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 32);
+  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 32, "type=\"password\"");
   WiFiManagerParameter custom_period_data_power("period_data_power", "Fréquence envoi puissance (secondes)", period_data_power, 10);
   WiFiManagerParameter custom_period_data_index("period_data_index", "Fréquence envoi index (secondes)", period_data_index, 10);
 
@@ -286,6 +286,9 @@ void setup()
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
 
+  d->logPercent("Connexion au reseau wifi..", 30);
+  delay(200); // just to see progress bar
+
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //and goes into a blocking loop awaiting configuration
@@ -297,6 +300,9 @@ void setup()
     ESP.reset();
     delay(1000);
   }
+
+  d->logPercent("Connexion au reseau wifi...", 35);
+  delay(200); // just to see progress bar
 
   WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
@@ -416,6 +422,7 @@ void setup()
   delay(500);
 
   offTs = millis();
+  ti.loop();
 }
 
 void loop()
@@ -439,7 +446,14 @@ void loop()
 
   if (millis() - refreshTime > REFRESH_DELAY)
   {
-    data->storeValue(ti.hp, ti.hc);
+    if(ti.modeBase)
+    {
+      data->storeValueBase(ti.base);
+    }
+    else
+    {
+      data->storeValue(ti.hp, ti.hc);
+    }
 
     if (!screensaver)
     {
@@ -455,7 +469,14 @@ void loop()
         break;
       case DATA2:
         reset = IDLE;
-        d->displayData2(ti.hp, ti.hc);
+        if(ti.modeBase)
+        {
+          d->displayData2Base(ti.base);
+        }
+        else
+        {
+          d->displayData2(ti.hp, ti.hc);
+        }
         break;
       case DATA3:
         reset = IDLE;

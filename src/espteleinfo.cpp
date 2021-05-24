@@ -11,6 +11,7 @@
 #define ISOUSC "ISOUSC"
 #define IMAX "IMAX"
 #define PTEC "PTEC"
+#define BASE "BASE"
 
 #define NBTRY 5
 
@@ -37,6 +38,8 @@ void ESPTeleInfo::init()
     hc_old = 1;
     hp = 0;
     hp_old = 1;
+    base = 0;
+    base_old = 1;
     imax = 0;
     imax_old = 1;
     isousc = 0;
@@ -44,6 +47,7 @@ void ESPTeleInfo::init()
     adc0[0] = '\0';
     ptec[0] = '\0';
     ptec_old[0] = '_';
+    modeBase = false;
 
     Serial.begin(1200, SERIAL_8N1);
     // Init teleinfo
@@ -92,6 +96,11 @@ void ESPTeleInfo::loop(void)
 
         hc = teleinfo.getLongVal(HC);
         hp = teleinfo.getLongVal(HP);
+        base = teleinfo.getLongVal(BASE);
+
+        if(base > 0){
+            modeBase  = true;
+        }
 
         imax = teleinfo.getLongVal(IMAX);
         strncpy(ptec, teleinfo.getStringVal(PTEC), 20);
@@ -114,6 +123,10 @@ void ESPTeleInfo::loop(void)
             {
                 mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP));
             }
+            if (base != base_old && base != 0 && sendIndex)
+            {
+                mqttClient.publish("teleinfokit/base", teleinfo.getStringVal(BASE));
+            }
             if (imax != imax_old)
             {
                 mqttClient.publish("teleinfokit/imax", teleinfo.getStringVal(IMAX));
@@ -134,6 +147,7 @@ void ESPTeleInfo::loop(void)
         if(sendIndex){
             hc_old = hc;
             hp_old = hp;
+            base_old = base;
             ts_index = millis();
         }
 

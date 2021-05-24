@@ -20,11 +20,15 @@ public:
     long papp, papp_old;
     long hc, hc_old;
     long hp, hp_old;
+    long base, base_old;
     long imax, imax_old;
     long isousc, isousc_old;
     char adc0[20];
     char ptec[20];
     char ptec_old[20];
+
+    bool modeBase;
+
     bool LogStartup();
     // 30 char max !
     void Log(String s);
@@ -33,8 +37,8 @@ private:
     long previousMillis;
     bool staticInfoSsent;
     char buffer[30];
-    char mqtt_user[20];
-    char mqtt_pwd[20];
+    char mqtt_user[32];
+    char mqtt_pwd[32];
 
     unsigned int delay_power;
     unsigned int delay_index;

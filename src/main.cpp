@@ -87,6 +87,8 @@ WebServer *web;
 Button2 button = Button2(PIN_BUTTON);
 WiFiManager wifiManager;
 
+WiFiEventHandler disconnectedEventHandler;
+
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
@@ -225,6 +227,15 @@ void setup()
   d->init(data);
   web = new WebServer();
 
+  disconnectedEventHandler = WiFi.onStationModeDisconnected([](const WiFiEventStationModeDisconnected& event)
+  {
+    d->log("Perte connexion Wifi\n Reset...");
+    delay(1000);
+    //reset and try again
+    ESP.reset();
+    delay(1000);
+  });
+
   pinMode(PIN_BUTTON, INPUT_PULLUP);
 
   button.setClickHandler(handlerBtn);
@@ -285,6 +296,10 @@ void setup()
   wifiManager.addParameter(&custom_http_password);
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
+
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.setConnectTimeout(30);
+  
 
   d->logPercent("Connexion au reseau wifi..", 30);
   delay(200); // just to see progress bar

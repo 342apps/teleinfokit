@@ -297,10 +297,6 @@ void setup()
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
 
-  wifiManager.setConfigPortalTimeout(180);
-  wifiManager.setConnectTimeout(30);
-  
-
   d->logPercent("Connexion au reseau wifi..", 30);
   delay(200); // just to see progress bar
 
@@ -315,6 +311,8 @@ void setup()
     ESP.reset();
     delay(1000);
   }
+
+  wifiManager.setConnectTimeout(45);
 
   d->logPercent("Connexion au reseau wifi...", 35);
   delay(200); // just to see progress bar

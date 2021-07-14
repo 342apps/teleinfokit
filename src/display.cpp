@@ -99,7 +99,7 @@ void Display::displayData2Base(long base)
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, "Index compteur");
   oled.drawString(0, 10, "BASE");
-  oled.drawString(20, 10, String(base));
+  oled.drawString(30, 10, String(base));
   oled.display();
 }
 

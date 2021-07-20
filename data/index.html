@@ -153,7 +153,7 @@
         </table>
 
         <p>
-            <a href="https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf" target="_blank"
+            <a href="https://www.enedis.fr/media/2035/download" target="_blank"
                 class="greyed">Information Enedis sur la télé-information (pdf)</a>
         </p>
 
@@ -402,45 +402,46 @@
     });
 
     const baseUrl = '';
-    var modeBase = false;
+    var modeBase;
     fetch(`${baseUrl}/index`)
-            .then(response => response.json())
-            .then(indexData => {
-                modeBase = indexData.base > 0;
-            });
-    console.log("mode base " + modeBase);
+        .then(response => response.json())
+        .then(indexData => {
+            modeBase = indexData.base > 0; 
 
-    if(modeBase) {
-        chartHistory.addSeries({
-            name: 'Consommation BASE',
-            type: 'column',
-            color: '#3491CD',
-            yAxis: 0,
-            tooltip: {
-                valueSuffix: ' Wh'
+            console.log("mode base " + modeBase);
+
+            if(modeBase) {
+                chartHistory.addSeries({
+                    name: 'Consommation BASE',
+                    type: 'column',
+                    color: '#3491CD',
+                    yAxis: 0,
+                    tooltip: {
+                        valueSuffix: ' Wh'
+                    }
+                });
+            }
+            else {
+                chartHistory.addSeries({
+                    name: 'Consommation HP',
+                        type: 'column',
+                        color: '#3491CD',
+                        yAxis: 0,
+                        tooltip: {
+                            valueSuffix: ' Wh'
+                        }
+                });
+                chartHistory.addSeries({
+                    name: 'Consommation HC',
+                        type: 'column',
+                        color: '#bcd2e8',
+                        yAxis: 0,
+                        tooltip: {
+                            valueSuffix: ' Wh'
+                        }
+                });
             }
         });
-    }
-    else {
-        chartHistory.addSeries({
-            name: 'Consommation HP',
-                type: 'column',
-                color: '#3491CD',
-                yAxis: 0,
-                tooltip: {
-                    valueSuffix: ' Wh'
-                }
-        });
-        chartHistory.addSeries({
-            name: 'Consommation HC',
-                type: 'column',
-                color: '#bcd2e8',
-                yAxis: 0,
-                tooltip: {
-                    valueSuffix: ' Wh'
-                }
-        });
-    }
 
     const realTimeLabel = 'à chaque changement';
     const add = (a, b) => a + b;
@@ -453,7 +454,9 @@
                     papp = obj.papp,
                     iinst = obj.iinst,
                     ptec = obj.ptec;
-                chartPower.setTitle(null, { text: 'Période tarifaire : ' + ptec.replace(/\./g, "") });
+                    
+                chartPower.setTitle(null, { text: "Période tarifaire : " + ptec.replace(/\./g, "") + "<br />" });
+
                 if (chartPower.series[0].data.length > 720) {
                     chartPower.series[0].addPoint([x, papp], true, true, true);
                 } else {
@@ -471,27 +474,27 @@
         fetch(`${baseUrl}/history`)
             .then(response => response.json())
             .then(obj => {
-                var history_hp = obj.history_hp;
-                var history_hc = obj.history_hc;
-                var history_base = obj.history_base;
                 var d = new Date(obj.historyStartupTime * 1000);
-                
                 var h = d.getHours();
                 const hours = [...Array(24).keys()].map(i => (h + i + 1) % 24 + "h");
-                const totalConsumption_hp = history_hp.reduce(add);
-                const totalConsumption_hc = history_hc.reduce(add);
-                const totalConsumption_base = history_base.reduce(add);
-                
+
                 if(modeBase) {
-                    chartHistory.setTitle(null, { text: "Total consommé BASE :  " + totalConsumption_base / 1000 + "kWh" });
+                    var history_base = obj.history_base;
+                    const totalConsumption_base = history_base.reduce(add);
+                    chartHistory.setTitle(null, { text: "Total consommé BASE :  " + totalConsumption_base / 1000 + " kWh" });
+                    chartHistory.series[0].setData(history_base.reverse());
                 }
                 else {
-                    chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + "kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + "kWh" });
+                    var history_hp = obj.history_hp;
+                    var history_hc = obj.history_hc;
+                    const totalConsumption_hp = history_hp.reduce(add);
+                    const totalConsumption_hc = history_hc.reduce(add);
+                    chartHistory.setTitle(null, { text: 'Total consommé HP :  ' + totalConsumption_hp / 1000 + " kWh<br />Total consommé HC :  " + totalConsumption_hc / 1000 + " kWh" });
+                    chartHistory.series[0].setData(history_hp.reverse());
+                    chartHistory.series[1].setData(history_hc.reverse());
                 }
+
                 chartHistory.xAxis[0].setCategories(hours);
-                chartHistory.series[0].setData(history_hp.reverse());
-                chartHistory.series[1].setData(history_hc.reverse());
-                chartHistory.series[2].setData(history_base.reverse());
             });
     }
     getHistory();

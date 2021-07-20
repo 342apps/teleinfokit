@@ -390,7 +390,7 @@ void setup()
     d->logPercent("MAJ en cours", percent);
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    d->log("OTA error " + error);
+    d->log("OTA error " + (String) error);
     if (error == OTA_AUTH_ERROR)
     {
       d->log("OTA Auth Failed");

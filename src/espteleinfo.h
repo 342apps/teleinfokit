@@ -1,10 +1,10 @@
 #ifndef ESPTELEINFO_H
 #define ESPTELEINFO_H
 
-#include <TeleInfo.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include "version.h"
+#include "TeleInfo342apps.h"
 
 class ESPTeleInfo
 {
@@ -50,6 +50,8 @@ private:
     unsigned long ts_index;
 
     char CHIP_ID[7] = {0};
+
+    char strdebug[80];
 
     bool sendPowerData();
     bool sendIndexData();

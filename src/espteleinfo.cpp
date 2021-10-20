@@ -13,6 +13,7 @@
 #define PTEC "PTEC"
 #define BASE "BASE"
 
+#define DEBUG
 #define NBTRY 5
 
 WiFiClient wifiClient;
@@ -107,6 +108,17 @@ void ESPTeleInfo::loop(void)
 
         if (connectMqtt())
         {
+
+#ifdef DEBUG
+
+            for(uint8_t i= 0; i<teleinfo.dataCount; i++){
+                sprintf(strdebug, "teleinfokit/%s", teleinfo.labels[i]);
+                mqttClient.publish(strdebug, teleinfo.values[i]);
+
+            }
+
+#endif
+
             if (iinst != iinst_old && sendPower)
             {
                 mqttClient.publish("teleinfokit/iinst", teleinfo.getStringVal(IINST));

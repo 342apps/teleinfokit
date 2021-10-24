@@ -13,7 +13,6 @@
 #define PTEC "PTEC"
 #define BASE "BASE"
 
-#define DEBUG
 #define NBTRY 5
 
 WiFiClient wifiClient;
@@ -68,6 +67,9 @@ void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *pa
     delay_index = period_data_index * 1000;
     delay_power = period_data_power * 1000;
 
+    // we use the power delay for generic data
+    delay_generic = delay_power;
+
     mqttClient.setServer(server, port);
 }
 
@@ -91,6 +93,7 @@ void ESPTeleInfo::loop(void)
     {
         sendPower = sendPowerData();
         sendIndex = sendIndexData();
+        sendGeneric = sendGenericData();
         
         iinst = teleinfo.getLongVal(IINST);
         papp = teleinfo.getLongVal(PAPP);
@@ -108,17 +111,16 @@ void ESPTeleInfo::loop(void)
 
         if (connectMqtt())
         {
-
-#ifdef DEBUG
-
-            for(uint8_t i= 0; i<teleinfo.dataCount; i++){
-                sprintf(strdebug, "teleinfokit/%s", teleinfo.labels[i]);
-                mqttClient.publish(strdebug, teleinfo.values[i]);
-
+            // send all data
+            if(sendGenericData()){
+                for(uint8_t i= 0; i<teleinfo.dataCount; i++){
+                    sprintf(strdebug, "teleinfokit/all/%s", teleinfo.labels[i]);
+                    mqttClient.publish(strdebug, teleinfo.values[i], true);
+                }
+                ts_generic = millis();
             }
 
-#endif
-
+            // send specific data
             if (iinst != iinst_old && sendPower)
             {
                 mqttClient.publish("teleinfokit/iinst", teleinfo.getStringVal(IINST));
@@ -166,7 +168,7 @@ void ESPTeleInfo::loop(void)
         imax_old = imax;
         strncpy(ptec_old, ptec, 20);
 
-        if (!staticInfoSsent)
+        if (!staticInfoSsent && connectMqtt())
         {
             if (teleinfo.getStringVal(ADCO)[0] != '\n')
             {
@@ -227,6 +229,11 @@ bool ESPTeleInfo::sendPowerData()
 bool ESPTeleInfo::sendIndexData()
 {
     return (delay_index <= 0 ) || (millis() - ts_index > (delay_index));
+}
+
+bool ESPTeleInfo::sendGenericData()
+{
+    return (delay_generic <= 0 ) || (millis() - ts_generic > (delay_generic));
 }
 
 // 30 char max !

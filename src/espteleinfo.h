@@ -42,12 +42,17 @@ private:
 
     unsigned int delay_power;
     unsigned int delay_index;
+    unsigned int delay_generic;
     bool sendPower;
     bool sendIndex;
+    bool sendGeneric;
+
     // timestamp for the last power data send
     unsigned long ts_power;
     // timestamp for the last index data send
     unsigned long ts_index;
+    // timestamp for the last generic data send
+    unsigned long ts_generic;
 
     char CHIP_ID[7] = {0};
 
@@ -55,6 +60,7 @@ private:
 
     bool sendPowerData();
     bool sendIndexData();
+    bool sendGenericData();
     bool connectMqtt();
 };
 

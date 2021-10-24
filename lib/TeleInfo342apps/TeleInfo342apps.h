@@ -1,7 +1,7 @@
 // Original library source: https://github.com/gbrd/arduino-teleinfo
 // under The MIT License (MIT)
 // Copyright (c) 2015 Gaël Bréard
-// this version is adapted for the need of this project
+// this library is adapted for the need of this project
 
 #ifndef Teleinfo_h
 #define Teleinfo_h
@@ -14,8 +14,8 @@
 
 #define LABEL_MAX_SIZE 8
 #define DATA_MAX_SIZE 13
-#define LINE_MAX_COUNT 16
-#define FRAME_MAX_SIZE 350
+#define LINE_MAX_COUNT 30
+#define FRAME_MAX_SIZE 500
 
 class TeleInfo
 {

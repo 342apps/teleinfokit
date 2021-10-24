@@ -1,7 +1,7 @@
 // Original library source: https://github.com/gbrd/arduino-teleinfo
 // under The MIT License (MIT)
 // Copyright (c) 2015 Gaël Bréard
-// this version is adapted for the need of this project
+// this library is adapted for the need of this project
 
 #include "Arduino.h"
 #include "TeleInfo342apps.h"

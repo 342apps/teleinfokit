@@ -37,10 +37,10 @@ void Display::displayStartup(String version)
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_CENTER);
-  oled.setFont(ArialMT_Plain_24);
+  oled.setFont(ArialMT_Plain_16);
   oled.drawString(64, 0, "TeleInfoKit");
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(64, 22, version);
+  oled.drawString(64, 20, version);
   oled.display();
   delay(800);
 }
@@ -49,10 +49,12 @@ void Display::logPercent(String text, int percentage)
 {
   oled.displayOn();
   oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setTextAlignment(TEXT_ALIGN_CENTER);
+  oled.setFont(ArialMT_Plain_16);
+  oled.drawString(64, 0, "TeleInfoKit");
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, text);
-  oled.drawProgressBar(2, 18, 124, 6, percentage);
+  oled.drawString(64, 13, text);
+  oled.drawProgressBar(2, 27, 123, 4, percentage);
   oled.display();
 }
 

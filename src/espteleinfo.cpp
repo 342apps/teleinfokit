@@ -118,13 +118,11 @@ void ESPTeleInfo::loop(void)
             // send all data
             if(sendGenericData()){
                 for(uint8_t i= 0; i<teleinfo.dataCount; i++){
-
                     if(strncmp(values_old[i], teleinfo.values[i], DATA_MAX_SIZE + 1) != 0){
                         sprintf(strdebug, "teleinfokit/data/%s", teleinfo.labels[i]);
                         mqttClient.publish(strdebug, teleinfo.values[i], true);
                         snprintf(values_old[i], DATA_MAX_SIZE+1, "%s", teleinfo.values[i]);
                     }
-
                 }
                 ts_generic = millis();
             }

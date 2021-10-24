@@ -114,7 +114,7 @@ void configModeCallback(WiFiManager *myWiFiManager)
 // Network connection has been done through captive portal of hotspot
 void saveConfigCallback()
 {
-  d->log("Configuration reseau OK");
+  d->log("Configuration réseau OK");
   shouldSaveConfig = true;
 }
 
@@ -128,7 +128,7 @@ void readConfig()
     {
       //file exists, reading and loading
       d->logPercent("Lecture configuration", 10);
-      delay(350); // just to see progress bar
+      delay(35); // just to see progress bar
 
       File configFile = LittleFS.open(CONFIG_FILE, "r");
       if (configFile)
@@ -146,7 +146,7 @@ void readConfig()
         configFile.close();
 
         d->logPercent("Configuration chargée", 30);
-        delay(350); // just to see progress bar
+        delay(35); // just to see progress bar
       }
       else
       {
@@ -203,13 +203,13 @@ void handlerBtn(Button2 &btn)
     {
       reset = RST_ACK;
       // display reset requested
-      d->log("Reinitialisation en cours");
+      d->log("Réinitialisation en cours");
       // reset
       wifiManager.resetSettings();
       ESP.eraseConfig();
       LittleFS.remove(CONFIG_FILE);
       // display restart
-      d->log("Redemarrage", 1000);
+      d->log("Redémarrage", 1000);
       // restart
       ESP.reset();
     }
@@ -243,7 +243,7 @@ void setup()
   button.setLongClickHandler(handlerBtn);
 
   d->displayStartup(String(VERSION));
-  d->logPercent("Demarrage", 5);
+  d->logPercent("Démarrage", 5);
 
   unsigned long reset_start = millis();
 
@@ -272,8 +272,7 @@ void setup()
   }
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
-  d->logPercent("Connexion au reseau wifi.", 25);
-  delay(200); // just to see progress bar
+  d->logPercent("Connexion au réseau wifi.", 25);
 
   // ========= WIFI MANAGER =========
   WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
@@ -298,8 +297,7 @@ void setup()
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
 
-  d->logPercent("Connexion au reseau wifi..", 30);
-  delay(200); // just to see progress bar
+  d->logPercent("Connexion au réseau wifi..", 30);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
@@ -315,13 +313,11 @@ void setup()
 
   wifiManager.setConnectTimeout(45);
 
-  d->logPercent("Connexion au reseau wifi...", 35);
-  delay(200); // just to see progress bar
+  d->logPercent("Connexion au réseau wifi...", 35);
 
   WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
 
-  d->logPercent("Connecte a " + String(WiFi.SSID()), 40);
-  delay(750); // just to see progress bar
+  d->logPercent("Connecté à " + String(WiFi.SSID()), 40);
 
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
@@ -340,7 +336,7 @@ void setup()
     File configFile = LittleFS.open(CONFIG_FILE, "w");
     if (!configFile)
     {
-      d->log("Erreur ecriture config");
+      d->log("Erreur écriture config");
     }
     else
     {
@@ -353,8 +349,8 @@ void setup()
       strcpy(config.period_data_index, custom_period_data_index.getValue());
       strcpy(config.period_data_power, custom_period_data_power.getValue());
       configFile.write((byte *)&config, sizeof(config));
-      d->logPercent("Configuration sauvee", 50);
-      delay(750);
+      d->logPercent("Configuration sauvée", 50);
+      delay(250);
     }
 
     ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
@@ -365,8 +361,7 @@ void setup()
   // ================ OTA ================
   ArduinoOTA.setHostname("teleinfokit");
   ArduinoOTA.setPassword("admin4tele9Info");
-  d->logPercent("Demarrage OTA", 60);
-  delay(750);
+  d->logPercent("Démarrage OTA", 60);
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -382,13 +377,13 @@ void setup()
     d->log("Demarrage MAJ " + type);
   });
   ArduinoOTA.onEnd([]() {
-    d->log("MAJ complete");
-    delay(1000);
-    d->log("Redemarrage en cours\nVeuillez patienter");
+    d->log("Mise à jour complète");
+    delay(500);
+    d->log("Redémarrage en cours\nVeuillez patienter");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     uint8_t percent = (progress / (total / 100));
-    d->logPercent("MAJ en cours", percent);
+    d->logPercent("Mise à jour en cours", percent);
   });
   ArduinoOTA.onError([](ota_error_t error) {
     d->log("OTA error " + (String) error);
@@ -418,20 +413,18 @@ void setup()
   timeClient.begin();
   timeClient.update();
   d->logPercent("Connexion NTP", 75);
-  delay(750);
   data->setNtp(&timeClient);
 
   web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
   d->logPercent("Connexion MQTT", 90);
-  delay(500);
   if (!ti.LogStartup())
   {
-    d->log("Erreur config MQTT \nReinitialiser les reglages", 2000);
+    d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
   }
 
-  d->logPercent("Demarrage termine", 100);
-  delay(500);
+  d->logPercent("Démarrage terminé", 100);
+  delay(300);
 
   offTs = millis();
   ti.loop();

@@ -12,7 +12,7 @@ FILENAME_BUILDNO = 'versioning'
 FILENAME_VERSION_H = 'include/version.h'
 compileTime =  datetime.datetime.now()
 version_root = 'v1.0.0.'
-beta = '-beta'
+beta = '-beta1'
 # beta = ''
 
 

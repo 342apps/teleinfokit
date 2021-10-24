@@ -17,6 +17,9 @@ public:
 
     // les données de consommation
     long iinst, iinst_old;
+    long iinst1, iinst1_old;
+    long iinst2, iinst2_old;
+    long iinst3, iinst3_old;
     long papp, papp_old;
     long hc, hc_old;
     long hp, hp_old;
@@ -30,6 +33,7 @@ public:
     char values_old[LINE_MAX_COUNT][DATA_MAX_SIZE+1]; //+1 for '\0' ending
 
     bool modeBase;
+    bool modeTriphase;
 
     bool LogStartup();
     // 30 char max !
@@ -58,12 +62,15 @@ private:
 
     char CHIP_ID[7] = {0};
 
-    char strdebug[80];
+    char strDataTopic[80];
 
     bool sendPowerData();
     bool sendIndexData();
     bool sendGenericData();
     bool connectMqtt();
+
+    // detects the communication mode (mono or triphase)
+    void getPhaseMode();
 };
 
 #endif /* ESPTELEINFO_H */

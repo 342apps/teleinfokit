@@ -49,6 +49,10 @@ void ESPTeleInfo::init()
     ptec_old[0] = '_';
     modeBase = false;
 
+    for(int i=0; i< LINE_MAX_COUNT; i++){
+        values_old[i][0] = '\0';
+    }
+
     Serial.begin(1200, SERIAL_8N1);
     // Init teleinfo
     teleinfo.begin();
@@ -114,8 +118,13 @@ void ESPTeleInfo::loop(void)
             // send all data
             if(sendGenericData()){
                 for(uint8_t i= 0; i<teleinfo.dataCount; i++){
-                    sprintf(strdebug, "teleinfokit/all/%s", teleinfo.labels[i]);
-                    mqttClient.publish(strdebug, teleinfo.values[i], true);
+
+                    if(strncmp(values_old[i], teleinfo.values[i], DATA_MAX_SIZE + 1) != 0){
+                        sprintf(strdebug, "teleinfokit/data/%s", teleinfo.labels[i]);
+                        mqttClient.publish(strdebug, teleinfo.values[i], true);
+                        snprintf(values_old[i], DATA_MAX_SIZE+1, "%s", teleinfo.values[i]);
+                    }
+
                 }
                 ts_generic = millis();
             }
@@ -131,15 +140,15 @@ void ESPTeleInfo::loop(void)
             }
             if (hc != hc_old && hc != 0 && sendIndex)
             {
-                mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC));
+                mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC), true);
             }
             if (hp != hp_old && hp != 0 && sendIndex)
             {
-                mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP));
+                mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP), true);
             }
             if (base != base_old && base != 0 && sendIndex)
             {
-                mqttClient.publish("teleinfokit/base", teleinfo.getStringVal(BASE));
+                mqttClient.publish("teleinfokit/base", teleinfo.getStringVal(BASE), true);
             }
             if (imax != imax_old)
             {

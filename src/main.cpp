@@ -242,7 +242,8 @@ void setup()
   button.setDoubleClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
-  d->logPercent("Demarrage " + String(VERSION), 5);
+  d->displayStartup(String(VERSION));
+  d->logPercent("Demarrage", 5);
 
   unsigned long reset_start = millis();
 
@@ -426,9 +427,7 @@ void setup()
   delay(500);
   if (!ti.LogStartup())
   {
-    d->logPercent("Demarrage termine", 100);
-    delay(500);
-    d->log("Erreur config MQTT \nReinitialiser les reglages", 5000);
+    d->log("Erreur config MQTT \nReinitialiser les reglages", 2000);
   }
 
   d->logPercent("Demarrage termine", 100);

@@ -27,6 +27,8 @@ public:
     char ptec[20];
     char ptec_old[20];
 
+    char values_old[LINE_MAX_COUNT][DATA_MAX_SIZE+1]; //+1 for '\0' ending
+
     bool modeBase;
 
     bool LogStartup();

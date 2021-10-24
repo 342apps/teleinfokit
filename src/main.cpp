@@ -128,7 +128,6 @@ void readConfig()
     {
       //file exists, reading and loading
       d->logPercent("Lecture configuration", 10);
-      delay(35); // just to see progress bar
 
       File configFile = LittleFS.open(CONFIG_FILE, "r");
       if (configFile)
@@ -145,8 +144,7 @@ void readConfig()
         strcpy(period_data_power, config.period_data_power);
         configFile.close();
 
-        d->logPercent("Configuration chargée", 30);
-        delay(35); // just to see progress bar
+        d->logPercent("Configuration chargée", 15);
       }
       else
       {

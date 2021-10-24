@@ -28,6 +28,7 @@ public:
     void displayNetwork();
     void displayReset();
     void displayOff();
+    void displayStartup(String version);
 
 private:
     Data *data;

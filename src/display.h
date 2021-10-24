@@ -7,6 +7,7 @@
 #include "SSD1306Wire.h"
 #include "data.h"
 #include "version.h"
+#include "fonts.h"
 
 #define HEIGHT 32
 #define WIDTH 128

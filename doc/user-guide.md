@@ -43,7 +43,7 @@ Si les deux champs sont laissés vides, l'authentification est désactivée.
 
 Si le serveur MQTT n'est pas accessible ou en cas d'erreur dans l'ip, login ou mot de passe MQTT, un message d'erreur s'affichera. Le démarrage se poursuit dans tous les cas, et le module reste accessible via ses APIs et le dashboard.
 
-Pour corriger la configuration MQTT, [réinitialiser le module](#Réinitialisation-de-la-configuration).
+Pour corriger la configuration MQTT, [réinitialiser le module](#réinitialisation-de-la-configuration-factory-reset).
 
 ### En cas d'erreur de paramétrage wifi
 
@@ -137,7 +137,7 @@ v0.x.xxxxxx
 
 La version de firmware est affichée sur la dernière ligne.
 
-Pour activer la réinitialisation, faire un appui long sur le bouton. La procédure est détaillée dans la section [réinitialisation de la configuration](#Réinitialisation-de-la-configuration).
+Pour activer la réinitialisation, faire un appui long sur le bouton. La procédure est détaillée dans la section [réinitialisation de la configuration](#réinitialisation-de-la-configuration-factory-reset).
 
 Un appui court passe à l'écran suivant sans réinitialisation.
 

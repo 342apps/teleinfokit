@@ -111,6 +111,15 @@ void ESPTeleInfo::loop(void)
         sendGeneric = sendGenericData();
         
         iinst = teleinfo.getLongVal(IINST);
+        iinst1 = teleinfo.getLongVal(IINST1);
+        iinst2 = teleinfo.getLongVal(IINST2);
+        iinst3 = teleinfo.getLongVal(IINST3);
+
+        iinst = iinst == -1 ? 0 : iinst;
+        iinst1 = iinst1 == -1 ? 0 : iinst1;
+        iinst2 = iinst2 == -1 ? 0 : iinst2;
+        iinst3 = iinst3 == -1 ? 0 : iinst3;
+
         papp = teleinfo.getLongVal(PAPP);
 
         hc = teleinfo.getLongVal(HC);
@@ -120,13 +129,14 @@ void ESPTeleInfo::loop(void)
         if(base > 0){
             modeBase  = true;
         }
+        getPhaseMode();
 
         imax = teleinfo.getLongVal(IMAX);
         strncpy(ptec, teleinfo.getStringVal(PTEC), 20);
 
         if (connectMqtt())
         {
-            // send all data
+            // send all data in the data topic
             if(sendGenericData()){
                 for(uint8_t i= 0; i<teleinfo.dataCount; i++){
                     if(strncmp(values_old[i], teleinfo.values[i], DATA_MAX_SIZE + 1) != 0){
@@ -227,7 +237,11 @@ void ESPTeleInfo::loop(void)
 }
 
 void ESPTeleInfo::getPhaseMode(){
-    modeTriphase = teleinfo.getLongVal(IINST1) > 0;
+    modeTriphase = !(
+        iinst > 0 && 
+        iinst1 <= 0 && 
+        iinst2 <= 0 && 
+        iinst3 <= 0);
 }
 
 bool ESPTeleInfo::LogStartup()

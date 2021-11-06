@@ -341,19 +341,6 @@
                 valueSuffix: ' VA'
             }
 
-        }, {
-            name: 'Intensité',
-            type: 'spline',
-            color: '#3491CD',
-            yAxis: 1,
-            marker: {
-                enabled: false
-            },
-            dashStyle: 'shortdot',
-            tooltip: {
-                valueSuffix: ' A'
-            }
-
         }],
         tooltip: {
             shared: true
@@ -402,6 +389,7 @@
     });
 
     const baseUrl = '';
+    // initialisation graphe history
     var modeBase;
     fetch(`${baseUrl}/index`)
         .then(response => response.json())
@@ -443,6 +431,73 @@
             }
         });
 
+    // initialisation graphe power
+    var modeSimplePhase;
+    fetch(`${baseUrl}/power`)
+        .then(response => response.json())
+        .then(powerData => {
+            modeSimplePhase = powerData.iinst != 0 && powerData.iinst1 == 0 && powerData.iinst2 == 0 && powerData.iinst3 == 0,
+
+            console.log("mode simple phase " + modeSimplePhase);
+
+            if(modeSimplePhase) {
+                chartPower.addSeries({
+                    name: 'Intensité',
+                    type: 'spline',
+                    color: '#3491CD',
+                    yAxis: 1,
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: 'shortdot',
+                    tooltip: {
+                        valueSuffix: ' A'
+                    }
+                });
+            }
+            else {
+                chartPower.addSeries({
+                    name: 'Intensité phase 1',
+                    type: 'spline',
+                    color: '#3491CD',
+                    yAxis: 1,
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: 'shortdot',
+                    tooltip: {
+                        valueSuffix: ' A'
+                    }
+                });
+                chartPower.addSeries({
+                    name: 'Intensité phase 2',
+                    type: 'spline',
+                    color: '#3467CD',
+                    yAxis: 1,
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: 'shortdot',
+                    tooltip: {
+                        valueSuffix: ' A'
+                    }
+                });
+                chartPower.addSeries({
+                    name: 'Intensité phase 3',
+                    type: 'spline',
+                    color: '#395691',
+                    yAxis: 1,
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: 'shortdot',
+                    tooltip: {
+                        valueSuffix: ' A'
+                    }
+                });
+            }
+        });
+
     const realTimeLabel = 'à chaque changement';
     const add = (a, b) => a + b;
 
@@ -453,19 +508,45 @@
                 var x = (new Date()).getTime(),
                     papp = obj.papp,
                     iinst = obj.iinst,
+                    iinst1 = obj.iinst1,
+                    iinst2 = obj.iinst2,
+                    iinst3 = obj.iinst3,
                     ptec = obj.ptec;
                     
                 chartPower.setTitle(null, { text: "Période tarifaire : " + ptec.replace(/\./g, "") + "<br />" });
 
+                // puissance
                 if (chartPower.series[0].data.length > 720) {
                     chartPower.series[0].addPoint([x, papp], true, true, true);
                 } else {
                     chartPower.series[0].addPoint([x, papp], true, false, true);
                 }
-                if (chartPower.series[1].data.length > 720) {
-                    chartPower.series[1].addPoint([x, iinst], true, true, true);
-                } else {
-                    chartPower.series[1].addPoint([x, iinst], true, false, true);
+                // intensite
+                if(modeSimplePhase){
+                    if (chartPower.series[1].data.length > 720) {
+                        chartPower.series[1].addPoint([x, iinst], true, true, true);
+                    } else {
+                        chartPower.series[1].addPoint([x, iinst], true, false, true);
+                    }
+                }
+                else{
+                    if (chartPower.series[1].data.length > 720) {
+                        chartPower.series[1].addPoint([x, iinst1], true, true, true);
+                    } else {
+                        chartPower.series[1].addPoint([x, iinst1], true, false, true);
+                    }
+
+                    if (chartPower.series[2].data.length > 720) {
+                        chartPower.series[2].addPoint([x, iinst2], true, true, true);
+                    } else {
+                        chartPower.series[2].addPoint([x, iinst2], true, false, true);
+                    }
+
+                    if (chartPower.series[3].data.length > 720) {
+                        chartPower.series[3].addPoint([x, iinst3], true, true, true);
+                    } else {
+                        chartPower.series[3].addPoint([x, iinst3], true, false, true);
+                    }
                 }
             });
     }

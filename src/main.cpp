@@ -468,7 +468,12 @@ void loop()
         break;
       case DATA1:
         reset = IDLE;
-        d->displayData1(ti.papp, ti.iinst);
+        if(ti.modeTriphase){
+          d->displayData1Triphase(ti.papp, ti.iinst1, ti.iinst2, ti.iinst3);
+        }
+        else{
+          d->displayData1(ti.papp, ti.iinst);
+        }
         break;
       case DATA2:
         reset = IDLE;

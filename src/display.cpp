@@ -86,9 +86,21 @@ void Display::displayData1(long papp, long iinst)
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Puissance / Intensite");
+  oled.drawString(0, 0, "Puissance / Intensité");
   oled.drawString(0, 10, String(papp) + "VA");
   oled.drawString(0, 20, String(iinst) + "A");
+  oled.display();
+}
+
+void Display::displayData1Triphase(long papp, long iinst1, long iinst2, long iinst3)
+{
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Puissance/Intensités phases");
+  oled.drawString(0, 10, String(papp) + "VA");
+  oled.drawString(0, 20, String(iinst1) + " / " + String(iinst2) + " / " + String(iinst3) + " A");
   oled.display();
 }
 
@@ -148,7 +160,7 @@ void Display::displayReset()
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Reinitialisation ?");
+  oled.drawString(0, 0, "Réinitialisation ?");
   oled.drawString(0, 10, "Appui long pour reset...");
   oled.drawString(0, 20, VERSION);
   oled.display();

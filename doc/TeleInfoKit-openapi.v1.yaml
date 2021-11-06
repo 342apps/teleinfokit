@@ -155,6 +155,12 @@ paths:
                   iinst:
                     type: number
                     description: 'Courant efficace. Unités : Ampères (A)'
+                  iinst1:
+                    type: number
+                  iinst2:
+                    type: number
+                  iinst3:
+                    type: number
                   ptec:
                     type: string
                     description: Periode tarifaire en cours
@@ -172,10 +178,15 @@ paths:
                   value:
                     papp: 2560
                     iinst: 11
+                    iinst1: 0
+                    iinst2: 0
+                    iinst3: 0
                     ptec: HP..
       operationId: get-power
       description: |-
-        Le endpoint `power` donne la consommation courante envoyée par le compteur, ainsi que la période tarifaire en cours.
+        Le endpoint `power` donne la consommation courante envoyée par le compteur, ainsi que la période tarifaire en cours. 
+
+        Pour l'instensité en monophasé seul le champ iinst est renseigné, les champs iinst1, iinst2 et iinst3 valent 0 ; et inversement en triphasé, iinst vaudra 0.
 
         Ces données ne sont pas enregistrées par le firmware, mais seulement envoyées par MQTT (voir documentation MQTT).
     parameters: []
@@ -256,7 +267,7 @@ paths:
                     hc: 9587586
                     base: -1
       operationId: get-index
-      description: Le endpoint `index` donne les valeurs des index "Heures creuses", "Heures Pleines" et "Base" du compteur.
+      description: 'Le endpoint `index` donne les valeurs des index "Heures creuses", "Heures Pleines" et "Base" du compteur. Pour les index non renseignés, la valeur vaut -1.'
   /info:
     get:
       summary: info

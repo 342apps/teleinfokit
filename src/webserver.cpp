@@ -27,7 +27,14 @@ void authenticate()
 void getPower()
 {
     authenticate();
-    server.send(200, "application/json", "{\"papp\": " + String(teleinfows->papp) + ", \"iinst\": " + String(teleinfows->iinst) + ", \"ptec\": \"" + String(teleinfows->ptec) + "\"}");
+    server.send(200, "application/json", 
+    "{\"papp\": " + String(teleinfows->papp) + 
+    ", \"iinst\": " + String(teleinfows->iinst) + 
+    ", \"iinst1\": " + String(teleinfows->iinst1) + 
+    ", \"iinst2\": " + String(teleinfows->iinst2) + 
+    ", \"iinst3\": " + String(teleinfows->iinst3) + 
+    ", \"ptec\": \"" + String(teleinfows->ptec) + 
+    "\"}");
 }
 
 void getIndex()

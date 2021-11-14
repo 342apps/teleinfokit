@@ -22,8 +22,10 @@ Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smar
 * Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
 * Choisir un identifiant et un mot de passe pour protéger l'accès aux données par mot de passe.
 * Pour limiter la fréquence d'envoi des données via MQTT, saisir un délai (en secondes). La valeur `0` signifie un envoi en temps réel.
-    * Pour les données de puissance (PAPP et IINST)
-    * Pour les données d'index (HCHC et HPHP)
+    * Pour les données de puissance (PAPP, IINST et IINST1, 2 et 3 dans le cas d'un abonnement triphasé ) et les données génériques pour le firmware v1
+    * Pour les données d'index (HCHC, HPHP et BASE)
+
+**Note:** les données triphasé (IINST1, IINST2 et IINST3) ne sont disponibles qu'à partir du firmware v1.
 
 Cliquer sur `Save`. Le module va afficher un message de confirmation puis continuer le démarrage avec un message `Configuration reseau ok`.
 
@@ -43,7 +45,7 @@ Si les deux champs sont laissés vides, l'authentification est désactivée.
 
 Si le serveur MQTT n'est pas accessible ou en cas d'erreur dans l'ip, login ou mot de passe MQTT, un message d'erreur s'affichera. Le démarrage se poursuit dans tous les cas, et le module reste accessible via ses APIs et le dashboard.
 
-Pour corriger la configuration MQTT, [réinitialiser le module](#Réinitialisation-de-la-configuration).
+Pour corriger la configuration MQTT, [réinitialiser le module](#réinitialisation-de-la-configuration-factory-reset).
 
 ### En cas d'erreur de paramétrage wifi
 
@@ -91,6 +93,8 @@ Puissance/Intensite
 
 Ces valeur sont mises à jour en continu, environ toutes les 2 secondes.
 
+**Firmware v1+**: dans le cas d'un abonnement en triphasé, les 3 valeurs d'intensité sont affichées en ligne : `I1 / I2 / I3`
+
 ### Écran #3 : Index compteurs
 
 Cet écran affiche les index courants des heure creuse et heure pleine, remontés par le compteur.
@@ -137,7 +141,7 @@ v0.x.xxxxxx
 
 La version de firmware est affichée sur la dernière ligne.
 
-Pour activer la réinitialisation, faire un appui long sur le bouton. La procédure est détaillée dans la section [réinitialisation de la configuration](#Réinitialisation-de-la-configuration).
+Pour activer la réinitialisation, faire un appui long sur le bouton. La procédure est détaillée dans la section [réinitialisation de la configuration](#réinitialisation-de-la-configuration-factory-reset).
 
 Un appui court passe à l'écran suivant sans réinitialisation.
 

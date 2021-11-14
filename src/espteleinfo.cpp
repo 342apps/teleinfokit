@@ -12,6 +12,10 @@
 #define IMAX "IMAX"
 #define PTEC "PTEC"
 #define BASE "BASE"
+// mode triphase
+#define IINST1 "IINST1"
+#define IINST2 "IINST2"
+#define IINST3 "IINST3"
 
 #define NBTRY 5
 
@@ -32,6 +36,12 @@ void ESPTeleInfo::init()
     previousMillis = millis();
     iinst = 0;
     iinst_old = 254;
+    iinst1 = 0;
+    iinst1_old = 254;
+    iinst2 = 0;
+    iinst2_old = 254;
+    iinst3 = 0;
+    iinst3_old = 254;
     papp = 0;
     papp_old = 1;
     hc = 0;
@@ -48,6 +58,11 @@ void ESPTeleInfo::init()
     ptec[0] = '\0';
     ptec_old[0] = '_';
     modeBase = false;
+    modeTriphase = false;
+
+    for(int i=0; i< LINE_MAX_COUNT; i++){
+        values_old[i][0] = '\0';
+    }
 
     Serial.begin(1200, SERIAL_8N1);
     // Init teleinfo
@@ -66,6 +81,9 @@ void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *pa
 
     delay_index = period_data_index * 1000;
     delay_power = period_data_power * 1000;
+
+    // we use the power delay for generic data
+    delay_generic = delay_power;
 
     mqttClient.setServer(server, port);
 }
@@ -90,8 +108,18 @@ void ESPTeleInfo::loop(void)
     {
         sendPower = sendPowerData();
         sendIndex = sendIndexData();
+        sendGeneric = sendGenericData();
         
         iinst = teleinfo.getLongVal(IINST);
+        iinst1 = teleinfo.getLongVal(IINST1);
+        iinst2 = teleinfo.getLongVal(IINST2);
+        iinst3 = teleinfo.getLongVal(IINST3);
+
+        iinst = iinst == -1 ? 0 : iinst;
+        iinst1 = iinst1 == -1 ? 0 : iinst1;
+        iinst2 = iinst2 == -1 ? 0 : iinst2;
+        iinst3 = iinst3 == -1 ? 0 : iinst3;
+
         papp = teleinfo.getLongVal(PAPP);
 
         hc = teleinfo.getLongVal(HC);
@@ -101,31 +129,62 @@ void ESPTeleInfo::loop(void)
         if(base > 0){
             modeBase  = true;
         }
+        getPhaseMode();
 
         imax = teleinfo.getLongVal(IMAX);
         strncpy(ptec, teleinfo.getStringVal(PTEC), 20);
 
         if (connectMqtt())
         {
-            if (iinst != iinst_old && sendPower)
+            // send all data in the data topic
+            if(sendGenericData()){
+                for(uint8_t i= 0; i<teleinfo.dataCount; i++){
+                    if(strncmp(values_old[i], teleinfo.values[i], DATA_MAX_SIZE + 1) != 0){
+                        sprintf(strDataTopic, "teleinfokit/data/%s", teleinfo.labels[i]);
+                        mqttClient.publish(strDataTopic, teleinfo.values[i], true);
+                        snprintf(values_old[i], DATA_MAX_SIZE+1, "%s", teleinfo.values[i]);
+                    }
+                }
+                ts_generic = millis();
+            }
+
+            // send specific data - backwards compatibility
+            if (!modeTriphase && iinst != iinst_old && sendPower)
             {
                 mqttClient.publish("teleinfokit/iinst", teleinfo.getStringVal(IINST));
             }
+
+            if (modeTriphase && sendPower){
+                // mode triphasé only : intensités des 3 phases
+                if (iinst1 != iinst1_old)
+                {
+                    mqttClient.publish("teleinfokit/iinst1", teleinfo.getStringVal(IINST1));
+                }
+                if (iinst2 != iinst2_old)
+                {
+                    mqttClient.publish("teleinfokit/iinst2", teleinfo.getStringVal(IINST2));
+                }
+                if (iinst3 != iinst3_old)
+                {
+                    mqttClient.publish("teleinfokit/iinst3", teleinfo.getStringVal(IINST3));
+                }
+            }
+
             if (papp != papp_old && sendPower)
             {
                 mqttClient.publish("teleinfokit/papp", teleinfo.getStringVal(PAPP));
             }
             if (hc != hc_old && hc != 0 && sendIndex)
             {
-                mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC));
+                mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC), true);
             }
             if (hp != hp_old && hp != 0 && sendIndex)
             {
-                mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP));
+                mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP), true);
             }
             if (base != base_old && base != 0 && sendIndex)
             {
-                mqttClient.publish("teleinfokit/base", teleinfo.getStringVal(BASE));
+                mqttClient.publish("teleinfokit/base", teleinfo.getStringVal(BASE), true);
             }
             if (imax != imax_old)
             {
@@ -140,6 +199,9 @@ void ESPTeleInfo::loop(void)
         if(sendPower)
         {
             iinst_old = iinst;
+            iinst1_old = iinst1;
+            iinst2_old = iinst2;
+            iinst3_old = iinst3;
             papp_old = papp;
             ts_power = millis();
         }
@@ -154,7 +216,7 @@ void ESPTeleInfo::loop(void)
         imax_old = imax;
         strncpy(ptec_old, ptec, 20);
 
-        if (!staticInfoSsent)
+        if (!staticInfoSsent && connectMqtt())
         {
             if (teleinfo.getStringVal(ADCO)[0] != '\n')
             {
@@ -172,6 +234,14 @@ void ESPTeleInfo::loop(void)
 
         teleinfo.resetAvailable();
     }
+}
+
+void ESPTeleInfo::getPhaseMode(){
+    modeTriphase = !(
+        iinst > 0 && 
+        iinst1 <= 0 && 
+        iinst2 <= 0 && 
+        iinst3 <= 0);
 }
 
 bool ESPTeleInfo::LogStartup()
@@ -215,6 +285,11 @@ bool ESPTeleInfo::sendPowerData()
 bool ESPTeleInfo::sendIndexData()
 {
     return (delay_index <= 0 ) || (millis() - ts_index > (delay_index));
+}
+
+bool ESPTeleInfo::sendGenericData()
+{
+    return (delay_generic <= 0 ) || (millis() - ts_generic > (delay_generic));
 }
 
 // 30 char max !

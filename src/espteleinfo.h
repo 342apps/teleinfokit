@@ -1,10 +1,10 @@
 #ifndef ESPTELEINFO_H
 #define ESPTELEINFO_H
 
-#include <TeleInfo.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include "version.h"
+#include "TeleInfo342apps.h"
 
 class ESPTeleInfo
 {
@@ -17,6 +17,9 @@ public:
 
     // les données de consommation
     long iinst, iinst_old;
+    long iinst1, iinst1_old;
+    long iinst2, iinst2_old;
+    long iinst3, iinst3_old;
     long papp, papp_old;
     long hc, hc_old;
     long hp, hp_old;
@@ -27,7 +30,10 @@ public:
     char ptec[20];
     char ptec_old[20];
 
+    char values_old[LINE_MAX_COUNT][DATA_MAX_SIZE+1]; //+1 for '\0' ending
+
     bool modeBase;
+    bool modeTriphase;
 
     bool LogStartup();
     // 30 char max !
@@ -42,18 +48,29 @@ private:
 
     unsigned int delay_power;
     unsigned int delay_index;
+    unsigned int delay_generic;
     bool sendPower;
     bool sendIndex;
+    bool sendGeneric;
+
     // timestamp for the last power data send
     unsigned long ts_power;
     // timestamp for the last index data send
     unsigned long ts_index;
+    // timestamp for the last generic data send
+    unsigned long ts_generic;
 
     char CHIP_ID[7] = {0};
 
+    char strDataTopic[80];
+
     bool sendPowerData();
     bool sendIndexData();
+    bool sendGenericData();
     bool connectMqtt();
+
+    // detects the communication mode (mono or triphase)
+    void getPhaseMode();
 };
 
 #endif /* ESPTELEINFO_H */

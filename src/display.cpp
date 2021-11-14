@@ -32,14 +32,29 @@ void Display::log(String text, int16_t displayTime)
   delay(displayTime);
 }
 
+void Display::displayStartup(String version)
+{
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_CENTER);
+  oled.setFont(ArialMT_Plain_16);
+  oled.drawString(64, 0, "TeleInfoKit");
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(64, 20, version);
+  oled.display();
+  delay(800);
+}
+
 void Display::logPercent(String text, int percentage)
 {
   oled.displayOn();
   oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setTextAlignment(TEXT_ALIGN_CENTER);
+  oled.setFont(ArialMT_Plain_16);
+  oled.drawString(64, 0, "TeleInfoKit");
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, text);
-  oled.drawProgressBar(2, 18, 124, 6, percentage);
+  oled.drawString(64, 13, text);
+  oled.drawProgressBar(2, 27, 123, 4, percentage);
   oled.display();
 }
 
@@ -71,9 +86,21 @@ void Display::displayData1(long papp, long iinst)
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Puissance / Intensite");
+  oled.drawString(0, 0, "Puissance / Intensité");
   oled.drawString(0, 10, String(papp) + "VA");
   oled.drawString(0, 20, String(iinst) + "A");
+  oled.display();
+}
+
+void Display::displayData1Triphase(long papp, long iinst1, long iinst2, long iinst3)
+{
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Puissance/Intensités phases");
+  oled.drawString(0, 10, String(papp) + "VA");
+  oled.drawString(0, 20, String(iinst1) + " / " + String(iinst2) + " / " + String(iinst3) + " A");
   oled.display();
 }
 
@@ -133,7 +160,7 @@ void Display::displayReset()
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Reinitialisation ?");
+  oled.drawString(0, 0, "Réinitialisation ?");
   oled.drawString(0, 10, "Appui long pour reset...");
   oled.drawString(0, 20, VERSION);
   oled.display();

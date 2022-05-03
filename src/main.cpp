@@ -163,9 +163,9 @@ void readConfig()
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
 {
-  switch (btn.getClickType())
+  switch (btn.getType())
   {
-  case SINGLE_CLICK:
+  case single_click:
     
     // reset management at startup
     if(reset_possible){
@@ -180,15 +180,15 @@ void handlerBtn(Button2 &btn)
     offTs = millis();
     screensaver = false;
     break;
-  case DOUBLE_CLICK:
+  case double_click:
     mode = GRAPH;
     resetTs = 0;
     offTs = millis();
     screensaver = false;
     break;
-  case TRIPLE_CLICK:
+  case triple_click:
     break;
-  case LONG_CLICK:
+  case long_click:
     // reset state machine mgmt
     if (reset == RST_PAGE)
     {

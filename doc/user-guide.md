@@ -239,4 +239,4 @@ Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarra
 
 Le firmware expose une API pour exploiter les données fournies par le module TeleInfoKit. Cette API est accessible par HTTP directement via l'adresse IP du module.
 
-L'API est décrite entièrement au format OpenAPI V3 par le fichier [TeleInfoKit-openapi.v1.yaml](./TeleInfoKit-openapi.v1.yaml). Pour une lecture plus simple [l'éditeur de swagger.io](https://editor.swagger.io/) peut être utilisé.
+L'API est décrite entièrement au format OpenAPI V3 par le fichier [TeleInfoKit-openapi.v1.yaml](./TeleInfoKit-openapi.v1.yaml). Pour une lecture plus simple [l'éditeur de swagger.io](https://editor.swagger.io/?url=https://raw.githubusercontent.com/342apps/teleinfokit/main/doc/TeleInfoKit-openapi.v1.yaml) peut être utilisé.

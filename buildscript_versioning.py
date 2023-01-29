@@ -11,7 +11,7 @@ tm = datetime.datetime.today()
 FILENAME_BUILDNO = 'versioning'
 FILENAME_VERSION_H = 'include/version.h'
 compileTime =  datetime.datetime.now()
-version_root = 'v1.0.0.'
+version_root = 'v2.0.0.'
 beta = ''
 # beta = ''
 
@@ -72,19 +72,15 @@ with open(FILENAME_BUILDNO, 'w+') as f:
     f.write(str(globalhash))
     print('Build number: {}'.format(build_no))
     print('Build hash: {}'.format(globalhash))
-    print('Build time: {}'.format(compileTime))
     print('Version: {}'.format(version))
 
 hf = """//  DO NOT EDIT MANUALLY THIS FILE - IT IS DELETED AND RECREATED AT EACH BUILD !!!! 
 #ifndef BUILD_HASH
   #define BUILD_HASH "{}"
 #endif
-#ifndef BUILD_TIME
-  #define BUILD_TIME "{}"
-#endif
 #ifndef VERSION
   #define VERSION "{}"
 #endif
-""".format(globalhash, compileTime, version)
+""".format(globalhash, version)
 with open(FILENAME_VERSION_H, 'w+') as f:
     f.write(hf)

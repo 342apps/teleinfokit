@@ -100,7 +100,6 @@ void getSysInfo()
     #ifdef _HW_VER
     response += ",\"hw_version\": \"" + String(_HW_VER) + "\"";
     #endif
-    response += ",\"buildTime\": \"" + String(BUILD_TIME) + "\"";
     response += ",\"ip\": \"" + WiFi.localIP().toString() + "\"";
     response += ",\"gw\": \"" + WiFi.gatewayIP().toString() + "\"";
     response += ",\"nm\": \"" + WiFi.subnetMask().toString() + "\"";

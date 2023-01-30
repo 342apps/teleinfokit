@@ -10,6 +10,11 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
+// include MDNS
+#ifdef ESP8266
+#include <ESP8266mDNS.h>
+#endif
+
 #include "data.h"
 #include "espteleinfo.h"
 #include "display.h"
@@ -70,6 +75,8 @@ enum reset_states
 
 uint8_t reset = IDLE;
 
+
+
 // timestamp for reset request auto-cancellation
 unsigned long resetTs = 0;
 
@@ -101,6 +108,7 @@ char http_username[32];
 char http_password[32];
 char period_data_power[10];
 char period_data_index[10];
+char UNIQUE_ID [18];
 
 // flag for saving network configuration
 bool shouldSaveConfig = false;
@@ -225,6 +233,12 @@ void setup()
   d->init(data);
   web = new WebServer();
 
+
+  snprintf(UNIQUE_ID, 18, "teleinfokit-%06X", ESP.getChipId());
+
+  WiFi.mode(WIFI_STA);
+  wifiManager.setHostname(UNIQUE_ID);
+
   disconnectedEventHandler = WiFi.onStationModeDisconnected([](const WiFiEventStationModeDisconnected& event)
   {
     d->log("Perte connexion Wifi\n Reset...");
@@ -295,11 +309,18 @@ void setup()
   wifiManager.addParameter(&custom_period_data_power);
   wifiManager.addParameter(&custom_period_data_index);
 
+  std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
+  wifiManager.setMenu(menu);
+
+  // set dark theme
+  wifiManager.setClass("invert");
+
   d->logPercent("Connexion au réseau wifi..", 30);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //and goes into a blocking loop awaiting configuration
+  wifiManager.setConnectTimeout(45);
   if (!wifiManager.autoConnect(AP_NAME, AP_PWD))
   {
     d->log("Connexion impossible\n Reset...");
@@ -309,11 +330,11 @@ void setup()
     delay(1000);
   }
 
-  wifiManager.setConnectTimeout(45);
 
   d->logPercent("Connexion au réseau wifi...", 35);
 
-  WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
+  // WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
+  WiFi.hostname(UNIQUE_ID);
 
   d->logPercent("Connecté à " + String(WiFi.SSID()), 40);
 
@@ -357,7 +378,7 @@ void setup()
   }
 
   // ================ OTA ================
-  ArduinoOTA.setHostname("teleinfokit");
+  ArduinoOTA.setHostname(UNIQUE_ID);
   ArduinoOTA.setPassword("admin4tele9Info");
   d->logPercent("Démarrage OTA", 60);
 
@@ -430,6 +451,11 @@ void setup()
 
 void loop()
 {
+
+  #ifdef ESP8266
+  MDNS.update();
+  #endif
+
   ArduinoOTA.handle();
   button.loop();
   web->loop();

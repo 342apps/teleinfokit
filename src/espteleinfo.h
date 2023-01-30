@@ -1,14 +1,21 @@
 #ifndef ESPTELEINFO_H
 #define ESPTELEINFO_H
 
-#include <PubSubClient.h>
+#define LINE_MAX_COUNT 50
+#define DATA_MAX_SIZE 200
+
+
 #include <ESP8266WiFi.h>
+#include <LibTeleinfo.h>
+#include <PubSubClient.h>
 #include "version.h"
-#include "TeleInfo342apps.h"
 
 class ESPTeleInfo
 {
+
+
 public:
+
     ESPTeleInfo();
 
     void init();
@@ -35,9 +42,16 @@ public:
     bool modeBase;
     bool modeTriphase;
 
+    _Mode_e tic_mode = TINFO_MODE_STANDARD;
+    TInfo tic;
+   
+
+
     bool LogStartup();
     // 30 char max !
     void Log(String s);
+
+
 
 private:
     long previousMillis;

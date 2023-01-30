@@ -10,7 +10,7 @@ void Data::init()
 {
     hourTimestamp = 0;
     previousHour = -1;
-    max = 1; // not 0 beause used to divide
+    max = 1; // not 0 because used to divide
     newHour = true;
     firstIndex_hp = 0;
     firstIndex_hc = 0;

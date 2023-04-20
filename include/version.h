@@ -1,10 +1,10 @@
 //  DO NOT EDIT MANUALLY THIS FILE - IT IS DELETED AND RECREATED AT EACH BUILD !!!! 
 #ifndef BUILD_HASH
-  #define BUILD_HASH "7b1a63"
+  #define BUILD_HASH "2f15a5"
 #endif
 #ifndef BUILD_TIME
-  #define BUILD_TIME "2022-04-18 21:06:30.728238"
+  #define BUILD_TIME "2023-04-12 22:51:14.235919"
 #endif
 #ifndef VERSION
-  #define VERSION "v1.0.0.7b1a63"
+  #define VERSION "v1.0.0.2f15a5"
 #endif

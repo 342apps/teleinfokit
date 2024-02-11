@@ -25,7 +25,7 @@
 #endif
 
 // #include "data.h"
-// #include "espteleinfo.h"
+#include "espteleinfo.h"
 #include "display.h"
 // #include "webserver.h"
 // #include <version.h>
@@ -104,7 +104,7 @@ bool reset_pending = false;
 
 Data *data;
 Display *d;
-// ESPTeleInfo ti = ESPTeleInfo();
+ESPTeleInfo ti = ESPTeleInfo();
 // WebServer *web;
 Button2 button = Button2(PIN_BUTTON);
 
@@ -297,7 +297,13 @@ void saveParamCallback(){
       delay(500);
     }
 
-    //ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
+    uint16_t port = 1883;
+    if (config.mqtt_port[0] != '\0')
+    {
+      port = atoi(config.mqtt_port);
+      delay(1000);
+    }
+    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
     configFile.close();
     // d->log(String(configFile.size()),1000);
     //end save
@@ -397,7 +403,7 @@ void setup()
   data = new Data();
   d = new Display();
   data->init();
-  // ti.init();
+  ti.init();
   d->init(data);
   // web = new WebServer();
 
@@ -583,14 +589,14 @@ void setup()
 
 
 
-  // uint16_t port = 1883;
-  // if (config.mqtt_port[0] != '\0')
-  // {
-  //   port = atoi(config.mqtt_port);
-  //   delay(1000);
-  // }
+  uint16_t port = 1883;
+  if (config.mqtt_port[0] != '\0')
+  {
+    port = atoi(config.mqtt_port);
+    delay(1000);
+  }
 
-  // ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
+  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
 
   
@@ -655,20 +661,20 @@ void setup()
 
   // web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.period_data_power), atoi(config.period_data_index));
 
-  // d->logPercent("Connexion MQTT", 90);
-  // if (!ti.LogStartup())
-  // {
-  //   d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
-  // }
-
-  d->logPercent("Obtention de l'heure", 80);
+  d->logPercent("Obtention de l'heure", 70);
   d->getTime();
+
+  d->logPercent("Connexion MQTT", 80);
+  if (!ti.LogStartup())
+  {
+    d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
+  }
 
     wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);
 
   offTs = millis();
-  // ti.loop();
+  ti.loop();
 }
 
 void loop()
@@ -779,7 +785,7 @@ void loop()
     refreshTime = millis();
   }
 
-  // ti.loop();
+  ti.loop();
   // timeClient.update();
 
     // update time every 5 minutes

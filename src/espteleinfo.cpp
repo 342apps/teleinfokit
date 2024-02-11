@@ -40,14 +40,16 @@ ESPTeleInfo::ESPTeleInfo()
 static void DataCallback(ValueList * me, uint8_t  flags)
 {
 
-  if (flags & TINFO_FLAGS_ADDED) {
-    getESPTeleInfo()->Log("New " + String(me->name) + " - " + String(me->value));
-  }
+//   if (flags & TINFO_FLAGS_ADDED) {
+//     getESPTeleInfo()->Log("New " + String(me->name) + " - " + String(me->value));
+//   }
 
-  if (flags & TINFO_FLAGS_UPDATED){
-    getESPTeleInfo()->Log("Maj " + String(me->name) + " - " + String(me->value));
-  }
+//   if (flags & TINFO_FLAGS_UPDATED){
+//     getESPTeleInfo()->Log("Maj " + String(me->name) + " - " + String(me->value));
+//   }
 
+    getESPTeleInfo()->SendData(me->name, me->value);
+  
   // Display values
 
 //   Serial.print(me->name);
@@ -91,7 +93,8 @@ void ESPTeleInfo::init()
         values_old[i][0] = '\0';
     }
 
-    sprintf(CHIP_ID, "%06X", ESP.getChipId());
+    //sprintf(CHIP_ID, "%06X", ESP.getChipId());
+    snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
 
     Serial.flush();
     Serial.end();
@@ -120,11 +123,26 @@ bool ESPTeleInfo::connectMqtt()
 {
     if (mqtt_user[0] == '\0')
     {
-        return mqttClient.connect(CHIP_ID);
+        return mqttClient.connect(UNIQUE_ID);
     }
     else
     {
-        return mqttClient.connect(CHIP_ID, mqtt_user, mqtt_pwd);
+        return mqttClient.connect(UNIQUE_ID, mqtt_user, mqtt_pwd);
+    }
+}
+
+void ESPTeleInfo::SendData(char *label, char *value)
+{
+    if (sendGenericData())
+    {
+        // send all data in the data topic
+        if (connectMqtt())
+        {
+            sprintf(strDataTopic, "teleinfokit_dev/data/%s", label);
+            mqttClient.publish(strDataTopic, value, true);
+
+            ts_generic = millis();
+        }
     }
 }
 
@@ -135,8 +153,8 @@ void ESPTeleInfo::loop(void)
 
         //teleinfo.getList().)
   
-        sendPower = sendPowerData();
-        sendIndex = sendIndexData();
+        // sendPower = sendPowerData();
+        // sendIndex = sendIndexData();
         sendGeneric = sendGenericData();
         
         // iinst = teleinfo.getLongVal(IINST);
@@ -169,7 +187,7 @@ void ESPTeleInfo::loop(void)
         //     if(sendGenericData()){
         //         for(uint8_t i= 0; i<teleinfo.dataCount; i++){
         //             if(strncmp(values_old[i], teleinfo.values[i], DATA_MAX_SIZE + 1) != 0){
-        //                 sprintf(strDataTopic, "teleinfokit/data/%s", teleinfo.labels[i]);
+        //                 sprintf(strDataTopic, "teleinfokit_dev/data/%s", teleinfo.labels[i]);
         //                 mqttClient.publish(strDataTopic, teleinfo.values[i], true);
         //                 snprintf(values_old[i], DATA_MAX_SIZE+1, "%s", teleinfo.values[i]);
         //             }
@@ -180,48 +198,48 @@ void ESPTeleInfo::loop(void)
         //     // send specific data - backwards compatibility
         //     if (!modeTriphase && iinst != iinst_old && sendPower)
         //     {
-        //         mqttClient.publish("teleinfokit/iinst", teleinfo.getStringVal(IINST));
+        //         mqttClient.publish("teleinfokit_dev/iinst", teleinfo.getStringVal(IINST));
         //     }
 
         //     if (modeTriphase && sendPower){
         //         // mode triphasé only : intensités des 3 phases
         //         if (iinst1 != iinst1_old)
         //         {
-        //             mqttClient.publish("teleinfokit/iinst1", teleinfo.getStringVal(IINST1));
+        //             mqttClient.publish("teleinfokit_dev/iinst1", teleinfo.getStringVal(IINST1));
         //         }
         //         if (iinst2 != iinst2_old)
         //         {
-        //             mqttClient.publish("teleinfokit/iinst2", teleinfo.getStringVal(IINST2));
+        //             mqttClient.publish("teleinfokit_dev/iinst2", teleinfo.getStringVal(IINST2));
         //         }
         //         if (iinst3 != iinst3_old)
         //         {
-        //             mqttClient.publish("teleinfokit/iinst3", teleinfo.getStringVal(IINST3));
+        //             mqttClient.publish("teleinfokit_dev/iinst3", teleinfo.getStringVal(IINST3));
         //         }
         //     }
 
         //     if (papp != papp_old && sendPower)
         //     {
-        //         mqttClient.publish("teleinfokit/papp", teleinfo.getStringVal(PAPP));
+        //         mqttClient.publish("teleinfokit_dev/papp", teleinfo.getStringVal(PAPP));
         //     }
         //     if (hc != hc_old && hc != 0 && sendIndex)
         //     {
-        //         mqttClient.publish("teleinfokit/hc", teleinfo.getStringVal(HC), true);
+        //         mqttClient.publish("teleinfokit_dev/hc", teleinfo.getStringVal(HC), true);
         //     }
         //     if (hp != hp_old && hp != 0 && sendIndex)
         //     {
-        //         mqttClient.publish("teleinfokit/hp", teleinfo.getStringVal(HP), true);
+        //         mqttClient.publish("teleinfokit_dev/hp", teleinfo.getStringVal(HP), true);
         //     }
         //     if (base != base_old && base != 0 && sendIndex)
         //     {
-        //         mqttClient.publish("teleinfokit/base", teleinfo.getStringVal(BASE), true);
+        //         mqttClient.publish("teleinfokit_dev/base", teleinfo.getStringVal(BASE), true);
         //     }
         //     if (imax != imax_old)
         //     {
-        //         mqttClient.publish("teleinfokit/imax", teleinfo.getStringVal(IMAX));
+        //         mqttClient.publish("teleinfokit_dev/imax", teleinfo.getStringVal(IMAX));
         //     }
         //     if (strcmp(ptec, ptec_old) != 0)
         //     {
-        //         mqttClient.publish("teleinfokit/ptec", teleinfo.getStringVal(PTEC));
+        //         mqttClient.publish("teleinfokit_dev/ptec", teleinfo.getStringVal(PTEC));
         //     }
         // }
 
@@ -250,12 +268,12 @@ void ESPTeleInfo::loop(void)
         //     if (teleinfo.getStringVal(ADCO)[0] != '\n')
         //     {
         //         strncpy(adc0, teleinfo.getStringVal(ADCO), 20);
-        //         mqttClient.publish("teleinfokit/adc0", teleinfo.getStringVal(ADCO), true);
+        //         mqttClient.publish("teleinfokit_dev/adc0", teleinfo.getStringVal(ADCO), true);
         //     }
         //     if (teleinfo.getStringVal(ISOUSC)[0] != '\n')
         //     {
         //         isousc = teleinfo.getLongVal(ISOUSC);
-        //         mqttClient.publish("teleinfokit/isousc", teleinfo.getStringVal(ISOUSC), true);
+        //         mqttClient.publish("teleinfokit_dev/isousc", teleinfo.getStringVal(ISOUSC), true);
         //     }
 
         //     staticInfoSsent = true;
@@ -265,13 +283,13 @@ void ESPTeleInfo::loop(void)
     }
 }
 
-void ESPTeleInfo::getPhaseMode(){
-    modeTriphase = !(
-        iinst > 0 && 
-        iinst1 <= 0 && 
-        iinst2 <= 0 && 
-        iinst3 <= 0);
-}
+// void ESPTeleInfo::getPhaseMode(){
+//     modeTriphase = !(
+//         iinst > 0 && 
+//         iinst1 <= 0 && 
+//         iinst2 <= 0 && 
+//         iinst3 <= 0);
+// }
 
 bool ESPTeleInfo::LogStartup()
 {
@@ -284,20 +302,20 @@ bool ESPTeleInfo::LogStartup()
     if (nbTry < NBTRY)
     {
         char str[80];
-        mqttClient.publish("teleinfokit/log", "Startup");
+        mqttClient.publish("teleinfokit_dev/log", "Startup");
         strcpy (str,"Version: ");
         strcat (str, VERSION);
-        mqttClient.publish("teleinfokit/log", str);
+        mqttClient.publish("teleinfokit_dev/log", str);
     #ifdef _HW_VER
         sprintf(str, "HW Version: %d", _HW_VER);
-        mqttClient.publish("teleinfokit/log", str);
+        mqttClient.publish("teleinfokit_dev/log", str);
     #endif
         strcpy (str,"IP: ");
         strcat (str, WiFi.localIP().toString().c_str());
-        mqttClient.publish("teleinfokit/log", str);
+        mqttClient.publish("teleinfokit_dev/log", str);
         strcpy (str,"MAC: ");
         strcat (str, WiFi.macAddress().c_str());
-        mqttClient.publish("teleinfokit/log", str);
+        mqttClient.publish("teleinfokit_dev/log", str);
         return true;
     }
     else
@@ -306,15 +324,15 @@ bool ESPTeleInfo::LogStartup()
     }
 }
 
-bool ESPTeleInfo::sendPowerData()
-{
-    return (delay_power <= 0 ) || (millis() - ts_power > (delay_power));
-}
+// bool ESPTeleInfo::sendPowerData()
+// {
+//     return (delay_power <= 0 ) || (millis() - ts_power > (delay_power));
+// }
 
-bool ESPTeleInfo::sendIndexData()
-{
-    return (delay_index <= 0 ) || (millis() - ts_index > (delay_index));
-}
+// bool ESPTeleInfo::sendIndexData()
+// {
+//     return (delay_index <= 0 ) || (millis() - ts_index > (delay_index));
+// }
 
 bool ESPTeleInfo::sendGenericData()
 {
@@ -333,6 +351,6 @@ void ESPTeleInfo::Log(String s)
     if (nbTry < NBTRY)
     {
         s.toCharArray(buffer, 30);
-        mqttClient.publish("teleinfokit/log", buffer);
+        mqttClient.publish("teleinfokit_dev/log", buffer);
     }
 }

@@ -36,6 +36,7 @@ public:
     char adc0[20];
     char ptec[20];
     char ptec_old[20];
+    char strDataTopic[50];
 
     char values_old[LINE_MAX_COUNT][DATA_MAX_SIZE+1]; //+1 for '\0' ending
 
@@ -50,6 +51,7 @@ public:
     bool LogStartup();
     // 30 char max !
     void Log(String s);
+    void SendData(char* label, char* value);
 
 
 
@@ -75,16 +77,15 @@ private:
     unsigned long ts_generic;
 
     char CHIP_ID[7] = {0};
-
-    char strDataTopic[80];
+    char UNIQUE_ID [30];
 
     bool sendPowerData();
     bool sendIndexData();
     bool sendGenericData();
-    bool connectMqtt();
 
     // detects the communication mode (mono or triphase)
     void getPhaseMode();
+    bool connectMqtt();
 };
 
 #endif /* ESPTELEINFO_H */

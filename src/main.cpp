@@ -69,6 +69,7 @@ enum modes
   DATA2,
   DATA3,
   NETWORK,
+  TIME,
   RESET,
   OFF
 };
@@ -344,7 +345,7 @@ void handlerBtn(Button2 &btn)
 
     if (screensaver == false)
     {
-      mode = (mode + 1) % 7; // cycle through 7 screens
+      mode = (mode + 1) % 8; // cycle through 8 screens
     }
     resetTs = 0;
     offTs = millis();
@@ -660,8 +661,11 @@ void setup()
   //   d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
   // }
 
+  d->logPercent("Obtention de l'heure", 80);
+  d->getTime();
+
     wm.startWebPortal();
-  d->logPercent("Démarrage terminé", 300);
+  d->logPercent("Démarrage terminé", 100);
 
   offTs = millis();
   // ti.loop();
@@ -746,6 +750,10 @@ void loop()
         reset = IDLE;
         d->displayNetwork();
         break;
+      case TIME:
+        reset = IDLE;
+        d->displayTime();
+        break;
       case RESET:
         if (reset != RST_REQ && reset != RST_ACK)
         {
@@ -773,10 +781,10 @@ void loop()
   // ti.loop();
   // timeClient.update();
 
-    // every 10 seconds
-  if(millis()-mtime > 30000 ){
+    // update time every 5 minutes
+  if(millis()-mtime > 5 * 60 * 1000 ){
     if(WiFi.status() == WL_CONNECTED){
-      getTime();
+      d->getTime();
     }
     mtime = millis();
   }

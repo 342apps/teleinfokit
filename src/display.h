@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <Wire.h>
+#include <TZ.h>
 #include "SSD1306Wire.h"
 #include "data.h"
 #include "version.h"
@@ -16,6 +17,9 @@ class Display
 {
 public:
     Display();
+    time_t now;
+
+   char buffer[80];
 
     void init(Data *d);
     void loop(void);
@@ -28,9 +32,11 @@ public:
     void displayData2Base(long base);
     void displayData3(char *adc0, long isousc, char *ptec);
     void displayNetwork();
+    void displayTime();
     void displayReset();
     void displayOff();
     void displayStartup(String version);
+    void getTime();
 
 private:
     Data *data;

@@ -154,6 +154,20 @@ void Display::displayNetwork()
   oled.display();
 }
 
+void Display::displayTime()
+{
+  struct tm timeinfo;
+   localtime_r(&now, &timeinfo); // update the structure tm with the current time
+   strftime (buffer,80,"%a %d %b %Y %H:%M:%S ", &timeinfo);
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Date / heure ");
+  oled.drawString(0, 10, buffer);
+  oled.display();
+}
+
 void Display::displayReset()
 {
   oled.displayOn();
@@ -170,4 +184,27 @@ void Display::displayOff()
 {
   oled.clear();
   oled.displayOff();
+}
+
+
+void Display::getTime()
+{
+  now = time(nullptr);
+  unsigned timeout = 5000; // try for timeout
+  unsigned start = millis();
+
+  configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
+  while (now < 8 * 3600 * 2)
+  { // what is this ?
+    delay(100);
+    // Serial.print(".");
+    now = time(nullptr);
+    if ((millis() - start) > timeout)
+    {
+      oled.drawString(0, 0,"[ERROR] Failed to get NTP time.");
+      return;
+    }
+  }
+
+
 }

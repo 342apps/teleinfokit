@@ -1,5 +1,6 @@
 #include <WiFiManager.h>
 #include <time.h>
+#include <TZ.h>
 #include <stdio.h>
 
 #define USEOTA
@@ -43,6 +44,7 @@
 // The structure that stores configuration
 typedef struct
 {
+  bool mode_tic_standard;
   char mqtt_server[40];
   char mqtt_port[6];
   char mqtt_server_username[32];
@@ -105,29 +107,37 @@ Display *d;
 // WebServer *web;
 Button2 button = Button2(PIN_BUTTON);
 
+time_t now;
 
-void getTime() {
-  int tz           = +1;
-  int dst          = 0;
-  time_t now       = time(nullptr);
+void getTime()
+{
+  now = time(nullptr);
   unsigned timeout = 5000; // try for timeout
-  unsigned start   = millis();
-  configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
+  unsigned start = millis();
+
+  configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
   d->log("Waiting for NTP time sync: ");
-  while (now < 8 * 3600 * 2 ) { // what is this ?
+  while (now < 8 * 3600 * 2)
+  { // what is this ?
     delay(100);
     // Serial.print(".");
     now = time(nullptr);
-    if((millis() - start) > timeout){
+    if ((millis() - start) > timeout)
+    {
       d->log("[ERROR] Failed to get NTP time.");
       return;
     }
   }
-  
+
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
-  d->log("Current time: ");
-  d->log(asctime(&timeinfo));
+  // gmtime_r(&now, &timeinfo);
+
+   char buffer[80];
+   //time(&now);    // read the current time
+   localtime_r(&now, &timeinfo); // update the structure tm with the current time
+   strftime (buffer,80,"%a %d %b %Y %H:%M:%S ", &timeinfo);
+  d->log(buffer, 1000);
+
 }
 
 // #REGION WifiManager ==================================
@@ -137,11 +147,35 @@ bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
-// Network connection has been done through captive portal of hotspot
+// network configuration variables
+char mode_tic_std_char[1];
+char mqtt_server[40];
+char mqtt_port[6];
+char mqtt_server_username[32];
+char mqtt_server_password[32];
+char http_username[32];
+char http_password[32];
+char period_data_power[10];
+char period_data_index[10];
+char UNIQUE_ID [30];
+
+char _customHtml_checkbox[] = "type=\"checkbox\""; 
+//const char _customHtml_checkbox_checked[] = "type=\"checkbox\" checked"; 
+WiFiManagerParameter *custom_checkbox;
+WiFiManagerParameter *custom_html;
+WiFiManagerParameter *custom_mqtt_server;
+WiFiManagerParameter *custom_mqtt_port;
+WiFiManagerParameter *custom_mqtt_username;
+WiFiManagerParameter *custom_mqtt_password;
+WiFiManagerParameter *custom_http_username;
+WiFiManagerParameter *custom_http_password;
+WiFiManagerParameter *custom_period_data_power;
+WiFiManagerParameter *custom_period_data_index;
+
+// Network connection has been done through captive portal of hotspot or through config webportal
 void saveConfigCallback()
 {
-  d->log("Configuration sauvée", 500);
-  shouldSaveConfig = true;
+    d->log("Configuration WiFi sauvée", 500);
 }
 
 //gets called when WiFiManager enters configuration mode
@@ -150,9 +184,123 @@ void configModeCallback(WiFiManager *myWiFiManager)
   d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\n" + WiFi.softAPIP().toString());
 }
 
+// Retreives configuration from filesystem
+void readConfig()
+{
+
+  if (LittleFS.begin())
+  {
+    if (LittleFS.exists(CONFIG_FILE))
+    {
+      //file exists, reading and loading
+      d->logPercent("Lecture configuration", 10);
+
+      File configFile = LittleFS.open(CONFIG_FILE, "r");
+      if (configFile)
+      {
+        configFile.read((byte *)&config, sizeof(config));
+
+        if(config.mode_tic_standard)
+        {
+          // d->log("Mode TIC STD", 500);
+          strcat(_customHtml_checkbox, " checked");
+          // d->log(_customHtml_checkbox, 500);
+        }
+        else {
+          strcpy(_customHtml_checkbox, "type=\"checkbox\""); 
+        }
+        // strcpy(mode_tic_std_char, config.mode_tic_standard ? "T" : "F");
+        strcpy(mqtt_server, config.mqtt_server);
+        strcpy(mqtt_port, config.mqtt_port);
+        strcpy(mqtt_server_username, config.mqtt_server_username);
+        strcpy(mqtt_server_password, config.mqtt_server_password);
+        strcpy(http_username, config.http_username);
+        strcpy(http_password, config.http_password);
+        strcpy(period_data_index, config.period_data_index);
+        strcpy(period_data_power, config.period_data_power);
+        configFile.close();
+
+        d->logPercent("Configuration chargée", 15);
+      }
+      else
+      {
+        {
+          d->log("Aucun fichier de configuration");
+        }
+      }
+    }
+  }
+  else
+  {
+    d->log("Erreur montage filesystem");
+  }
+}
+
 void saveParamCallback(){
-  d->log("[CALLBACK] saveParamCallback fired", 500);
   // wm.stopConfigPortal();
+  d->logPercent("Sauvegarde configuration", 5);
+  shouldSaveConfig = true;
+
+  strcpy(mode_tic_std_char, custom_checkbox->getValue());
+  strcpy(mqtt_server, custom_mqtt_server->getValue());
+  strcpy(mqtt_port, custom_mqtt_port->getValue());
+  strcpy(mqtt_server_username, custom_mqtt_username->getValue());
+  strcpy(mqtt_server_password, custom_mqtt_password->getValue());
+  strcpy(http_username, custom_http_username->getValue());
+  strcpy(http_password, custom_http_password->getValue());
+  strcpy(period_data_index, custom_period_data_index->getValue());
+  strcpy(period_data_power, custom_period_data_power->getValue());
+
+  //save the custom parameters to FS
+  // if (shouldSaveConfig)
+  // {
+
+    File configFile = LittleFS.open(CONFIG_FILE, "w");
+    if (!configFile)
+    {
+      d->log("Erreur écriture config");
+    }
+    else
+    {
+      // d->log(String(sizeof(config)),1000);
+      config.mode_tic_standard = strcmp(custom_checkbox->getValue(), "T") == 0 ? true : false;
+      strcpy(config.mqtt_server, custom_mqtt_server->getValue());
+      strcpy(config.mqtt_port, custom_mqtt_port->getValue());
+      strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
+      strcpy(config.mqtt_server_password, custom_mqtt_password->getValue());
+      strcpy(config.http_username, custom_http_username->getValue());
+      strcpy(config.http_password, custom_http_password->getValue());
+      strcpy(config.period_data_index, custom_period_data_index->getValue());
+      strcpy(config.period_data_power, custom_period_data_power->getValue());
+      configFile.write((byte *)&config, sizeof(config));
+
+
+        if(config.mode_tic_standard)
+        {
+          // d->log("Mode TIC STD", 500);
+          strcat(_customHtml_checkbox, " checked");
+          // d->log(_customHtml_checkbox, 500);
+        }
+        else {
+          strcpy(_customHtml_checkbox, "type=\"checkbox\""); 
+        }
+    custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
+    
+
+      for(uint8_t i = 10; i <= 100; i++){
+        d->logPercent("Sauvegarde configuration", i);
+        delay(7);
+      }
+
+      d->logPercent("Configuration sauvée", 100);
+      delay(500);
+    }
+
+    //ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
+    configFile.close();
+    // d->log(String(configFile.size()),1000);
+    //end save
+  //}
 }
 
 void handleRoute(){
@@ -180,58 +328,7 @@ void handlePreOtaUpdateCallback(){
 // WiFiUDP ntpUDP;
 // NTPClient timeClient(ntpUDP);
 
-// network configuration variables
-char mqtt_server[40];
-char mqtt_port[6] = "1883";
-char mqtt_server_username[32];
-char mqtt_server_password[32];
-char http_username[32];
-char http_password[32];
-char period_data_power[10];
-char period_data_index[10];
-char UNIQUE_ID [18];
 
-// // Retreives configuration from filesystem
-// void readConfig()
-// {
-
-//   if (LittleFS.begin())
-//   {
-//     if (LittleFS.exists(CONFIG_FILE))
-//     {
-//       //file exists, reading and loading
-//       d->logPercent("Lecture configuration", 10);
-
-//       File configFile = LittleFS.open(CONFIG_FILE, "r");
-//       if (configFile)
-//       {
-//         configFile.read((byte *)&config, sizeof(config));
-
-//         strcpy(mqtt_server, config.mqtt_server);
-//         strcpy(mqtt_port, config.mqtt_port);
-//         strcpy(mqtt_server_username, config.mqtt_server_username);
-//         strcpy(mqtt_server_password, config.mqtt_server_password);
-//         strcpy(http_username, config.http_username);
-//         strcpy(http_password, config.http_password);
-//         strcpy(period_data_index, config.period_data_index);
-//         strcpy(period_data_power, config.period_data_power);
-//         configFile.close();
-
-//         d->logPercent("Configuration chargée", 15);
-//       }
-//       else
-//       {
-//         {
-//           d->log("Aucun fichier de configuration");
-//         }
-//       }
-//     }
-//   }
-//   else
-//   {
-//     d->log("Erreur montage filesystem");
-//   }
-// }
 
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
@@ -287,6 +384,8 @@ void handlerBtn(Button2 &btn)
       delay(200);
     }
     break;
+    case empty:
+    break;
   }
 }
 
@@ -301,7 +400,7 @@ void setup()
   d->init(data);
   // web = new WebServer();
 
-  snprintf(UNIQUE_ID, 18, "teleinfokit-%06X", ESP.getChipId());
+  snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
 
   d->displayStartup(String(VERSION));
   d->logPercent("Démarrage", 5);
@@ -324,40 +423,48 @@ void setup()
     }
   }
 
-// #REGION WifiManager ==================================
-  WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
-  WiFiManagerParameter custom_mqtt_server("server", "Serveur MQTT", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "Port MQTT", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "MQTT login", mqtt_server_username, 32);
-  WiFiManagerParameter custom_mqtt_password("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
-  WiFiManagerParameter custom_http_username("http_username", "HTTP login", http_username, 32);
-  WiFiManagerParameter custom_http_password("http_password", "HTTP mot de passe", http_password, 32, "type=\"password\"");
-  WiFiManagerParameter custom_period_data_power("period_data_power", "Fréquence envoi puissance (secondes)", period_data_power, 10);
-  WiFiManagerParameter custom_period_data_index("period_data_index", "Fréquence envoi index (secondes)", period_data_index, 10);
+  readConfig();
 
-  const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+// #REGION WifiManager ==================================
+
 
   wm.setAPCallback(configModeCallback);
   wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveConfigCallback);
   wm.setSaveParamsCallback(saveParamCallback);
   wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
+
+  // const char* custom_radio_str = "<br/><label for='radio_mode_tic'>Mode TIC</label><input type='radio' name='radio_mode_tic' value='1' checked> One<br><input type='radio' name='radio_mode_tic' value='2'> Two<br><input type='radio' name='radio_mode_tic' value='3'> Three";
+  // new (&custom_field) WiFiManagerParameter(custom_radio_str); // custom html input
   
-  wm.addParameter(&custom_html);
-  wm.addParameter(&custom_checkbox);
-  wm.addParameter(&custom_mqtt_server);
-  wm.addParameter(&custom_mqtt_port);
-  wm.addParameter(&custom_mqtt_username);
-  wm.addParameter(&custom_mqtt_password);
-  wm.addParameter(&custom_http_username);
-  wm.addParameter(&custom_http_password);
-  wm.addParameter(&custom_period_data_power);
-  wm.addParameter(&custom_period_data_index);
 
-  //custom_mqtt_port.setValue("test",4);  // a creuser pour les valeurs par defaut
+ custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
+ custom_html = new WiFiManagerParameter("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
+ custom_mqtt_server = new WiFiManagerParameter("server", "<br />Serveur MQTT", mqtt_server, 40);
+ custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
+ custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login", mqtt_server_username, 32);
+ custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
+ custom_http_username = new WiFiManagerParameter("http_username", "HTTP login", http_username, 32);
+ custom_http_password = new WiFiManagerParameter("http_password", "HTTP mot de passe", http_password, 32, "type=\"password\"");
+ custom_period_data_power = new WiFiManagerParameter("period_data_power", "Délai envoi puissance (secondes)", period_data_power, 10);
+ custom_period_data_index = new WiFiManagerParameter("period_data_index", "Délai envoi index (secondes)", period_data_index, 10);
+  
+  wm.addParameter(custom_html);
+  wm.addParameter(custom_checkbox);
+  wm.addParameter(custom_mqtt_server);
+  wm.addParameter(custom_mqtt_port);
+  wm.addParameter(custom_mqtt_username);
+  wm.addParameter(custom_mqtt_password);
+  wm.addParameter(custom_http_username);
+  wm.addParameter(custom_http_password);
+  wm.addParameter(custom_period_data_power);
+  wm.addParameter(custom_period_data_index);
 
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","custom","close","sep","erase","update","restart","exit"};
+  if(strcmp(config.mqtt_port, "") == 0){
+    custom_mqtt_port->setValue("1883",4);
+  }
+
+  //std::vector<const char *> menu = {"wifi","wifinoscan","info","param","custom","close","sep","erase","update","restart","exit"};
   //wm.setMenu(menu); // custom menu, pass vector
   wm.setParamsPage(true);
   // set Hostname
@@ -474,7 +581,6 @@ void setup()
 
 
 
-  //readConfig();
 
   // uint16_t port = 1883;
   // if (config.mqtt_port[0] != '\0')
@@ -668,11 +774,10 @@ void loop()
   // timeClient.update();
 
     // every 10 seconds
-  if(millis()-mtime > 10000 ){
+  if(millis()-mtime > 30000 ){
     if(WiFi.status() == WL_CONNECTED){
       getTime();
     }
-    else Serial.println("No Wifi");  
     mtime = millis();
   }
 }

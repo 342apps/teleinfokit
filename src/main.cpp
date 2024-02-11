@@ -699,7 +699,7 @@ void loop()
     d->displayOff();
   }
 
-  if (millis() - refreshTime > REFRESH_DELAY)
+  if ((millis() - refreshTime > REFRESH_DELAY) || (mode == TIME && millis() - refreshTime > 1000))
   {
     // if(ti.modeBase)
     // {
@@ -752,6 +752,7 @@ void loop()
         break;
       case TIME:
         reset = IDLE;
+        d->getTime();
         d->displayTime();
         break;
       case RESET:

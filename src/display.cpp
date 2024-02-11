@@ -157,8 +157,8 @@ void Display::displayNetwork()
 void Display::displayTime()
 {
   struct tm timeinfo;
-   localtime_r(&now, &timeinfo); // update the structure tm with the current time
-   strftime (buffer,80,"%a %d %b %Y %H:%M:%S ", &timeinfo);
+  localtime_r(&now, &timeinfo); // update the structure tm with the current time
+  strftime (buffer,80,"%a %d %b %Y %H:%M:%S ", &timeinfo);
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);

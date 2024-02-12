@@ -18,7 +18,7 @@ public:
 
     ESPTeleInfo();
 
-    void init();
+    void init(_Mode_e tic_mode);
     void initMqtt(char *server, uint16_t port, char *username, char *password, int period_data_power, int period_data_index);
     void loop(void);
 
@@ -43,7 +43,7 @@ public:
     bool modeBase;
     bool modeTriphase;
 
-    _Mode_e tic_mode = TINFO_MODE_STANDARD;
+    // _Mode_e tic_mode = TINFO_MODE_STANDARD;
     TInfo tic;
    
 

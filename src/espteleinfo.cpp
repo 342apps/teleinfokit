@@ -57,7 +57,7 @@ static void DataCallback(ValueList * me, uint8_t  flags)
 //   Serial.println(me->value);
 }
 
-void ESPTeleInfo::init()
+void ESPTeleInfo::init(_Mode_e tic_mode)
 {
     instanceEsp = this;
 

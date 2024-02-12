@@ -264,7 +264,11 @@ void saveParamCallback(){
     else
     {
       // d->log(String(sizeof(config)),1000);
-      config.mode_tic_standard = strcmp(custom_checkbox->getValue(), "T") == 0 ? true : false;
+      bool std = strcmp(custom_checkbox->getValue(), "T") == 0;
+      if(std != config.mode_tic_standard){
+        ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+      }
+      config.mode_tic_standard = std;
       strcpy(config.mqtt_server, custom_mqtt_server->getValue());
       strcpy(config.mqtt_port, custom_mqtt_port->getValue());
       strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
@@ -403,7 +407,6 @@ void setup()
   data = new Data();
   d = new Display();
   data->init();
-  ti.init();
   d->init(data);
   // web = new WebServer();
 
@@ -431,6 +434,7 @@ void setup()
   }
 
   readConfig();
+  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
 
 // #REGION WifiManager ==================================
 
@@ -445,8 +449,8 @@ void setup()
   // new (&custom_field) WiFiManagerParameter(custom_radio_str); // custom html input
   
 
+ custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
  custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
- custom_html = new WiFiManagerParameter("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
  custom_mqtt_server = new WiFiManagerParameter("server", "<br />Serveur MQTT", mqtt_server, 40);
  custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login", mqtt_server_username, 32);

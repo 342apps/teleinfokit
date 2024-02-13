@@ -58,7 +58,7 @@ void Display::logPercent(String text, int percentage)
   oled.display();
 }
 
-void Display::drawGraph(long papp)
+void Display::drawGraph(long papp, char mode)
 {
   oled.displayOn();
   oled.clear();
@@ -76,7 +76,9 @@ void Display::drawGraph(long papp)
   oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.drawString(0, 0, "Historique 24h");
+  oled.drawRect(0, 1, 9, 11);
+  oled.drawString(1, 0, String(mode));
+  oled.drawString(12, 0, "Historique 24h");
   oled.display();
 }
 

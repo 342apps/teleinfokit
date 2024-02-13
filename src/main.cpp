@@ -49,8 +49,6 @@ typedef struct
   char mqtt_port[6];
   char mqtt_server_username[32];
   char mqtt_server_password[32];
-  char http_username[32];
-  char http_password[32];
   char period_data_power[10];
   char period_data_index[10];
 } ConfStruct;
@@ -154,8 +152,6 @@ char mqtt_server[40];
 char mqtt_port[6];
 char mqtt_server_username[32];
 char mqtt_server_password[32];
-char http_username[32];
-char http_password[32];
 char period_data_power[10];
 char period_data_index[10];
 char UNIQUE_ID [30];
@@ -168,8 +164,6 @@ WiFiManagerParameter *custom_mqtt_server;
 WiFiManagerParameter *custom_mqtt_port;
 WiFiManagerParameter *custom_mqtt_username;
 WiFiManagerParameter *custom_mqtt_password;
-WiFiManagerParameter *custom_http_username;
-WiFiManagerParameter *custom_http_password;
 WiFiManagerParameter *custom_period_data_power;
 WiFiManagerParameter *custom_period_data_index;
 
@@ -215,8 +209,6 @@ void readConfig()
         strcpy(mqtt_port, config.mqtt_port);
         strcpy(mqtt_server_username, config.mqtt_server_username);
         strcpy(mqtt_server_password, config.mqtt_server_password);
-        strcpy(http_username, config.http_username);
-        strcpy(http_password, config.http_password);
         strcpy(period_data_index, config.period_data_index);
         strcpy(period_data_power, config.period_data_power);
         configFile.close();
@@ -247,8 +239,6 @@ void saveParamCallback(){
   strcpy(mqtt_port, custom_mqtt_port->getValue());
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
   strcpy(mqtt_server_password, custom_mqtt_password->getValue());
-  strcpy(http_username, custom_http_username->getValue());
-  strcpy(http_password, custom_http_password->getValue());
   strcpy(period_data_index, custom_period_data_index->getValue());
   strcpy(period_data_power, custom_period_data_power->getValue());
 
@@ -273,8 +263,6 @@ void saveParamCallback(){
       strcpy(config.mqtt_port, custom_mqtt_port->getValue());
       strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password->getValue());
-      strcpy(config.http_username, custom_http_username->getValue());
-      strcpy(config.http_password, custom_http_password->getValue());
       strcpy(config.period_data_index, custom_period_data_index->getValue());
       strcpy(config.period_data_power, custom_period_data_power->getValue());
       configFile.write((byte *)&config, sizeof(config));
@@ -291,6 +279,8 @@ void saveParamCallback(){
         }
     custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
     
+    // TODO pass actual value
+    d->drawGraph(0, config.mode_tic_standard ? 'S' : 'H');
 
       for(uint8_t i = 10; i <= 100; i++){
         d->logPercent("Sauvegarde configuration", i);
@@ -307,6 +297,7 @@ void saveParamCallback(){
       port = atoi(config.mqtt_port);
       delay(1000);
     }
+    ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
     ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
     configFile.close();
     // d->log(String(configFile.size()),1000);
@@ -344,6 +335,7 @@ void handlePreOtaUpdateCallback(){
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
 {
+  d->log("btn");
   switch (btn.getType())
   {
   case single_click:
@@ -455,8 +447,6 @@ void setup()
  custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login", mqtt_server_username, 32);
  custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
- custom_http_username = new WiFiManagerParameter("http_username", "HTTP login", http_username, 32);
- custom_http_password = new WiFiManagerParameter("http_password", "HTTP mot de passe", http_password, 32, "type=\"password\"");
  custom_period_data_power = new WiFiManagerParameter("period_data_power", "Délai envoi puissance (secondes)", period_data_power, 10);
  custom_period_data_index = new WiFiManagerParameter("period_data_index", "Délai envoi index (secondes)", period_data_index, 10);
   
@@ -466,8 +456,6 @@ void setup()
   wm.addParameter(custom_mqtt_port);
   wm.addParameter(custom_mqtt_username);
   wm.addParameter(custom_mqtt_password);
-  wm.addParameter(custom_http_username);
-  wm.addParameter(custom_http_password);
   wm.addParameter(custom_period_data_power);
   wm.addParameter(custom_period_data_index);
 
@@ -727,7 +715,7 @@ void loop()
       case GRAPH:
         reset = IDLE;
         // d->drawGraph(ti.papp);
-        d->drawGraph(0);  // to remove and use commented code
+        d->drawGraph(0, config.mode_tic_standard ? 'S' : 'H');  // to remove and use commented code
         break;
       case DATA1:
         reset = IDLE;

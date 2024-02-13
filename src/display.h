@@ -25,7 +25,7 @@ public:
     void loop(void);
     void log(String text, int16_t displayTime = 500);
     void logPercent(String text, int percentage);
-    void drawGraph(long papp);
+    void drawGraph(long papp, char mode);
     void displayData1(long papp, long iinst);
     void displayData1Triphase(long papp, long iinst1, long iinst2, long iinst3);
     void displayData2(long hp, long hc);

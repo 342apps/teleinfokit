@@ -30,17 +30,13 @@ void getPower()
     server.send(200, "application/json", 
     "{\"papp\": " + String(teleinfows->papp) + 
     ", \"iinst\": " + String(teleinfows->iinst) + 
-    ", \"iinst1\": " + String(teleinfows->iinst1) + 
-    ", \"iinst2\": " + String(teleinfows->iinst2) + 
-    ", \"iinst3\": " + String(teleinfows->iinst3) + 
-    ", \"ptec\": \"" + String(teleinfows->ptec) + 
     "\"}");
 }
 
 void getIndex()
 {
     authenticate();
-    server.send(200, "application/json", "{\"hp\": " + String(teleinfows->hp) + ", \"hc\": " + String(teleinfows->hc) + ", \"base\": " + String(teleinfows->base) + "}");
+    server.send(200, "application/json", "{\"index\": " + String(teleinfows->index)+ "}");
 }
 
 void getHistory()
@@ -77,7 +73,7 @@ void getHistory()
 void getMeterInfo()
 {
     authenticate();
-    server.send(200, "application/json", "{\"adc0\": \"" + String(teleinfows->adc0) + "\", \"isousc\": " + String(teleinfows->isousc) + ", \"ptec\": \"" + String(teleinfows->ptec) + "\"}");
+    server.send(200, "application/json", "{\"compteur\": \"" + String(teleinfows->compteur) + "\"}");
 }
 
 void getConfigInfo()

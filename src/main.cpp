@@ -49,8 +49,7 @@ typedef struct
   char mqtt_port[6];
   char mqtt_server_username[32];
   char mqtt_server_password[32];
-  char period_data_power[10];
-  char period_data_index[10];
+  char data_transmission_period[10];
 } ConfStruct;
 
 ConfStruct config;
@@ -65,7 +64,6 @@ enum modes
   GRAPH,
   DATA1,
   DATA2,
-  DATA3,
   NETWORK,
   TIME,
   RESET,
@@ -152,8 +150,7 @@ char mqtt_server[40];
 char mqtt_port[6];
 char mqtt_server_username[32];
 char mqtt_server_password[32];
-char period_data_power[10];
-char period_data_index[10];
+char data_transmission_period[10];
 char UNIQUE_ID [30];
 
 char _customHtml_checkbox[] = "type=\"checkbox\""; 
@@ -164,8 +161,7 @@ WiFiManagerParameter *custom_mqtt_server;
 WiFiManagerParameter *custom_mqtt_port;
 WiFiManagerParameter *custom_mqtt_username;
 WiFiManagerParameter *custom_mqtt_password;
-WiFiManagerParameter *custom_period_data_power;
-WiFiManagerParameter *custom_period_data_index;
+WiFiManagerParameter *custom_data_transmission_period;
 
 // Network connection has been done through captive portal of hotspot or through config webportal
 void saveConfigCallback()
@@ -209,8 +205,7 @@ void readConfig()
         strcpy(mqtt_port, config.mqtt_port);
         strcpy(mqtt_server_username, config.mqtt_server_username);
         strcpy(mqtt_server_password, config.mqtt_server_password);
-        strcpy(period_data_index, config.period_data_index);
-        strcpy(period_data_power, config.period_data_power);
+        strcpy(data_transmission_period, config.data_transmission_period);
         configFile.close();
 
         d->logPercent("Configuration chargée", 15);
@@ -239,8 +234,7 @@ void saveParamCallback(){
   strcpy(mqtt_port, custom_mqtt_port->getValue());
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
   strcpy(mqtt_server_password, custom_mqtt_password->getValue());
-  strcpy(period_data_index, custom_period_data_index->getValue());
-  strcpy(period_data_power, custom_period_data_power->getValue());
+  strcpy(data_transmission_period, custom_data_transmission_period->getValue());
 
   //save the custom parameters to FS
   // if (shouldSaveConfig)
@@ -263,8 +257,6 @@ void saveParamCallback(){
       strcpy(config.mqtt_port, custom_mqtt_port->getValue());
       strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password->getValue());
-      strcpy(config.period_data_index, custom_period_data_index->getValue());
-      strcpy(config.period_data_power, custom_period_data_power->getValue());
       configFile.write((byte *)&config, sizeof(config));
 
 
@@ -298,7 +290,7 @@ void saveParamCallback(){
       delay(1000);
     }
     ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
-    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
+    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
     configFile.close();
     // d->log(String(configFile.size()),1000);
     //end save
@@ -335,7 +327,6 @@ void handlePreOtaUpdateCallback(){
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
 {
-  d->log("btn");
   switch (btn.getType())
   {
   case single_click:
@@ -347,7 +338,7 @@ void handlerBtn(Button2 &btn)
 
     if (screensaver == false)
     {
-      mode = (mode + 1) % 8; // cycle through 8 screens
+      mode = (mode + 1) % 7; // cycle through 7 screens
     }
     resetTs = 0;
     offTs = millis();
@@ -447,8 +438,7 @@ void setup()
  custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login", mqtt_server_username, 32);
  custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
- custom_period_data_power = new WiFiManagerParameter("period_data_power", "Délai envoi puissance (secondes)", period_data_power, 10);
- custom_period_data_index = new WiFiManagerParameter("period_data_index", "Délai envoi index (secondes)", period_data_index, 10);
+ custom_data_transmission_period = new WiFiManagerParameter("data_transmission_period", "Délai entre envoi données (secondes) [Laisser vide pour temps réel]", data_transmission_period, 10);
   
   wm.addParameter(custom_html);
   wm.addParameter(custom_checkbox);
@@ -456,8 +446,7 @@ void setup()
   wm.addParameter(custom_mqtt_port);
   wm.addParameter(custom_mqtt_username);
   wm.addParameter(custom_mqtt_password);
-  wm.addParameter(custom_period_data_power);
-  wm.addParameter(custom_period_data_index);
+  wm.addParameter(custom_data_transmission_period);
 
   if(strcmp(config.mqtt_port, "") == 0){
     custom_mqtt_port->setValue("1883",4);
@@ -588,7 +577,7 @@ void setup()
     delay(1000);
   }
 
-  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
+  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
 
 
   
@@ -612,7 +601,7 @@ void setup()
   // strcpy(http_username, custom_http_username.getValue());
   // strcpy(http_password, custom_http_password.getValue());
   // strcpy(period_data_index, custom_period_data_index.getValue());
-  // strcpy(period_data_power, custom_period_data_power.getValue());
+  // strcpy(data_transmission_period, custom_data_transmission_period.getValue());
 
   // //save the custom parameters to FS
   // if (shouldSaveConfig)
@@ -633,13 +622,13 @@ void setup()
   //     strcpy(config.http_username, custom_http_username.getValue());
   //     strcpy(config.http_password, custom_http_password.getValue());
   //     strcpy(config.period_data_index, custom_period_data_index.getValue());
-  //     strcpy(config.period_data_power, custom_period_data_power.getValue());
+  //     strcpy(config.data_transmission_period, custom_data_transmission_period.getValue());
   //     configFile.write((byte *)&config, sizeof(config));
   //     d->logPercent("Configuration sauvée", 50);
   //     delay(250);
   //   }
 
-  //   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.period_data_power), atoi(config.period_data_index));
+  //   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period), atoi(config.period_data_index));
   //   configFile.close();
   //   //end save
   // }
@@ -651,7 +640,7 @@ void setup()
   // d->logPercent("Connexion NTP", 75);
   // data->setNtp(&timeClient);
 
-  // web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.period_data_power), atoi(config.period_data_index));
+  // web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.data_transmission_period), atoi(config.period_data_index));
 
   d->logPercent("Obtention de l'heure", 70);
   d->getTime();
@@ -725,11 +714,11 @@ void loop()
         // else{
         //   d->displayData1(ti.papp, ti.iinst);
         // }
-        d->displayData1(0, 0);  // to remove and use commented code
+        d->displayData1(ti.papp, ti.iinst); 
         break;
       case DATA2:
         reset = IDLE;
-        d->displayData2Base(0);  // to remove and use commented code
+        d->displayData2(ti.index, ti.compteur); 
         // if(ti.modeBase)
         // {
         //   d->displayData2Base(ti.base);
@@ -738,11 +727,6 @@ void loop()
         // {
         //   d->displayData2(ti.hp, ti.hc);
         // }
-        break;
-      case DATA3:
-        reset = IDLE;
-        d->displayData3("adc0", 0, 0);  // to remove and use commented code
-        // d->displayData3(ti.adc0, ti.isousc, ti.ptec);
         break;
       case NETWORK:
         reset = IDLE;

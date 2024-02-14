@@ -26,10 +26,10 @@ TInfo teleinfo;
 
 static ESPTeleInfo *instanceEsp;
 
-static ESPTeleInfo *getESPTeleInfo() noexcept { // pour obtenir le singleton
-      return instanceEsp;
-   }
-
+static ESPTeleInfo *getESPTeleInfo() noexcept
+{ // pour obtenir le singleton
+    return instanceEsp;
+}
 
 ESPTeleInfo::ESPTeleInfo()
 {
@@ -37,63 +37,47 @@ ESPTeleInfo::ESPTeleInfo()
     mqtt_pwd[0] = '\0';
 }
 
-static void DataCallback(ValueList * me, uint8_t  flags)
+static void DataCallback(ValueList *me, uint8_t flags)
 {
 
-//   if (flags & TINFO_FLAGS_ADDED) {
-//     getESPTeleInfo()->Log("New " + String(me->name) + " - " + String(me->value));
-//   }
+    //   if (flags & TINFO_FLAGS_ADDED) {
+    //     getESPTeleInfo()->Log("New " + String(me->name) + " - " + String(me->value));
+    //   }
 
-//   if (flags & TINFO_FLAGS_UPDATED){
-//     getESPTeleInfo()->Log("Maj " + String(me->name) + " - " + String(me->value));
-//   }
+    //   if (flags & TINFO_FLAGS_UPDATED){
+    //     getESPTeleInfo()->Log("Maj " + String(me->name) + " - " + String(me->value));
+    //   }
 
-    getESPTeleInfo()->SendData(me->name, me->value);
-  
-  // Display values
+    getESPTeleInfo()->SetData(me->name, me->value);
+    // while(me->next){
+    //     me = me->next;
+    // }
+    
 
-//   Serial.print(me->name);
-//   Serial.print("=");
-//   Serial.println(me->value);
+    // Display values
+
+    //   Serial.print(me->name);
+    //   Serial.print("=");
+    //   Serial.println(me->value);
 }
 
 void ESPTeleInfo::init(_Mode_e tic_mode)
 {
     instanceEsp = this;
-
+    ticMode = tic_mode;
     staticInfoSsent = false;
     previousMillis = millis();
     iinst = 0;
-    iinst_old = 254;
-    iinst1 = 0;
-    iinst1_old = 254;
-    iinst2 = 0;
-    iinst2_old = 254;
-    iinst3 = 0;
-    iinst3_old = 254;
     papp = 0;
-    papp_old = 1;
-    hc = 0;
-    hc_old = 1;
-    hp = 0;
-    hp_old = 1;
-    base = 0;
-    base_old = 1;
-    imax = 0;
-    imax_old = 1;
-    isousc = 0;
-    isousc_old = 1;
-    adc0[0] = '\0';
-    ptec[0] = '\0';
-    ptec_old[0] = '_';
-    modeBase = false;
-    modeTriphase = false;
+    index = 0;
+    compteur[0] = '\0';
 
-    for(int i=0; i< LINE_MAX_COUNT; i++){
+    for (int i = 0; i < LINE_MAX_COUNT; i++)
+    {
         values_old[i][0] = '\0';
     }
 
-    //sprintf(CHIP_ID, "%06X", ESP.getChipId());
+    // sprintf(CHIP_ID, "%06X", ESP.getChipId());
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
 
     Serial.flush();
@@ -103,18 +87,28 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     // Init teleinfo
     teleinfo.init(tic_mode);
     teleinfo.attachData(DataCallback);
+
+    if (Serial.available())
+    {
+        teleinfo.process(Serial.read());
+        if (ticMode == TINFO_MODE_HISTORIQUE)
+        {
+            teleinfo.valueGet(adc0, compteur);
+        }
+        else
+        {
+            teleinfo.valueGet(adsc, compteur);
+        }
+    }
 }
 
-void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password, int period_data_power, int period_data_index)
+void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password, int period_data)
 {
     strcpy(mqtt_user, username);
     strcpy(mqtt_pwd, password);
 
-    delay_index = period_data_index * 1000;
-    delay_power = period_data_power * 1000;
-
     // we use the power delay for generic data
-    delay_generic = delay_power;
+    delay_generic = period_data;
 
     mqttClient.setServer(server, port);
 }
@@ -131,36 +125,98 @@ bool ESPTeleInfo::connectMqtt()
     }
 }
 
+void ESPTeleInfo::SetData(char *label, char *value)
+{
+    if (ticMode == TINFO_MODE_HISTORIQUE)
+    {
+        if (strcmp(label, "IINST") == 0)
+        {
+            iinst = atol(value);
+        }
+        else if (strcmp(label, "PAPP") == 0)
+        {
+            papp = atol(value);
+        }
+        else if (strcmp(label, "BASE") == 0)
+        {
+            indexes[0] = atol(value);
+            index = indexes[0] + indexes[1] + indexes[2];
+        }
+        else if (strcmp(label, "HCHC") == 0)
+        {
+            indexes[1] = atol(value);
+            index = indexes[0] + indexes[1] + indexes[2];
+        }
+        else if (strcmp(label, "HCHP") == 0)
+        {
+            indexes[2] = atol(value);
+            index = indexes[0] + indexes[1] + indexes[2];
+        }
+    }
+    else
+    {
+        // store intensity value for HIST or STD modes
+        if (strcmp(label, "IRMS1") == 0)
+        {
+            iinst = atol(value);
+        }
+        // store power value for HIST or STD modes
+        else if (strcmp(label, "SINTS") == 0)
+        {
+            papp = atol(value);
+        }
+        // Index BASE for hist mode or total for std mode (EAST)
+        else if (strcmp(label, "EAST") == 0)
+        {
+            index = atol(value);
+        }
+    }
+
+    if(delay_generic <= 0){
+        SendData(label, value);
+    }
+    else if(sendGenericData()){
+        SendAllData();
+        ts_generic = millis();
+    }
+}
+
+void ESPTeleInfo::SendAllData()
+{
+
+    ValueList *item = teleinfo.getList();
+
+    if (item)
+    {
+        while (item->next)
+        {
+            SendData(item->name, item->value);
+            item = item-> next;
+        }
+    }
+}
+
 void ESPTeleInfo::SendData(char *label, char *value)
 {
-    if (sendGenericData())
+    // send all data in the data topic
+    if (connectMqtt())
     {
-        // send all data in the data topic
-        if (connectMqtt())
-        {
-            sprintf(strDataTopic, "teleinfokit_dev/data/%s", label);
-            mqttClient.publish(strDataTopic, value, true);
-
-            ts_generic = millis();
-        }
+        sprintf(strDataTopic, "teleinfokit_dev/data/%s", label);
+        mqttClient.publish(strDataTopic, value, true);
     }
 }
 
 void ESPTeleInfo::loop(void)
 {
-    if ( Serial.available() ) {
+    if (Serial.available())
+    {
         teleinfo.process(Serial.read());
 
-        //teleinfo.getList().)
-  
-        // sendPower = sendPowerData();
-        // sendIndex = sendIndexData();
-        sendGeneric = sendGenericData();
-        
-        // iinst = teleinfo.getLongVal(IINST);
-        // iinst1 = teleinfo.getLongVal(IINST1);
-        // iinst2 = teleinfo.getLongVal(IINST2);
-        // iinst3 = teleinfo.getLongVal(IINST3);
+        // teleinfo.getList().)
+
+       //sendGeneric = sendGenericData();
+
+        //iinst = teleinfo.getLongVal(IINST);
 
         // iinst = iinst == -1 ? 0 : iinst;
         // iinst1 = iinst1 == -1 ? 0 : iinst1;
@@ -285,9 +341,9 @@ void ESPTeleInfo::loop(void)
 
 // void ESPTeleInfo::getPhaseMode(){
 //     modeTriphase = !(
-//         iinst > 0 && 
-//         iinst1 <= 0 && 
-//         iinst2 <= 0 && 
+//         iinst > 0 &&
+//         iinst1 <= 0 &&
+//         iinst2 <= 0 &&
 //         iinst3 <= 0);
 // }
 
@@ -303,18 +359,18 @@ bool ESPTeleInfo::LogStartup()
     {
         char str[80];
         mqttClient.publish("teleinfokit_dev/log", "Startup");
-        strcpy (str,"Version: ");
-        strcat (str, VERSION);
+        strcpy(str, "Version: ");
+        strcat(str, VERSION);
         mqttClient.publish("teleinfokit_dev/log", str);
-    #ifdef _HW_VER
+#ifdef _HW_VER
         sprintf(str, "HW Version: %d", _HW_VER);
         mqttClient.publish("teleinfokit_dev/log", str);
-    #endif
-        strcpy (str,"IP: ");
-        strcat (str, WiFi.localIP().toString().c_str());
+#endif
+        strcpy(str, "IP: ");
+        strcat(str, WiFi.localIP().toString().c_str());
         mqttClient.publish("teleinfokit_dev/log", str);
-        strcpy (str,"MAC: ");
-        strcat (str, WiFi.macAddress().c_str());
+        strcpy(str, "MAC: ");
+        strcat(str, WiFi.macAddress().c_str());
         mqttClient.publish("teleinfokit_dev/log", str);
         return true;
     }
@@ -324,19 +380,9 @@ bool ESPTeleInfo::LogStartup()
     }
 }
 
-// bool ESPTeleInfo::sendPowerData()
-// {
-//     return (delay_power <= 0 ) || (millis() - ts_power > (delay_power));
-// }
-
-// bool ESPTeleInfo::sendIndexData()
-// {
-//     return (delay_index <= 0 ) || (millis() - ts_index > (delay_index));
-// }
-
 bool ESPTeleInfo::sendGenericData()
 {
-    return (delay_generic <= 0 ) || (millis() - ts_generic > (delay_generic));
+    return (delay_generic <= 0) || (millis() - ts_generic > (delay_generic));
 }
 
 // 30 char max !

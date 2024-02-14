@@ -27,10 +27,7 @@ public:
     void logPercent(String text, int percentage);
     void drawGraph(long papp, char mode);
     void displayData1(long papp, long iinst);
-    void displayData1Triphase(long papp, long iinst1, long iinst2, long iinst3);
-    void displayData2(long hp, long hc);
-    void displayData2Base(long base);
-    void displayData3(char *adc0, long isousc, char *ptec);
+    void displayData2(long index, char* compteur);
     void displayNetwork();
     void displayTime();
     void displayReset();

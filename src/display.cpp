@@ -94,53 +94,16 @@ void Display::displayData1(long papp, long iinst)
   oled.display();
 }
 
-void Display::displayData1Triphase(long papp, long iinst1, long iinst2, long iinst3)
+void Display::displayData2(long index, char* compteur)
 {
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Puissance/Intensités phases");
-  oled.drawString(0, 10, String(papp) + "VA");
-  oled.drawString(0, 20, String(iinst1) + " / " + String(iinst2) + " / " + String(iinst3) + " A");
-  oled.display();
-}
-
-void Display::displayData2(long hp, long hc)
-{
-  oled.displayOn();
-  oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Index compteurs");
-  oled.drawString(0, 10, "HC");
-  oled.drawString(20, 10, String(hc));
-  oled.drawString(0, 20, "HP");
-  oled.drawString(20, 20, String(hp));
-  oled.display();
-}
-
-void Display::displayData2Base(long base)
-{
-  oled.displayOn();
-  oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Index compteur");
-  oled.drawString(0, 10, "BASE");
-  oled.drawString(30, 10, String(base));
-  oled.display();
-}
-
-void Display::displayData3(char *adc0, long isousc, char *ptec)
-{
-  oled.displayOn();
-  oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "ID cpt " + String(adc0));
-  oled.drawString(0, 10, "Puiss. souscrite : " + String(isousc) + "A");
-  oled.drawString(0, 20, "Per. tarif : " + String(ptec));
+  oled.drawString(0, 0, "Compteur");
+  oled.drawString(0, 10, compteur);
+  oled.drawString(0, 20, "Index total");
+  oled.drawString(50, 20, String(index));
   oled.display();
 }
 

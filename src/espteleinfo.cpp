@@ -35,6 +35,7 @@ ESPTeleInfo::ESPTeleInfo()
 {
     mqtt_user[0] = '\0';
     mqtt_pwd[0] = '\0';
+    ts_analyzeData = 0;
 }
 
 static void DataCallback(ValueList *me, uint8_t flags)
@@ -52,7 +53,6 @@ static void DataCallback(ValueList *me, uint8_t flags)
     // while(me->next){
     //     me = me->next;
     // }
-    
 
     // Display values
 
@@ -65,7 +65,6 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
 {
     instanceEsp = this;
     ticMode = tic_mode;
-    staticInfoSsent = false;
     previousMillis = millis();
     iinst = 0;
     papp = 0;
@@ -91,14 +90,6 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     if (Serial.available())
     {
         teleinfo.process(Serial.read());
-        if (ticMode == TINFO_MODE_HISTORIQUE)
-        {
-            teleinfo.valueGet(adc0, compteur);
-        }
-        else
-        {
-            teleinfo.valueGet(adsc, compteur);
-        }
     }
 }
 
@@ -125,57 +116,56 @@ bool ESPTeleInfo::connectMqtt()
     }
 }
 
-void ESPTeleInfo::SetData(char *label, char *value)
+void ESPTeleInfo::AnalyzeData()
 {
     if (ticMode == TINFO_MODE_HISTORIQUE)
     {
-        if (strcmp(label, "IINST") == 0)
-        {
-            iinst = atol(value);
-        }
-        else if (strcmp(label, "PAPP") == 0)
-        {
-            papp = atol(value);
-        }
-        else if (strcmp(label, "BASE") == 0)
-        {
-            indexes[0] = atol(value);
-            index = indexes[0] + indexes[1] + indexes[2];
-        }
-        else if (strcmp(label, "HCHC") == 0)
-        {
-            indexes[1] = atol(value);
-            index = indexes[0] + indexes[1] + indexes[2];
-        }
-        else if (strcmp(label, "HCHP") == 0)
-        {
-            indexes[2] = atol(value);
-            index = indexes[0] + indexes[1] + indexes[2];
-        }
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_iinst_, analyzeBuffer);
+        iinst = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_papp_, analyzeBuffer);
+        papp = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_base_, analyzeBuffer);
+        indexes[0] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_hchc_, analyzeBuffer);
+        indexes[1] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_hchp_, analyzeBuffer);
+        indexes[2] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2];
     }
     else
     {
         // store intensity value for HIST or STD modes
-        if (strcmp(label, "IRMS1") == 0)
-        {
-            iinst = atol(value);
-        }
-        // store power value for HIST or STD modes
-        else if (strcmp(label, "SINTS") == 0)
-        {
-            papp = atol(value);
-        }
-        // Index BASE for hist mode or total for std mode (EAST)
-        else if (strcmp(label, "EAST") == 0)
-        {
-            index = atol(value);
-        }
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_irms1_, analyzeBuffer);
+        iinst = atol(analyzeBuffer);
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_sinsts_, analyzeBuffer);
+        papp = atol(analyzeBuffer);
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_east_, analyzeBuffer);
+        index = atol(analyzeBuffer);
     }
+}
 
-    if(delay_generic <= 0){
+void ESPTeleInfo::SetData(char *label, char *value)
+{
+    if (delay_generic <= 0)
+    {
         SendData(label, value);
     }
-    else if(sendGenericData()){
+    else if (sendGenericData())
+    {
         SendAllData();
         ts_generic = millis();
     }
@@ -191,7 +181,7 @@ void ESPTeleInfo::SendAllData()
         while (item->next)
         {
             SendData(item->name, item->value);
-            item = item-> next;
+            item = item->next;
         }
     }
 }
@@ -212,11 +202,41 @@ void ESPTeleInfo::loop(void)
     {
         teleinfo.process(Serial.read());
 
+        if (millis() - ts_analyzeData > 1000)
+        {
+            AnalyzeData();
+            // ValueList *item = teleinfo.getList();
+
+            // if (item)
+            // {
+            //     while (item->next)
+            //     {
+            //         if (item->flags & TINFO_FLAGS_UPDATED)
+            //         {
+            //         }
+            //         item = item->next;
+            //     }
+            // }
+            ts_analyzeData = millis();
+        }
+
+        if (compteur[0] == '\0')
+        {
+
+            if (ticMode == TINFO_MODE_HISTORIQUE)
+            {
+                teleinfo.valueGet(_adc0_, compteur);
+            }
+            else
+            {
+                teleinfo.valueGet(_adsc_, compteur);
+            }
+        }
         // teleinfo.getList().)
 
-       //sendGeneric = sendGenericData();
+        // sendGeneric = sendGenericData();
 
-        //iinst = teleinfo.getLongVal(IINST);
+        // iinst = teleinfo.getLongVal(IINST);
 
         // iinst = iinst == -1 ? 0 : iinst;
         // iinst1 = iinst1 == -1 ? 0 : iinst1;

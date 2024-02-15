@@ -24,10 +24,12 @@ public:
 
     // les données de consommation
     long iinst;      // HIST: IINST  STD IRMS1
-    long papp;        // HIST: PAPP   STD SINTS
+    long papp;        // HIST: PAPP   STD SINSTS
     long index;      // HIST: BASE + HCHC + HCHP   STD EAST
     char compteur[20];          // HIST: ADCO   STD ADSC
     char strDataTopic[50];
+    long ts_analyzeData;
+    char analyzeBuffer[20];
 
     char values_old[LINE_MAX_COUNT][DATA_MAX_SIZE+1]; //+1 for '\0' ending
 
@@ -35,8 +37,16 @@ public:
     TInfo tic;
    
 
-    char* adc0 = (char *)"ADCO";
-    char* adsc = (char *)"ADSC";
+    char* _adc0_ = (char *)"ADCO";
+    char* _adsc_ = (char *)"ADSC";
+    char* _irms1_ = (char *)"IRMS1";
+    char* _sinsts_ = (char *)"SINSTS";
+    char* _east_ = (char *)"EAST";
+    char* _iinst_ = (char *)"IINST";
+    char* _papp_ = (char *)"PAPP";
+    char* _base_ = (char *)"BASE";
+    char* _hchc_ = (char *)"HCHC";
+    char* _hchp_ = (char *)"HCHP";
 
     bool LogStartup();
     // 30 char max !
@@ -50,7 +60,6 @@ public:
 private:
     _Mode_e ticMode;
     long previousMillis;
-    bool staticInfoSsent;
     char buffer[30];
     char mqtt_user[32];
     char mqtt_pwd[32];
@@ -76,6 +85,7 @@ private:
     // detects the communication mode (mono or triphase)
     void getPhaseMode();
     bool connectMqtt();
+    void AnalyzeData();
 };
 
 #endif /* ESPTELEINFO_H */

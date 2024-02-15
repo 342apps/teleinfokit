@@ -704,7 +704,7 @@ void loop()
       case GRAPH:
         reset = IDLE;
         // d->drawGraph(ti.papp);
-        d->drawGraph(0, config.mode_tic_standard ? 'S' : 'H');  // to remove and use commented code
+        d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');  // to remove and use commented code
         break;
       case DATA1:
         reset = IDLE;

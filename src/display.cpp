@@ -103,7 +103,9 @@ void Display::displayData2(long index, char* compteur)
   oled.drawString(0, 0, "Compteur");
   oled.drawString(0, 10, compteur);
   oled.drawString(0, 20, "Index total");
+  oled.setTextAlignment(TEXT_ALIGN_RIGHT);
   oled.drawString(50, 20, String(index));
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.display();
 }
 

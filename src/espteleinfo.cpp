@@ -91,6 +91,7 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     {
         teleinfo.process(Serial.read());
     }
+    
 }
 
 void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password, int period_data)
@@ -232,130 +233,6 @@ void ESPTeleInfo::loop(void)
                 teleinfo.valueGet(_adsc_, compteur);
             }
         }
-        // teleinfo.getList().)
-
-        // sendGeneric = sendGenericData();
-
-        // iinst = teleinfo.getLongVal(IINST);
-
-        // iinst = iinst == -1 ? 0 : iinst;
-        // iinst1 = iinst1 == -1 ? 0 : iinst1;
-        // iinst2 = iinst2 == -1 ? 0 : iinst2;
-        // iinst3 = iinst3 == -1 ? 0 : iinst3;
-
-        // papp = teleinfo.getLongVal(PAPP);
-
-        // hc = teleinfo.getLongVal(HC);
-        // hp = teleinfo.getLongVal(HP);
-        // base = teleinfo.getLongVal(BASE);
-
-        // if(base > 0){
-        //     modeBase  = true;
-        // }
-        // getPhaseMode();
-
-        // imax = teleinfo.getLongVal(IMAX);
-        // strncpy(ptec, teleinfo.getStringVal(PTEC), 20);
-
-        // if (connectMqtt())
-        // {
-        //     // send all data in the data topic
-        //     if(sendGenericData()){
-        //         for(uint8_t i= 0; i<teleinfo.dataCount; i++){
-        //             if(strncmp(values_old[i], teleinfo.values[i], DATA_MAX_SIZE + 1) != 0){
-        //                 sprintf(strDataTopic, "teleinfokit_dev/data/%s", teleinfo.labels[i]);
-        //                 mqttClient.publish(strDataTopic, teleinfo.values[i], true);
-        //                 snprintf(values_old[i], DATA_MAX_SIZE+1, "%s", teleinfo.values[i]);
-        //             }
-        //         }
-        //         ts_generic = millis();
-        //     }
-
-        //     // send specific data - backwards compatibility
-        //     if (!modeTriphase && iinst != iinst_old && sendPower)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/iinst", teleinfo.getStringVal(IINST));
-        //     }
-
-        //     if (modeTriphase && sendPower){
-        //         // mode triphasé only : intensités des 3 phases
-        //         if (iinst1 != iinst1_old)
-        //         {
-        //             mqttClient.publish("teleinfokit_dev/iinst1", teleinfo.getStringVal(IINST1));
-        //         }
-        //         if (iinst2 != iinst2_old)
-        //         {
-        //             mqttClient.publish("teleinfokit_dev/iinst2", teleinfo.getStringVal(IINST2));
-        //         }
-        //         if (iinst3 != iinst3_old)
-        //         {
-        //             mqttClient.publish("teleinfokit_dev/iinst3", teleinfo.getStringVal(IINST3));
-        //         }
-        //     }
-
-        //     if (papp != papp_old && sendPower)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/papp", teleinfo.getStringVal(PAPP));
-        //     }
-        //     if (hc != hc_old && hc != 0 && sendIndex)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/hc", teleinfo.getStringVal(HC), true);
-        //     }
-        //     if (hp != hp_old && hp != 0 && sendIndex)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/hp", teleinfo.getStringVal(HP), true);
-        //     }
-        //     if (base != base_old && base != 0 && sendIndex)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/base", teleinfo.getStringVal(BASE), true);
-        //     }
-        //     if (imax != imax_old)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/imax", teleinfo.getStringVal(IMAX));
-        //     }
-        //     if (strcmp(ptec, ptec_old) != 0)
-        //     {
-        //         mqttClient.publish("teleinfokit_dev/ptec", teleinfo.getStringVal(PTEC));
-        //     }
-        // }
-
-        // if(sendPower)
-        // {
-        //     iinst_old = iinst;
-        //     iinst1_old = iinst1;
-        //     iinst2_old = iinst2;
-        //     iinst3_old = iinst3;
-        //     papp_old = papp;
-        //     ts_power = millis();
-        // }
-
-        // if(sendIndex){
-        //     hc_old = hc;
-        //     hp_old = hp;
-        //     base_old = base;
-        //     ts_index = millis();
-        // }
-
-        // imax_old = imax;
-        // strncpy(ptec_old, ptec, 20);
-
-        // if (!staticInfoSsent && connectMqtt())
-        // {
-        //     if (teleinfo.getStringVal(ADCO)[0] != '\n')
-        //     {
-        //         strncpy(adc0, teleinfo.getStringVal(ADCO), 20);
-        //         mqttClient.publish("teleinfokit_dev/adc0", teleinfo.getStringVal(ADCO), true);
-        //     }
-        //     if (teleinfo.getStringVal(ISOUSC)[0] != '\n')
-        //     {
-        //         isousc = teleinfo.getLongVal(ISOUSC);
-        //         mqttClient.publish("teleinfokit_dev/isousc", teleinfo.getStringVal(ISOUSC), true);
-        //     }
-
-        //     staticInfoSsent = true;
-        // }
-
-        // teleinfo.resetAvailable();
     }
 }
 
@@ -416,7 +293,104 @@ void ESPTeleInfo::Log(String s)
     }
     if (nbTry < NBTRY)
     {
-        s.toCharArray(buffer, 30);
+        s.toCharArray(buffer, 200);
         mqttClient.publish("teleinfokit_dev/log", buffer);
     }
+}
+
+void ESPTeleInfo::sendMqttDiscovery(){
+    discoveryDevice = "\"dev\":{\"ids\":\"" + String(UNIQUE_ID) +"\" ,\"name\":\"TeleInfoKit\",\"sw\":\""+String(VERSION)+"\",\"mdl\":\"TeleInfoKit v4\",\"mf\": \"342apps\"}";
+    mqttClient.setBufferSize(500);
+
+     if (connectMqtt()){
+        if(ticMode == TINFO_MODE_STANDARD){
+            sendMqttDiscoveryIndex(F("EAST"), "Index total");
+            sendMqttDiscoveryIndex(F("EASF01"), F("Index fournisseur 01"));
+            sendMqttDiscoveryIndex(F("EASF02"), F("Index fournisseur 02"));
+            sendMqttDiscoveryIndex(F("EASF03"), F("Index fournisseur 03"));
+            sendMqttDiscoveryIndex(F("EASF04"), F("Index fournisseur 04"));
+            sendMqttDiscoveryIndex(F("EASF05"), F("Index fournisseur 05"));
+            sendMqttDiscoveryIndex(F("EASF06"), F("Index fournisseur 06"));
+            sendMqttDiscoveryIndex(F("EASF07"), F("Index fournisseur 07"));
+            sendMqttDiscoveryIndex(F("EASF08"), F("Index fournisseur 08"));
+            sendMqttDiscoveryIndex(F("EASF09"), F("Index fournisseur 09"));
+            sendMqttDiscoveryIndex(F("EASF10"), F("Index fournisseur 10"));
+            sendMqttDiscoveryIndex(F("EASD01"), F("Index distributeur 01"));
+            sendMqttDiscoveryIndex(F("EASD02"), F("Index distributeur 02"));
+            sendMqttDiscoveryIndex(F("EASD03"), F("Index distributeur 03"));
+            sendMqttDiscoveryIndex(F("EASD04"), F("Index distributeur 04"));
+
+            sendMqttDiscoveryForType(F("SINSTS"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            sendMqttDiscoveryForType(F("IRMS1"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+            sendMqttDiscoveryForType(F("URMS1"), F("Tension"), F("voltage"), "V", F("mdi:sine-wave"));
+
+            sendMqttDiscoveryText(F("ADSC"), F("Adresse compteur"));
+            sendMqttDiscoveryText(F("NGTF"), F("Option tarifaire"));
+            sendMqttDiscoveryText(F("LTARF"), F("Libellé tarif en cours"));
+            sendMqttDiscoveryText(F("NTARF"), F("Numéro index tarifaire en cours"));
+            sendMqttDiscoveryText(F("NJOURF+1"), F("Numéro du prochain jour calendrier fournisseur"));
+            sendMqttDiscoveryText(F("MSG1"), F("Message"));
+            sendMqttDiscoveryText(F("RELAI"), F("Etat relais"));
+        }
+        else {
+            sendMqttDiscoveryIndex(F("BASE"), F("Index BASE"));
+            sendMqttDiscoveryIndex(F("HCHC"), F("Index heure cruse"));
+            sendMqttDiscoveryIndex(F("HCHP"), F("Index heure pleine"));
+            sendMqttDiscoveryIndex(F("EJPHN"), F("Index EJP heure normale"));
+            sendMqttDiscoveryIndex(F("EJPHPM"), F("Index EJP heure de pointe mobile"));
+            sendMqttDiscoveryIndex(F("BBRHCJB"), F("Index Tempo heures creuses jours Bleus"));
+            sendMqttDiscoveryIndex(F("BBRHPJB"), F("Index Tempo heures pleines jours Bleus"));
+            sendMqttDiscoveryIndex(F("BBRHCJW"), F("Index Tempo heures creuses jours Blancs"));
+            sendMqttDiscoveryIndex(F("BBRHPJW"), F("Index Tempo heures pleines jours Blancs"));
+            sendMqttDiscoveryIndex(F("BBRHCJR"), F("Index Tempo heures creuses jours Rouges"));
+            sendMqttDiscoveryIndex(F("BBRHPJR"), F("Index Tempo heures pleines jours Rouges"));
+
+            sendMqttDiscoveryForType(F("PAPP"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            sendMqttDiscoveryForType(F("IINST"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+
+            sendMqttDiscoveryText(F("ADCO"), F("Adresse compteur"));
+            sendMqttDiscoveryText(F("OPTARIF"), F("Option tarifaire"));
+            sendMqttDiscoveryText(F("PTEC"), F("Période tarifaire en cours"));
+            sendMqttDiscoveryText(F("DEMAIN"), F("Couleur du lendemain"));
+        }
+    }
+    mqttClient.setBufferSize(256);
+}
+
+void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName){
+    label.toCharArray(bufLabel, 10);
+    sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
+
+    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"")+
+    F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"teleinfokit_dev/data/")+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
+    F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"ic\":\"mdi:counter\",")+
+    discoveryDevice + "}";
+
+    sensor.toCharArray(payloadDiscovery, 500);
+    mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
+}
+
+void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon){
+
+    label.toCharArray(bufLabel, 10);
+    sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
+
+    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"dev_cla\":\"")+deviceClass+F("\",\"unit_of_meas\":\"")+unit+"\""+
+    F(",\"stat_t\":\"teleinfokit_dev/data/")+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+"\",\"ic\":\""+icon+"\","+
+    discoveryDevice + "}";
+
+    sensor.toCharArray(payloadDiscovery, 500);
+    mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
+}
+
+void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName){
+    label.toCharArray(bufLabel, 10);
+    sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
+
+    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"stat_t\":\"teleinfokit_dev/data/")+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
+    F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"ic\":\"mdi:information-outline\",")+
+    discoveryDevice + "}";
+
+    sensor.toCharArray(payloadDiscovery, 500);
+    mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
 }

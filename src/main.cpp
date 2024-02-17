@@ -499,7 +499,7 @@ void setup()
   #ifdef USEOTA  
   ArduinoOTA.setHostname(UNIQUE_ID);
   ArduinoOTA.setPassword("admin4tele9Info");
-  d->logPercent("Démarrage OTA", 60);
+  d->logPercent("Démarrage OTA", 50);
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -580,61 +580,6 @@ void setup()
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
 
 
-  
-
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-
-  // std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
-  // wifiManager.setMenu(menu);
-
-  // // set dark theme
-  // wifiManager.setClass("invert");
-
-  // //-WiFi.hostname("TeleInfoKit_" + String(ESP.getChipId()));
-  // WiFi.hostname(UNIQUE_ID);
-
-
-  // strcpy(mqtt_server, custom_mqtt_server.getValue());
-  // strcpy(mqtt_port, custom_mqtt_port.getValue());
-  // strcpy(mqtt_server_username, custom_mqtt_username.getValue());
-  // strcpy(mqtt_server_password, custom_mqtt_password.getValue());
-  // strcpy(http_username, custom_http_username.getValue());
-  // strcpy(http_password, custom_http_password.getValue());
-  // strcpy(period_data_index, custom_period_data_index.getValue());
-  // strcpy(data_transmission_period, custom_data_transmission_period.getValue());
-
-  // //save the custom parameters to FS
-  // if (shouldSaveConfig)
-  // {
-  //   d->logPercent("Sauvegarde configuration", 45);
-
-  //   File configFile = LittleFS.open(CONFIG_FILE, "w");
-  //   if (!configFile)
-  //   {
-  //     d->log("Erreur écriture config");
-  //   }
-  //   else
-  //   {
-  //     strcpy(config.mqtt_server, custom_mqtt_server.getValue());
-  //     strcpy(config.mqtt_port, custom_mqtt_port.getValue());
-  //     strcpy(config.mqtt_server_username, custom_mqtt_username.getValue());
-  //     strcpy(config.mqtt_server_password, custom_mqtt_password.getValue());
-  //     strcpy(config.http_username, custom_http_username.getValue());
-  //     strcpy(config.http_password, custom_http_password.getValue());
-  //     strcpy(config.period_data_index, custom_period_data_index.getValue());
-  //     strcpy(config.data_transmission_period, custom_data_transmission_period.getValue());
-  //     configFile.write((byte *)&config, sizeof(config));
-  //     d->logPercent("Configuration sauvée", 50);
-  //     delay(250);
-  //   }
-
-  //   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period), atoi(config.period_data_index));
-  //   configFile.close();
-  //   //end save
-  // }
-
-
-
   // timeClient.begin();
   // timeClient.update();
   // d->logPercent("Connexion NTP", 75);
@@ -642,14 +587,21 @@ void setup()
 
   // web->init(&ti, data, config.mqtt_server, config.mqtt_port, config.mqtt_server_username, config.http_username, config.http_password, atoi(config.data_transmission_period), atoi(config.period_data_index));
 
-  d->logPercent("Obtention de l'heure", 70);
+  d->logPercent("Obtention de l'heure", 60);
   d->getTime();
 
-  d->logPercent("Connexion MQTT", 80);
+  d->logPercent("Connexion MQTT", 70);
   if (!ti.LogStartup())
   {
     d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
   }
+
+  d->logPercent("Envoi MQTT Discovery", 80);
+
+  ti.sendMqttDiscovery();
+  ti.SendAllData();
+
+  d->logPercent("Activation portail config", 90);
 
     wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);

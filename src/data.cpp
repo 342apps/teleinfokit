@@ -46,6 +46,7 @@ void Data::calculateGraph()
 
 void Data::storeValueBase(long base)
 {
+    now = time(nullptr);
     localtime_r(&now, &timeinfo); // update the structure tm with the current time
     if (previousHour != timeinfo.tm_hour)
     {

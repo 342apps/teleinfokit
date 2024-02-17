@@ -99,8 +99,8 @@ void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *pa
     strcpy(mqtt_user, username);
     strcpy(mqtt_pwd, password);
 
-    // we use the power delay for generic data
-    delay_generic = period_data;
+    // we use the power delay for generic data, *1000 to get ms
+    delay_generic = period_data * 1000;
 
     mqttClient.setServer(server, port);
 }
@@ -165,24 +165,18 @@ void ESPTeleInfo::SetData(char *label, char *value)
     {
         SendData(label, value);
     }
-    else if (sendGenericData())
-    {
-        SendAllData();
-        ts_generic = millis();
-    }
 }
 
 void ESPTeleInfo::SendAllData()
 {
-
     ValueList *item = teleinfo.getList();
 
     if (item)
     {
         while (item->next)
         {
-            SendData(item->name, item->value);
             item = item->next;
+            SendData(item->name, item->value);
         }
     }
 }
@@ -219,6 +213,12 @@ void ESPTeleInfo::loop(void)
             //     }
             // }
             ts_analyzeData = millis();
+        }
+
+        if (delay_generic > 0 && sendGenericData())
+        {
+            SendAllData();
+            ts_generic = millis();
         }
 
         if (compteur[0] == '\0')
@@ -279,7 +279,8 @@ bool ESPTeleInfo::LogStartup()
 
 bool ESPTeleInfo::sendGenericData()
 {
-    return (delay_generic <= 0) || (millis() - ts_generic > (delay_generic));
+    //return (delay_generic <= 0) || (millis() - ts_generic > (delay_generic));
+    return (millis() - ts_generic) > (delay_generic);
 }
 
 // 30 char max !

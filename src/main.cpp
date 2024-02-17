@@ -257,6 +257,7 @@ void saveParamCallback(){
       strcpy(config.mqtt_port, custom_mqtt_port->getValue());
       strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
       strcpy(config.mqtt_server_password, custom_mqtt_password->getValue());
+      strcpy(config.data_transmission_period, custom_data_transmission_period->getValue());
       configFile.write((byte *)&config, sizeof(config));
 
 

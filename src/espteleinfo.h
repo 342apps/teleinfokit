@@ -172,7 +172,7 @@ private:
 41 NTARF (numero index tarif en cours)
 42 NJOURF+1
 43 MSG1
-44 RELAI
+44 RELAIS
 
 ======= Text HIST
 45 ADC0 (Adresse compteur)

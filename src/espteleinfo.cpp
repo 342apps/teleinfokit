@@ -340,7 +340,7 @@ void ESPTeleInfo::sendMqttDiscovery(){
             sendMqttDiscoveryText(F("NTARF"), F("Numéro index tarifaire en cours"));
             sendMqttDiscoveryText(F("NJOURF+1"), F("Numéro du prochain jour calendrier fournisseur"));
             sendMqttDiscoveryText(F("MSG1"), F("Message"));
-            sendMqttDiscoveryText(F("RELAI"), F("Etat relais"));
+            sendMqttDiscoveryText(F("RELAIS"), F("Etat relais"));
         }
         else {
             sendMqttDiscoveryIndex(F("BASE"), F("Index BASE"));

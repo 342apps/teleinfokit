@@ -600,7 +600,6 @@ void setup()
   d->logPercent("Envoi MQTT Discovery", 80);
 
   ti.sendMqttDiscovery();
-  ti.SendAllData();
 
   d->logPercent("Activation portail config", 90);
 

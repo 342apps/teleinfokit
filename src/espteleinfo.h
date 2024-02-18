@@ -39,6 +39,7 @@ public:
     char strDataTopic[50];
     char strDiscoveryTopic[75];
     long ts_analyzeData;
+    long ts_startup;
     char analyzeBuffer[20];
 
 
@@ -58,12 +59,9 @@ public:
     char* _hchp_ = (char *)"HCHP";
 
     bool LogStartup();
+    void SetData(char * name, char * val);
     // 30 char max !
     void Log(String s);
-    void SendAllData();
-    void SendAllUnsentData();
-    void SendData(char* label, char* value);
-    void SetData(char * name, char * val);
 
     void sendMqttDiscovery();
 
@@ -81,6 +79,7 @@ private:
 
     unsigned int delay_generic;
     bool sendGeneric;
+    bool started;
 
     // timestamp for the last power data send
     unsigned long ts_power;
@@ -93,6 +92,9 @@ private:
     char UNIQUE_ID [30];
     char bufLabel[10];
 
+    void SendAllData();
+    void SendAllUnsentData();
+    void SendData(char* label, char* value);
     bool sendGenericData();
 
     void sendMqttDiscoveryIndex(String label, String friendlyName);

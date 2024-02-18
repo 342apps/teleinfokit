@@ -19,6 +19,8 @@ ESPTeleInfo::ESPTeleInfo()
     mqtt_user[0] = '\0';
     mqtt_pwd[0] = '\0';
     ts_analyzeData = 0;
+    ts_startup = 0;
+    started = false;
 }
 
 static void DataCallback(ValueList *me, uint8_t flags)
@@ -166,6 +168,10 @@ void ESPTeleInfo::SendData(char *label, char *value)
 
 void ESPTeleInfo::loop(void)
 {
+    if(ts_startup == 0){
+        ts_startup = millis();
+    }
+
     if (Serial.available())
     {
         teleinfo.process(Serial.read());
@@ -193,6 +199,12 @@ void ESPTeleInfo::loop(void)
             {
                 teleinfo.valueGet(_adsc_, adresseCompteur);
             }
+        }
+
+        // SendAll data 5s after start of loop to be sure all labels have been processed and are available
+        if(!started && (millis() - ts_startup > 5000)){
+            SendAllData();
+            started = true;
         }
     }
 }

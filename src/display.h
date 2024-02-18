@@ -19,7 +19,7 @@ public:
     Display();
     time_t now;
 
-   char buffer[80];
+    char buffer[80];
 
     void init(Data *d);
     void loop(void);
@@ -27,7 +27,7 @@ public:
     void logPercent(String text, int percentage);
     void drawGraph(long papp, char mode);
     void displayData1(long papp, long iinst);
-    void displayData2(long index, char* compteur);
+    void displayData2(long index, char *compteur);
     void displayNetwork();
     void displayTime();
     void displayReset();

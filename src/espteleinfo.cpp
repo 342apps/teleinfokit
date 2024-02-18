@@ -1,7 +1,5 @@
 #include "espteleinfo.h"
 
-#define NBTRY 5
-
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
@@ -128,7 +126,8 @@ void ESPTeleInfo::SetData(char *label, char *value)
         // Send data in real time
         SendData(label, value);
     }
-    else {
+    else
+    {
         // Store updated data to send later
         addOrReplaceValueInList(unsentList, label, value);
     }
@@ -136,8 +135,9 @@ void ESPTeleInfo::SetData(char *label, char *value)
 
 void ESPTeleInfo::SendAllUnsentData()
 {
-    UnsentValueList* current = unsentList;
-    while (current != nullptr) {
+    UnsentValueList *current = unsentList;
+    while (current != nullptr)
+    {
         SendData(current->name, current->value);
         current = current->next;
     }
@@ -170,7 +170,8 @@ void ESPTeleInfo::SendData(char *label, char *value)
 
 void ESPTeleInfo::loop(void)
 {
-    if(ts_startup == 0){
+    if (ts_startup == 0)
+    {
         ts_startup = millis();
     }
 
@@ -192,7 +193,6 @@ void ESPTeleInfo::loop(void)
 
         if (adresseCompteur[0] == '\0')
         {
-
             if (ticMode == TINFO_MODE_HISTORIQUE)
             {
                 teleinfo.valueGet(_adc0_, adresseCompteur);
@@ -204,7 +204,8 @@ void ESPTeleInfo::loop(void)
         }
 
         // SendAll data 5s after start of loop to be sure all labels have been processed and are available
-        if(!started && (millis() - ts_startup > 5000)){
+        if (!started && (millis() - ts_startup > 5000))
+        {
             SendAllData();
             started = true;
         }
@@ -265,12 +266,15 @@ void ESPTeleInfo::Log(String s)
     }
 }
 
-void ESPTeleInfo::sendMqttDiscovery(){
-    discoveryDevice = "\"dev\":{\"ids\":\"" + String(UNIQUE_ID) +"\" ,\"name\":\"TeleInfoKit\",\"sw\":\""+String(VERSION)+"\",\"mdl\":\"TeleInfoKit v4\",\"mf\": \"342apps\"}";
+void ESPTeleInfo::sendMqttDiscovery()
+{
+    discoveryDevice = "\"dev\":{\"ids\":\"" + String(UNIQUE_ID) + "\" ,\"name\":\"TeleInfoKit\",\"sw\":\"" + String(VERSION) + "\",\"mdl\":\"TeleInfoKit v4\",\"mf\": \"342apps\"}";
     mqttClient.setBufferSize(500);
 
-     if (connectMqtt()){
-        if(ticMode == TINFO_MODE_STANDARD){
+    if (connectMqtt())
+    {
+        if (ticMode == TINFO_MODE_STANDARD)
+        {
             sendMqttDiscoveryIndex(F("EAST"), "Index total");
             sendMqttDiscoveryIndex(F("EASF01"), F("Index fournisseur 01"));
             sendMqttDiscoveryIndex(F("EASF02"), F("Index fournisseur 02"));
@@ -299,7 +303,8 @@ void ESPTeleInfo::sendMqttDiscovery(){
             sendMqttDiscoveryText(F("MSG1"), F("Message"));
             sendMqttDiscoveryText(F("RELAIS"), F("Etat relais"));
         }
-        else {
+        else
+        {
             sendMqttDiscoveryIndex(F("BASE"), F("Index BASE"));
             sendMqttDiscoveryIndex(F("HCHC"), F("Index heure cruse"));
             sendMqttDiscoveryIndex(F("HCHP"), F("Index heure pleine"));
@@ -324,48 +329,53 @@ void ESPTeleInfo::sendMqttDiscovery(){
     mqttClient.setBufferSize(256);
 }
 
-void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName){
+void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
+{
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"")+
-    F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"")+bufDataTopic+"/"+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
-    F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"ic\":\"mdi:counter\",")+
-    discoveryDevice + "}";
+    String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"") +
+                    F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
+                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:counter\",") +
+                    discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
 }
 
-void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon){
+void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon)
+{
 
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"dev_cla\":\"")+deviceClass+F("\",\"unit_of_meas\":\"")+unit+"\""+
-    F(",\"stat_t\":\"")+bufDataTopic+"/"+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+"\",\"ic\":\""+icon+"\","+
-    discoveryDevice + "}";
+    String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"") + deviceClass + F("\",\"unit_of_meas\":\"") + unit + "\"" +
+                    F(",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + "\",\"ic\":\"" + icon + "\"," +
+                    discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
 }
 
-void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName){
+void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
+{
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"stat_t\":\"")+bufDataTopic+"/"+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
-    F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"ic\":\"mdi:information-outline\",")+
-    discoveryDevice + "}";
+    String sensor = F("{\"name\":\"") + friendlyName + F("\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
+                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:information-outline\",") +
+                    discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
 }
 
-void ESPTeleInfo::freeList(UnsentValueList*& head) {
-    UnsentValueList* current = head;
-    while (current != nullptr) {
-        UnsentValueList* next = current->next;
+void ESPTeleInfo::freeList(UnsentValueList *&head)
+{
+    UnsentValueList *current = head;
+    while (current != nullptr)
+    {
+        UnsentValueList *next = current->next;
         free(current->name);
         free(current->value);
         delete current;
@@ -374,19 +384,22 @@ void ESPTeleInfo::freeList(UnsentValueList*& head) {
     head = nullptr;
 }
 
-void ESPTeleInfo::addOrReplaceValueInList(UnsentValueList*& head, const char* name, const char* newValue) {
-    UnsentValueList* current = head;
-    while (current != nullptr) {
-        if (strcmp(current->name, name) == 0) {
+void ESPTeleInfo::addOrReplaceValueInList(UnsentValueList *&head, const char *name, const char *newValue)
+{
+    UnsentValueList *current = head;
+    while (current != nullptr)
+    {
+        if (strcmp(current->name, name) == 0)
+        {
             free(current->value);
-            current->value = strdup(newValue); 
-            return; 
+            current->value = strdup(newValue);
+            return;
         }
         current = current->next;
     }
 
     // not found -> add
-    UnsentValueList* newNode = new UnsentValueList;
+    UnsentValueList *newNode = new UnsentValueList;
     newNode->name = strdup(name);
     newNode->value = strdup(newValue);
     newNode->next = head;

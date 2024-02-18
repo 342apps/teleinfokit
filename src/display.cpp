@@ -6,9 +6,9 @@ SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY
 Display::Display()
 {
   oled.init();
-  #if _HW_VER == 1
+#if _HW_VER == 1
   oled.flipScreenVertically();
-  #endif
+#endif
   oled.setFont(ArialMT_Plain_10);
 }
 
@@ -94,7 +94,7 @@ void Display::displayData1(long papp, long iinst)
   oled.display();
 }
 
-void Display::displayData2(long index, char* compteur)
+void Display::displayData2(long index, char *compteur)
 {
   oled.displayOn();
   oled.clear();
@@ -124,7 +124,7 @@ void Display::displayTime()
 {
   struct tm timeinfo;
   localtime_r(&now, &timeinfo); // update the structure tm with the current time
-  strftime (buffer,80,"%a %d %b %Y %H:%M:%S ", &timeinfo);
+  strftime(buffer, 80, "%a %d %b %Y %H:%M:%S ", &timeinfo);
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
@@ -152,7 +152,6 @@ void Display::displayOff()
   oled.displayOff();
 }
 
-
 void Display::getTime()
 {
   now = time(nullptr);
@@ -167,10 +166,8 @@ void Display::getTime()
     now = time(nullptr);
     if ((millis() - start) > timeout)
     {
-      oled.drawString(0, 0,"[ERROR] Failed to get NTP time.");
+      oled.drawString(0, 0, "[ERROR] Failed to get NTP time.");
       return;
     }
   }
-
-
 }

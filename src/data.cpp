@@ -22,13 +22,12 @@ void Data::init()
     }
 }
 
-void Data::setNtp(){
+void Data::setNtp()
+{
     now = time(nullptr);
     localtime_r(&now, &timeinfo); // update the structure tm with the current time
-    // strftime (buffer,80,"%a %d %b %Y %H:%M:%S ", &timeinfo);
-    startupTime = now;  // epoch time
+    startupTime = now; // epoch time
     previousHour = timeinfo.tm_hour;
-    // previousHour = ntpClient->getHours();
 }
 
 void Data::calculateGraph()

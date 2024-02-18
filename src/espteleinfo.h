@@ -10,6 +10,7 @@
 #include <PubSubClient.h>
 #include "version.h"
 
+
 // Linked list structure containing all values received
 typedef struct _UnsentValueList UnsentValueList;
 struct _UnsentValueList
@@ -91,6 +92,8 @@ private:
     char CHIP_ID[7] = {0};
     char UNIQUE_ID [30];
     char bufLabel[10];
+    char bufLogTopic[35];
+    char bufDataTopic[35];
 
     void SendAllData();
     void SendAllUnsentData();

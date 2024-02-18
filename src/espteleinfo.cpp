@@ -39,6 +39,8 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     adresseCompteur[0] = '\0';
 
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
+    snprintf(bufLogTopic, 35, "%s/log", UNIQUE_ID);
+    snprintf(bufDataTopic, 35, "%s/data", UNIQUE_ID);
 
     Serial.flush();
     Serial.end();
@@ -161,7 +163,7 @@ void ESPTeleInfo::SendData(char *label, char *value)
     // send all data in the data topic
     if (connectMqtt())
     {
-        sprintf(strDataTopic, "teleinfokit_dev/data/%s", label);
+        sprintf(strDataTopic, "%s/%s", bufDataTopic, label);
         mqttClient.publish(strDataTopic, value, true);
     }
 }
@@ -259,7 +261,7 @@ void ESPTeleInfo::Log(String s)
     if (nbTry < NBTRY)
     {
         s.toCharArray(logBuffer, 200);
-        mqttClient.publish("teleinfokit_dev/log", logBuffer);
+        mqttClient.publish(bufLogTopic, logBuffer);
     }
 }
 
@@ -327,7 +329,7 @@ void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName){
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
     String sensor = F("{\"name\":\"")+friendlyName+F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"")+
-    F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"teleinfokit_dev/data/")+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
+    F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"")+bufDataTopic+"/"+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
     F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"ic\":\"mdi:counter\",")+
     discoveryDevice + "}";
 
@@ -341,7 +343,7 @@ void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, St
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
     String sensor = F("{\"name\":\"")+friendlyName+F("\",\"dev_cla\":\"")+deviceClass+F("\",\"unit_of_meas\":\"")+unit+"\""+
-    F(",\"stat_t\":\"teleinfokit_dev/data/")+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+"\",\"ic\":\""+icon+"\","+
+    F(",\"stat_t\":\"")+bufDataTopic+"/"+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+"\",\"ic\":\""+icon+"\","+
     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
@@ -352,7 +354,7 @@ void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName){
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"stat_t\":\"teleinfokit_dev/data/")+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
+    String sensor = F("{\"name\":\"")+friendlyName+F("\",\"stat_t\":\"")+bufDataTopic+"/"+label+F("\",\"uniq_id\":\"")+String(UNIQUE_ID)+"-"+label+
     F("\",\"obj_id\":\"")+String(UNIQUE_ID)+"-"+label+F("\",\"ic\":\"mdi:information-outline\",")+
     discoveryDevice + "}";
 

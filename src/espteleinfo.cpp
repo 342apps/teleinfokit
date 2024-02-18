@@ -165,20 +165,29 @@ void ESPTeleInfo::SetData(char *label, char *value)
     {
         SendData(label, value);
     }
+    else {
+        addOrReplaceValueInList(unsentList, label, value);
+    }
 }
 
 void ESPTeleInfo::SendAllData()
 {
-    ValueList *item = teleinfo.getList();
-
-    if (item)
-    {
-        while (item->next)
-        {
-            item = item->next;
-            SendData(item->name, item->value);
-        }
+    UnsentValueList* current = unsentList;
+    while (current != nullptr) {
+        SendData(current->name, current->value);
+        current = current->next;
     }
+    freeList(unsentList);
+    // ValueList *item = teleinfo.getList();
+
+    // if (item)
+    // {
+    //     while (item->next)
+    //     {
+    //         item = item->next;
+    //         SendData(item->name, item->value);
+    //     }
+    // }
 }
 
 void ESPTeleInfo::SendData(char *label, char *value)
@@ -255,20 +264,20 @@ bool ESPTeleInfo::LogStartup()
     if (nbTry < NBTRY)
     {
         char str[80];
-        mqttClient.publish("teleinfokit_dev/log", "Startup");
+        Log("Startup");
         strcpy(str, "Version: ");
         strcat(str, VERSION);
-        mqttClient.publish("teleinfokit_dev/log", str);
+        Log(str);
 #ifdef _HW_VER
         sprintf(str, "HW Version: %d", _HW_VER);
-        mqttClient.publish("teleinfokit_dev/log", str);
+        Log(str);
 #endif
         strcpy(str, "IP: ");
         strcat(str, WiFi.localIP().toString().c_str());
-        mqttClient.publish("teleinfokit_dev/log", str);
+        Log(str);
         strcpy(str, "MAC: ");
         strcat(str, WiFi.macAddress().c_str());
-        mqttClient.publish("teleinfokit_dev/log", str);
+        Log(str);
         return true;
     }
     else
@@ -394,4 +403,35 @@ void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName){
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
+}
+
+void ESPTeleInfo::freeList(UnsentValueList*& head) {
+    UnsentValueList* current = head;
+    while (current != nullptr) {
+        UnsentValueList* next = current->next;
+        free(current->name);
+        free(current->value);
+        delete current;
+        current = next;
+    }
+    head = nullptr;
+}
+
+void ESPTeleInfo::addOrReplaceValueInList(UnsentValueList*& head, const char* name, const char* newValue) {
+    UnsentValueList* current = head;
+    while (current != nullptr) {
+        if (strcmp(current->name, name) == 0) {
+            free(current->value);  // Libérer la mémoire de l'ancienne valeur
+            current->value = strdup(newValue);  // Copier la nouvelle valeur
+            return;  // Arrêter la recherche et sortir de la fonction une fois que l'élément est trouvé et remplacé
+        }
+        current = current->next;
+    }
+
+    // not found -> add
+    UnsentValueList* newNode = new UnsentValueList;
+    newNode->name = strdup(name);  // Utiliser strdup pour allouer dynamiquement et copier la chaîne
+    newNode->value = strdup(newValue);
+    newNode->next = head;
+    head = newNode;
 }

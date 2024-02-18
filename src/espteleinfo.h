@@ -10,6 +10,15 @@
 #include <PubSubClient.h>
 #include "version.h"
 
+// Linked list structure containing all values received
+typedef struct _UnsentValueList UnsentValueList;
+struct _UnsentValueList
+{
+  UnsentValueList *next; // next element
+  char  * name;    // LABEL of value name
+  char  * value;   // value
+};
+
 class ESPTeleInfo
 {
 
@@ -99,6 +108,10 @@ private:
 
     bool discovery_sent[49];    // flag to specify if mqtt discovery message is sent
     String discoveryDevice;
+
+    UnsentValueList* unsentList = nullptr;
+    void freeList(UnsentValueList*& head);
+    void addOrReplaceValueInList(UnsentValueList*& head, const char* name, const char* newValue);
     //#define discoveryIndex {"name":"%s","dev_cla":"energy","stat_cla":"total_increasing","unit_of_meas":"kWh","val_tpl":"{{float(value)/1000.0}}","stat_t":"%s/data/%s","uniq_id":"%s-%s","ic":"mdi:counter","dev":{"ids":"%s","name":"TeleInfoKit","sw":"VERSION","mdl":"TeleInfoKit v4"}}
 /*
 ======= Indexes STD

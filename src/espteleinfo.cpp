@@ -1,22 +1,5 @@
 #include "espteleinfo.h"
 
-#define INTERVAL 3000 // 3 sec delay between publishing
-
-#define IINST "IINST"
-#define PAPP "PAPP"
-#define HC "HCHC"
-#define HP "HCHP"
-#define ADCO "ADCO"
-#define OPTARIF "OPTARIF"
-#define ISOUSC "ISOUSC"
-#define IMAX "IMAX"
-#define PTEC "PTEC"
-#define BASE "BASE"
-// mode triphase
-#define IINST1 "IINST1"
-#define IINST2 "IINST2"
-#define IINST3 "IINST3"
-
 #define NBTRY 5
 
 WiFiClient wifiClient;
@@ -40,25 +23,7 @@ ESPTeleInfo::ESPTeleInfo()
 
 static void DataCallback(ValueList *me, uint8_t flags)
 {
-
-    //   if (flags & TINFO_FLAGS_ADDED) {
-    //     getESPTeleInfo()->Log("New " + String(me->name) + " - " + String(me->value));
-    //   }
-
-    //   if (flags & TINFO_FLAGS_UPDATED){
-    //     getESPTeleInfo()->Log("Maj " + String(me->name) + " - " + String(me->value));
-    //   }
-
     getESPTeleInfo()->SetData(me->name, me->value);
-    // while(me->next){
-    //     me = me->next;
-    // }
-
-    // Display values
-
-    //   Serial.print(me->name);
-    //   Serial.print("=");
-    //   Serial.println(me->value);
 }
 
 void ESPTeleInfo::init(_Mode_e tic_mode)
@@ -69,14 +34,8 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     iinst = 0;
     papp = 0;
     index = 0;
-    compteur[0] = '\0';
+    adresseCompteur[0] = '\0';
 
-    for (int i = 0; i < LINE_MAX_COUNT; i++)
-    {
-        values_old[i][0] = '\0';
-    }
-
-    // sprintf(CHIP_ID, "%06X", ESP.getChipId());
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
 
     Serial.flush();
@@ -91,7 +50,6 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     {
         teleinfo.process(Serial.read());
     }
-    
 }
 
 void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password, int period_data)
@@ -117,7 +75,7 @@ bool ESPTeleInfo::connectMqtt()
     }
 }
 
-void ESPTeleInfo::AnalyzeData()
+void ESPTeleInfo::AnalyzeTicForInternalData()
 {
     if (ticMode == TINFO_MODE_HISTORIQUE)
     {
@@ -163,14 +121,16 @@ void ESPTeleInfo::SetData(char *label, char *value)
 {
     if (delay_generic <= 0)
     {
+        // Send data in real time
         SendData(label, value);
     }
     else {
+        // Store updated data to send later
         addOrReplaceValueInList(unsentList, label, value);
     }
 }
 
-void ESPTeleInfo::SendAllData()
+void ESPTeleInfo::SendAllUnsentData()
 {
     UnsentValueList* current = unsentList;
     while (current != nullptr) {
@@ -178,16 +138,20 @@ void ESPTeleInfo::SendAllData()
         current = current->next;
     }
     freeList(unsentList);
-    // ValueList *item = teleinfo.getList();
+}
 
-    // if (item)
-    // {
-    //     while (item->next)
-    //     {
-    //         item = item->next;
-    //         SendData(item->name, item->value);
-    //     }
-    // }
+void ESPTeleInfo::SendAllData()
+{
+    ValueList *item = teleinfo.getList();
+
+    if (item)
+    {
+        while (item->next)
+        {
+            item = item->next;
+            SendData(item->name, item->value);
+        }
+    }
 }
 
 void ESPTeleInfo::SendData(char *label, char *value)
@@ -208,50 +172,30 @@ void ESPTeleInfo::loop(void)
 
         if (millis() - ts_analyzeData > 1000)
         {
-            AnalyzeData();
-            // ValueList *item = teleinfo.getList();
-
-            // if (item)
-            // {
-            //     while (item->next)
-            //     {
-            //         if (item->flags & TINFO_FLAGS_UPDATED)
-            //         {
-            //         }
-            //         item = item->next;
-            //     }
-            // }
+            AnalyzeTicForInternalData();
             ts_analyzeData = millis();
         }
 
         if (delay_generic > 0 && sendGenericData())
         {
-            SendAllData();
+            SendAllUnsentData();
             ts_generic = millis();
         }
 
-        if (compteur[0] == '\0')
+        if (adresseCompteur[0] == '\0')
         {
 
             if (ticMode == TINFO_MODE_HISTORIQUE)
             {
-                teleinfo.valueGet(_adc0_, compteur);
+                teleinfo.valueGet(_adc0_, adresseCompteur);
             }
             else
             {
-                teleinfo.valueGet(_adsc_, compteur);
+                teleinfo.valueGet(_adsc_, adresseCompteur);
             }
         }
     }
 }
-
-// void ESPTeleInfo::getPhaseMode(){
-//     modeTriphase = !(
-//         iinst > 0 &&
-//         iinst1 <= 0 &&
-//         iinst2 <= 0 &&
-//         iinst3 <= 0);
-// }
 
 bool ESPTeleInfo::LogStartup()
 {
@@ -264,7 +208,7 @@ bool ESPTeleInfo::LogStartup()
     if (nbTry < NBTRY)
     {
         char str[80];
-        Log("Startup");
+        Log("Startup " + String(UNIQUE_ID));
         strcpy(str, "Version: ");
         strcat(str, VERSION);
         Log(str);
@@ -288,11 +232,10 @@ bool ESPTeleInfo::LogStartup()
 
 bool ESPTeleInfo::sendGenericData()
 {
-    //return (delay_generic <= 0) || (millis() - ts_generic > (delay_generic));
     return (millis() - ts_generic) > (delay_generic);
 }
 
-// 30 char max !
+// 100 char max !
 void ESPTeleInfo::Log(String s)
 {
     int8_t nbTry = 0;
@@ -303,8 +246,8 @@ void ESPTeleInfo::Log(String s)
     }
     if (nbTry < NBTRY)
     {
-        s.toCharArray(buffer, 200);
-        mqttClient.publish("teleinfokit_dev/log", buffer);
+        s.toCharArray(logBuffer, 200);
+        mqttClient.publish("teleinfokit_dev/log", logBuffer);
     }
 }
 
@@ -421,16 +364,16 @@ void ESPTeleInfo::addOrReplaceValueInList(UnsentValueList*& head, const char* na
     UnsentValueList* current = head;
     while (current != nullptr) {
         if (strcmp(current->name, name) == 0) {
-            free(current->value);  // Libérer la mémoire de l'ancienne valeur
-            current->value = strdup(newValue);  // Copier la nouvelle valeur
-            return;  // Arrêter la recherche et sortir de la fonction une fois que l'élément est trouvé et remplacé
+            free(current->value);
+            current->value = strdup(newValue); 
+            return; 
         }
         current = current->next;
     }
 
     // not found -> add
     UnsentValueList* newNode = new UnsentValueList;
-    newNode->name = strdup(name);  // Utiliser strdup pour allouer dynamiquement et copier la chaîne
+    newNode->name = strdup(name);
     newNode->value = strdup(newValue);
     newNode->next = head;
     head = newNode;

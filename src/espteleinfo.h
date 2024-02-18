@@ -35,13 +35,12 @@ public:
     long iinst;      // HIST: IINST  STD IRMS1
     long papp;        // HIST: PAPP   STD SINSTS
     long index;      // HIST: BASE + HCHC + HCHP   STD EAST
-    char compteur[20];          // HIST: ADCO   STD ADSC
+    char adresseCompteur[20];          // HIST: ADCO   STD ADSC
     char strDataTopic[50];
     char strDiscoveryTopic[75];
     long ts_analyzeData;
     char analyzeBuffer[20];
 
-    char values_old[LINE_MAX_COUNT][DATA_MAX_SIZE+1]; //+1 for '\0' ending
 
     // _Mode_e tic_mode = TINFO_MODE_STANDARD;
     TInfo tic;
@@ -62,6 +61,7 @@ public:
     // 30 char max !
     void Log(String s);
     void SendAllData();
+    void SendAllUnsentData();
     void SendData(char* label, char* value);
     void SetData(char * name, char * val);
 
@@ -71,7 +71,7 @@ public:
 private:
     _Mode_e ticMode;
     long previousMillis;
-    char buffer[100];
+    char logBuffer[100];
     char mqtt_user[32];
     char mqtt_pwd[32];
 
@@ -104,7 +104,7 @@ private:
     // detects the communication mode (mono or triphase)
     void getPhaseMode();
     bool connectMqtt();
-    void AnalyzeData();
+    void AnalyzeTicForInternalData();
 
     bool discovery_sent[49];    // flag to specify if mqtt discovery message is sent
     String discoveryDevice;

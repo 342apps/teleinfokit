@@ -77,7 +77,7 @@ void getHistory()
 void getMeterInfo()
 {
     authenticate();
-    server.send(200, "application/json", "{\"compteur\": \"" + String(teleinfows->compteur) + "\"}");
+    server.send(200, "application/json", "{\"compteur\": \"" + String(teleinfows->adresseCompteur) + "\"}");
 }
 
 void getConfigInfo()

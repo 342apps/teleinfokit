@@ -671,7 +671,7 @@ void loop()
         break;
       case DATA2:
         reset = IDLE;
-        d->displayData2(ti.index, ti.compteur); 
+        d->displayData2(ti.index, ti.adresseCompteur); 
         // if(ti.modeBase)
         // {
         //   d->displayData2Base(ti.base);

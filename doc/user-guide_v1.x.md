@@ -1,10 +1,12 @@
-# Guide d'utilisation TeleInfoKit
+# Guide d'utilisation TeleInfoKit (Firmware v1.x)
+
+> **ATTENTION** : cette documentation concerne les firmwares antérieurs à la version 2. Pour la documentation du firmware l eplus récent, voir la [page dédiée](./user_guide.md).
 
 ## Démarrage et configuration
 
-Lors du premier démarrage du module il est nécessaire de saisir les informations de connexion au réseau Wifi. Les informations concernant le serveur MQTT ou le mode TIC peuvent être également renseignées au démarrage, mais peuvent être saisies plus tard, une fois le module connecté au réseau WiFi.
+Lors du premier démarrage du module il est nécessaire de saisir les informations de connexion au réseau Wifi, au serveur MQTT et à l'authentification.
 
-Brancher le connecteur USB-C à une source d'alimentation 5V (chargeur USB classique), puis attendre jusqu'à l'affichage de l'écran suivant :
+Brancher le connecteur micro USB à une source d'alimentation 5V (chargeur USB classique), puis attendre jusqu'à l'affichage de l'écran suivant :
 
 ```text
 Hotspot Wifi: TeleInfoKit
@@ -15,17 +17,17 @@ Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smar
 
 ![Captive portal](./captive-portal.png)
 
-### Optionnel : configuration MQTT et TIC
-
-Il est possible de configurer dès maintenant le serveur MQTT et les réglages pour les données TIC. Pour cela, se référer à la section [configuration MQTT et TIC](#configuration-mqtt-et-tic).
-
-Ces réglages seront toujours accessibles une fois le module connecté au réseau WiFi.
-
-### Configuration WiFi
-
-Cliquer sur le bouton "Configure Wifi" pour faire apparaître la liste des réseaux wifi à portée (l'ESP-01 est compatible **WiFi 2.4GHz seulement**), puis :
+* Cliquer sur le bouton "Configure Wifi" pour faire apparaître la liste des réseaux wifi à portée (l'ESP-01 est compatible wifi 2.4GHz seulement).
 * Taper le nom du réseau dans le champ SSID ou le sélectionner dans la liste.
 * Saisir le mot de passe du réseau wifi
+* Saisir l'adresse du serveur mqtt (ip ou alias dns)
+* Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
+* Choisir un identifiant et un mot de passe pour protéger l'accès aux données par mot de passe.
+* Pour limiter la fréquence d'envoi des données via MQTT, saisir un délai (en secondes). La valeur `0` signifie un envoi en temps réel.
+    * Pour les données de puissance (PAPP, IINST et IINST1, 2 et 3 dans le cas d'un abonnement triphasé ) et les données génériques pour le firmware v1
+    * Pour les données d'index (HCHC, HPHP et BASE)
+
+**Note:** les données triphasé (IINST1, IINST2 et IINST3) ne sont disponibles qu'à partir du firmware v1.
 
 Cliquer sur `Save`. Le module va afficher un message de confirmation puis continuer le démarrage avec un message `Configuration reseau ok`.
 
@@ -33,24 +35,19 @@ Le point d'accès wifi se désactive.
 
 **Note:** Le réseau wifi utilisé doit avoir accès à internet pour que l'heure puisse être obtenue depuis un serveur NTP.
 
-## Configuration MQTT et TIC
+### Authentification
 
-La configuration est accessible via le bouton `Setup` la page principale 
-* Saisir l'adresse du serveur mqtt (ip ou alias dns)
-* Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
-* Pour limiter la fréquence d'envoi des données via MQTT, saisir un délai (en secondes). La valeur `0` ou un champ vide signifie un envoi en temps réel.
+Lors de la configuration initiale il est possible de saisir un login/password pour protéger l'accès aux données. Ces identifiants sont utilisés pour activer une authentification HTTP Basic sur la page dashboard et l'accès aux APIs. Le navigateur demandera automatiquement ces identifiants.
 
-> **Note:** Quelques secondes après le démarrage, l'ensemble des données est envoyé afin de resynchroniser les éventuels systèmes à l'écoute sur toutes les valeurs.
+![Authentication](./authentication.png)
 
-> **Note:** Que ce soit en mode temps réel ou avec un délai défini, seules les données mises à jour sont envoyées.
-
-> **Note:** En mode temps réel, les données sont transmises au rythme des trames envoyées par le compteur, soit environ **toutes les 1 à 2 secondes**.
+Si les deux champs sont laissés vides, l'authentification est désactivée.
 
 ### En cas de mauvais paramétrage MQTT
 
-Si le serveur MQTT n'est pas accessible ou en cas d'erreur dans l'ip, login ou mot de passe MQTT, un message d'erreur s'affichera. Le démarrage se poursuit dans tous les cas, et le module reste accessible via son portail de configuration.
+Si le serveur MQTT n'est pas accessible ou en cas d'erreur dans l'ip, login ou mot de passe MQTT, un message d'erreur s'affichera. Le démarrage se poursuit dans tous les cas, et le module reste accessible via ses APIs et le dashboard.
 
-Pour corriger la configuration MQTT, suivre la procédure de [Configuration MQTT et TIC](#configuration-mqtt-et-tic) ou bien [réinitialiser le module](#réinitialisation-de-la-configuration-factory-reset).
+Pour corriger la configuration MQTT, [réinitialiser le module](#réinitialisation-de-la-configuration-factory-reset).
 
 ### En cas d'erreur de paramétrage wifi
 
@@ -58,7 +55,7 @@ Si le paramétrage wifi est incorrect, le module ne poursuit pas son démarrage.
 
 ## Messages MQTT
 
-Se référer au document [Messages MQTT](./mqtt.md) pour toutes les informations sur la structure des topics et le contenu des messages.
+Se référer au document [Messages MQTT](./mqtt_v1.md) pour toutes les informations sur la structure des topics et le contenu des messages.
 
 ## Écrans
 

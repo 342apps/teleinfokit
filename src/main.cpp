@@ -396,6 +396,8 @@ void setup()
   wm.addParameter(custom_mqtt_username);
   wm.addParameter(custom_mqtt_password);
   wm.addParameter(custom_data_transmission_period);
+  wm.setCustomHeadElement("<style>body{background-color: #F9FAFB; color: #375c72;} .msg.S {border-left-color: #477089;} button{color: #FFF; background-color: #81AECA;}</style>");
+  wm.setTitle(F("Portail TeleInfoKit"));
 
   if (strcmp(config.mqtt_port, "") == 0)
   {

@@ -12,6 +12,7 @@
 
 #include "espteleinfo.h"
 #include "display.h"
+#include "randomKeyGenerator.h"
 
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
@@ -20,7 +21,7 @@
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define SCREENSAVER_DELAY 60000
 #define AP_NAME "TeleInfoKit"
-#define AP_PWD "givememydata"
+// #define AP_PWD "givememydata"
 
 #define REFRESH_DELAY 1000
 
@@ -83,6 +84,7 @@ Data *data;
 Display *d;
 ESPTeleInfo ti = ESPTeleInfo();
 Button2 button = Button2(PIN_BUTTON);
+RandomKeyGenerator *randKey;
 
 time_t now;
 
@@ -148,7 +150,7 @@ void saveConfigCallback()
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager *myWiFiManager)
 {
-  d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\n" + WiFi.softAPIP().toString());
+  d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé :" + String(randKey->apPwd));
 }
 
 // Retreives configuration from filesystem
@@ -427,7 +429,9 @@ void setup()
   // if it does not connect it starts an access point with the specified name
   // and goes into a blocking loop awaiting configuration
   wm.setConnectTimeout(45);
-  if (!wm.autoConnect(AP_NAME, AP_PWD))
+
+  // the AP password is random and specific to each device, but will be always the same for a device
+  if (!wm.autoConnect(AP_NAME, randKey->apPwd))
   {
     d->log("Connexion impossible\n Reset...");
     delay(1000);

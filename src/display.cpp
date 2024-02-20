@@ -101,10 +101,10 @@ void Display::displayData2(long index, char *compteur)
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, "Compteur");
-  oled.drawString(0, 10, compteur);
-  oled.drawString(0, 20, "Index total");
+  oled.drawString(0, 10, "Index total");
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  oled.drawString(120, 20, String(index));
+  oled.drawString(120, 0, compteur);
+  oled.drawString(120, 10, String(index));
   oled.display();
 }
 
@@ -143,6 +143,8 @@ void Display::displayReset()
   oled.drawString(0, 0, "Réinitialisation ?");
   oled.drawString(0, 10, "Appui long pour reset...");
   oled.drawString(0, 20, VERSION);
+  oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+  oled.drawString(120, 20, String(ESP.getChipId()));
   oled.display();
 }
 

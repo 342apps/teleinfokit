@@ -11,12 +11,12 @@ char RandomKeyGenerator::generateRandomHexChar() {
 }
 
 // Generates a key with format "XXXX-XXXX-XXXX"
-void RandomKeyGenerator::generateRandomHexKey(char hexKey[16]) {
-    for (int i = 0; i < 16; ++i) {
+void RandomKeyGenerator::generateRandomHexKey(char hexKey[14]) {
+    for (int i = 0; i < 14; ++i) {
         hexKey[i] = generateRandomHexChar();
 
         // Ajoute un tiret après chaque groupe de 4 caractères hexadécimaux
-        if ((i + 1) % 5 == 0 && i != 15) {
+        if ((i + 1) % 5 == 0 && i != 13) {
             hexKey[i] = '-';
         }
     }

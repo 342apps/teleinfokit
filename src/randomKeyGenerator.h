@@ -10,11 +10,11 @@ public:
 
     void InitAccessPointPassword();
 
-    char apPwd[16];
+    char apPwd[14];
 
 private:
 
-    void generateRandomHexKey(char hexKey[16]);
+    void generateRandomHexKey(char hexKey[14]);
     char generateRandomHexChar();
 
 };

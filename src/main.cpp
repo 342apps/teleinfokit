@@ -344,6 +344,7 @@ void setup()
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // //-pinMode(PIN_OPTO, INPUT_PULLUP);
   data = new Data();
+  randKey = new RandomKeyGenerator();
   d = new Display();
   data->init();
   d->init(data);

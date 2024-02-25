@@ -8,12 +8,14 @@ Brancher le connecteur USB-C à une source d'alimentation 5V (chargeur USB class
 
 ```text
 Hotspot Wifi: TeleInfoKit
-192.168.4.1
+Clé: ABCD-1234-EF56 
 ```
 
-Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est `givememydata`. Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
+Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est affiché à l'écran. Il est unique à chaque boitier.
 
-![Captive portal](./captive-portal.png)
+Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
+
+![Captive portal](./captive-portal_v2.png)
 
 ### Optionnel : configuration MQTT et TIC
 
@@ -36,6 +38,21 @@ Le point d'accès wifi se désactive.
 ## Configuration MQTT et TIC
 
 La configuration est accessible via le bouton `Setup` la page principale 
+
+![MQTT config](./cp_config.png)
+
+### Mode TIC
+
+Il existe deux mode TIC : Historique et Standard. Les anciens compteurs électroniques blanc génèrent seulement des informations TIC en mode Historique. Les compteurs linky peuvent être en mode Standard ou Historique. Le mode Standard envoie des informations plus nombreuses et plus précises que le mode Historique. Il est possible de demander à son fournisseur d'électricité de changer ce mode.
+
+Sélectionner le mode TIC adapté au compteur en cochant la case `Mode TIC Standard` si le compteur est paramétré en mode Standard.
+
+Le mode TIC courant sera affiché à gauche de l'écran du TeleInfoKit qui affiche le graphe (voir section [Ecran historique](#écran-1--historique)).
+
+> Pour vérifier si votre compteur est en mode TIC Historique ou Standard, sur l'écran de celui-ci il sera affiché `Historique mode TIC` ou `Standard mode TIC` en appuyant quelques fois sur son bouton.
+
+### Configuration MQTT
+
 * Saisir l'adresse du serveur mqtt (ip ou alias dns)
 * Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
 * Pour limiter la fréquence d'envoi des données via MQTT, saisir un délai (en secondes). La valeur `0` ou un champ vide signifie un envoi en temps réel.
@@ -76,15 +93,17 @@ Ce premier écran rassemble un grand nombre d'informations. La zone principale e
 
 A chaque barre correspond 1 heure. Les barres à gauche sont les plus anciennes, la barre la plus à droite est l'heure courante. La hauteur de la barre indique le nombre de Wh consommés sur cette période d'une heure (HC + HP).
 
-La barre horizontale à droite indique la hauteur maximale des barres du graphe. Le nombre indiqué sous cette barre (2453Wh sur l'exemple ci-dessous) indique la consommation max sur une période d'une heure au cours des dernières 24h. Cela sert donc d'échelle pour le graphe, cette valeur étant la consommation associée à la barre la plus haute du graphe.
+La barre horizontale à droite indique la hauteur maximale des barres du graphe. Le nombre indiqué sous cette barre (2864Wh sur l'exemple ci-dessous) indique la consommation max sur une période d'une heure au cours des dernières 24h. Cela sert donc d'échelle pour le graphe, cette valeur étant la consommation associée à la barre la plus haute du graphe.
 
-![Historique](./history-screen.png)
+![Historique](./history-screen_v2.png)
 
 Le graphe est optimisé pour occuper le maximum de hauteur possible à l'écran. L'échelle (la plus grande consommation par tranche d'une heure) s'adapte donc au fur et a mesure du temps.
 
 Au fil des heures, le graphe se décale vers la gauche, les nouvelles valeurs de consommation poussant les anciennes.
 
-Dans le coin supérieur droit, la puissance consommée à l'instant t est affichée (ici 2610VA). Sa valeur est mise à jour en continu, environ toutes les 2 secondes.
+Dans le coin supérieur droit, la puissance consommée à l'instant t est affichée (ici 2985VA). Sa valeur est mise à jour en continu, environ toutes les 1 à 2 secondes.
+
+Dans le coin haut gauche se trouve l'indication du mode TIC. Pour le mode Standard, un `S` apparait dans un carré, pour le mode Historique ce sera un `H`. 
 
 ### Écran #2 : Puissance / Intensité
 
@@ -98,31 +117,17 @@ Puissance/Intensite
 
 Ces valeur sont mises à jour en continu, environ toutes les 2 secondes.
 
-**Firmware v1+**: dans le cas d'un abonnement en triphasé, les 3 valeurs d'intensité sont affichées en ligne : `I1 / I2 / I3`
+### Écran #3 : Informations compteur
 
-### Écran #3 : Index compteurs
-
-Cet écran affiche les index courants des heure creuse et heure pleine, remontés par le compteur.
+Cet écran affiche les l'identifiant compteur et l'index total en Wh (tag `EAST` pour le mode standard, et tag `BASE` + `HCHP` + `HPHP` pour le mode Historique).
 
 ```text
-Index compteurs
-HC 211485
-HP 415443
+Compteur 123064875214
+Index total 125456987
+
 ```
 
-Ces valeur sont mises à jour en continu, environ toutes les 2 secondes.
-
-### Écran #4 : Informations compteur
-
-Cet écran affiche les l'identifiant compteur, la puissance souscrite sur l'abonnement et la période tarifaire en cours (`HP..` : heure pleine, `HC..` : heure creuse).
-
-```text
-Id cpt 064875214
-Puiss. souscrite : 90A
-Per. tarif : HP..
-```
-
-### Écran #5 : Réseau
+### Écran #4 : Réseau
 
 Sur cet écran, le réseau wifi auquel le module est connecté s'affiche, avec l'IP obtenue sur ce réseau. En dernière ligne l'adresse MAC de l'ESP est affichée, pour lui affecter une IP statique par exemple.
 
@@ -134,17 +139,23 @@ DC:4F:22:E3:27:A3
 
 Les valeurs sont données à titre d'exemple.
 
-### Écran #6 : Réinitialisation + version
+### Écran #5 : Date  /heure
+
+Affiche la date et l'heure pour vérifier la bonne connexion réseau.
+
+### Écran #6 : Réinitialisation + version + ID
 
 L'écran est le suivant :
 
 ```text
 Reinitialisation ?
 Appui long pour reset...
-v0.x.xxxxxx
+v2.x.xxxxxx       ab12cd
 ```
 
-La version de firmware est affichée sur la dernière ligne.
+La version de firmware est affichée sur la dernière ligne sur la gauche.
+
+Sur la droite se trouve l'ID du chip ESP-01 (ici ab12cd) qui compose le nom du TeleInfoKit une fois qu'il est connecté au réseau.
 
 Pour activer la réinitialisation, faire un appui long sur le bouton. La procédure est détaillée dans la section [réinitialisation de la configuration](#réinitialisation-de-la-configuration-factory-reset).
 

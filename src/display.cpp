@@ -144,7 +144,10 @@ void Display::displayReset()
   oled.drawString(0, 10, "Appui long pour reset...");
   oled.drawString(0, 20, VERSION);
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  oled.drawString(120, 20, String(ESP.getChipId()));
+  char valeurHex[10];
+  // Utilisation de sprintf pour formater en hexadécimal
+  sprintf(valeurHex, "%x", ESP.getChipId());
+  oled.drawString(120, 20, String(valeurHex));
   oled.display();
 }
 

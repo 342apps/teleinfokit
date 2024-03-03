@@ -148,14 +148,16 @@ Affiche la date et l'heure pour vérifier la bonne connexion réseau.
 L'écran est le suivant :
 
 ```text
-Reinitialisation ?
+Réinit ?      v2.x.xxxxxx
 Appui long pour reset...
-v2.x.xxxxxx       ab12cd
+ABCD-1234-EF56
 ```
 
-La version de firmware est affichée sur la dernière ligne sur la gauche.
+La version de firmware est affichée sur la première ligne sur la droite.
 
-Sur la droite se trouve l'ID du chip ESP-01 (ici ab12cd) qui compose le nom du TeleInfoKit une fois qu'il est connecté au réseau.
+Sur la dernière ligne se trouve le mot de passe du point d'accès WiFi lorsque celui-ci est actif à la première utilisation du TeleInfoKit ou bien après avoir réinitialisé les paramètres.
+
+Le mot de passe n'est composé que de tirets, de chiffres et de lettres majuscules comprises entre A et F (caractères hexadécimaux). 
 
 Pour activer la réinitialisation, faire un appui long sur le bouton. La procédure est détaillée dans la section [réinitialisation de la configuration](#réinitialisation-de-la-configuration-factory-reset).
 
@@ -179,9 +181,9 @@ Pour modifier ou supprimer les paramètres (Réseau Wifi, serveur MQTT, authenti
 * Naviguer jusqu'à l'écran 6
 
 ```text
-Reinitialisation ?
+Réinit ?      v2.x.xxxxxx
 Appui long pour reset...
-v0.x.xxxxx
+ABCD-1234-EF56
 ```
 
 * Effectuer un appui long
@@ -214,16 +216,18 @@ Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarra
 
 Si le module ne démarre plus du tout, il est également possible d'effectuer une remise à zéro complète, avant que celui-ci ne commence sa phase d'initialisation. Cela peut être utile en cas de crash en boucle si une mauvaise configuration a été effectuée, en cas de corruption du fichier de configuration interne, ou tout autre cas de figure non prévu.
 
-Il suffit de presser le bouton frontal **une fois durant la première seconde du démarrage** du module. Le module peut être redémarré grâce à un appui sur le bouton reset, ou en débranchant et rebranchant sa prise usb.
+Il suffit de presser le bouton frontal une fois **dès que l'écran affiche "démarrage" avec la barre de progression**, juste après l'écran d'accueil qui indique `TeleInfoKit` avec la version du module. Le module peut être redémarré grâce à un appui sur le bouton reset, ou en débranchant et rebranchant sa prise usb.
 
-**Attention à ne PAS appuyer sur le bouton AVANT le démarrage du module, celui-ci ne démarrera pas.**
+> Si l'appui se fait trop tot, le boîtier va démarrer en **mode TEST** et ne sera **pas connecté au WiFi**. Redémarrer et recommencer la procédure. Voir section [Mode test](#mode-test).
+
+> **Attention à ne PAS appuyer sur le bouton AVANT le démarrage du module, celui-ci ne démarrera pas.**
 
 Si la demande de réinitialisation est bien prise en compte, l'écran va afficher : 
 
 ```text
-Reinitialisation ?
+Réinit ?      v2.x.xxxxxx
 Appui long pour reset...
-v0.x.xxxxx
+ABCD-1234-EF56
 ```
 
 * Effectuer un appui long
@@ -253,6 +257,25 @@ Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarra
 
 ## API
 
-Le firmware expose une API pour exploiter les données fournies par le module TeleInfoKit. Cette API est accessible par HTTP directement via l'adresse IP du module.
+Le module n'expose plus d'API HTTP REST depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.
 
-L'API est décrite entièrement au format OpenAPI V3 par le fichier [TeleInfoKit-openapi.v1.yaml](./TeleInfoKit-openapi.v1.yaml). Pour une lecture plus simple [l'éditeur de swagger.io](https://editor.swagger.io/) peut être utilisé.
+## Mode TEST
+
+Un mode de test existe pour vérifier que le signal TIC arrive bien au module et que celui-ci parvient à le décoder. Ce mode de test s'active en appuyant sur le bouton frontal dans la première demi-seconde du démarrage. Lorsque le mode TEST est actif, le module ne se **connecte PAS au WiFi**, il n'envoie donc aucune information et la mise à jour "Over The Air" est indisponible.
+
+Dans ce mode TEST, l'écran affiche des informations TIC sommaires : 
+- La puissance instantanée consommée (`SINSTS` pour le mode Standard, `PAPP` pour le mode historique)
+- L'index total (`EAST`pour le mode standard, `BASE` + `HCHP` + `HPHP` pour le mode historique)
+
+L'écran affiche :
+```text
+TIC TEST              [H]
+POWER               1234
+INDEX           12345698
+```
+
+En haut à droite de l'écran se trouve un `H` ou un `S` dans un encadré pour indiquer le mode TIC courant (Standard ou Historique). Pour basculer d'un mode à l'autre, cliquer une fois sur le bouton.
+
+Les données vont s'afficher au bout d'une seconde environ et vont se mettre à jour régulièrement.
+
+Pour sortir du mode TEST, redémarrer le module ou attendre 60 secondes sans appui sur le bouton, celui-ci va redémarrer automatiquement en mode normal.

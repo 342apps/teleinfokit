@@ -78,7 +78,7 @@ void Display::drawGraph(long papp, char mode)
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.drawRect(0, 1, 9, 11);
   oled.drawString(1, 0, String(mode));
-  oled.drawString(12, 0, "Historique 24h");
+  oled.drawString(12, 0, "Graphe 24h");
   oled.display();
 }
 

@@ -1,7 +1,7 @@
 //  DO NOT EDIT MANUALLY THIS FILE - IT IS DELETED AND RECREATED AT EACH BUILD !!!! 
 #ifndef BUILD_HASH
-  #define BUILD_HASH "7837cc"
+  #define BUILD_HASH "d0d031"
 #endif
 #ifndef VERSION
-  #define VERSION "v2.0.0.7837cc"
+  #define VERSION "v2.0.0.d0d031"
 #endif

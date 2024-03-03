@@ -165,7 +165,7 @@ void saveConfigCallback()
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager *myWiFiManager)
 {
-  d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé :" + String(randKey->apPwd));
+  d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
 }
 
 // Retreives configuration from filesystem
@@ -401,7 +401,6 @@ void setup()
   snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
 
   d->displayStartup(String(VERSION));
-  d->logPercent("Démarrage", 5);
 
   unsigned long reset_start = millis();
 
@@ -416,6 +415,8 @@ void setup()
       d->displayTestTic("START", "START", 'X');
     }
   }
+
+  d->logPercent("Démarrage", 5);
 
   while (!test_mode && millis() - reset_start < 1500)
   {
@@ -679,6 +680,12 @@ void loop()
 
       d->displayTestTic(String(ti.papp), String(ti.index), ti.ticMode == TINFO_MODE_STANDARD ? 'S' : 'H');
       refreshTime = millis();
+
+      if(millis() - offTs > 60000){
+        // restart auto
+        d->log("Sortie du mode TEST", 1000);
+        wm.reboot();
+      }
     }
   }
   ti.loop();

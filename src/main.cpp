@@ -179,7 +179,7 @@ void readConfig()
         {
           strcpy(_customHtml_checkbox, "type=\"checkbox\"");
         }
-        
+
         strcpy(mqtt_server, config.mqtt_server);
         strcpy(mqtt_port, config.mqtt_port);
         strcpy(mqtt_server_username, config.mqtt_server_username);
@@ -280,98 +280,100 @@ void handlePreOtaUpdateCallback()
 
 // /#REGION WifiManager ==================================
 
-
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
 {
 
   d->log("Click");
-if(test_mode){
-  switch (btn.getType())
+  if (test_mode)
   {
-  case single_click:
-  case double_click:
-  case triple_click:
-  case long_click:
-    if(ti.ticMode == TINFO_MODE_HISTORIQUE){
-      d->log("Switch STD");
-      // go mode standard
-      config.mode_tic_standard = true;
-      ti.init(TINFO_MODE_STANDARD);
+    switch (btn.getType())
+    {
+    case single_click:
+    case double_click:
+    case triple_click:
+    case long_click:
+      if (ti.ticMode == TINFO_MODE_HISTORIQUE)
+      {
+        d->log("Switch STD");
+        // go mode standard
+        config.mode_tic_standard = true;
+        ti.init(TINFO_MODE_STANDARD);
+      }
+      else
+      {
+        d->log("Switch HISTO");
+        // go mode historique
+        config.mode_tic_standard = false;
+        ti.init(TINFO_MODE_HISTORIQUE);
+      }
+      break;
+    case empty:
+      break;
     }
-    else{
-      d->log("Switch HISTO");
-      // go mode historique
-      config.mode_tic_standard = false;
-      ti.init(TINFO_MODE_HISTORIQUE);
-
-    }
-  break;
-  case empty:
-    break;
-  }
     resetTs = 0;
     offTs = millis();
     screensaver = false;
-}
-else{
-
-  switch (btn.getType())
+  }
+  else
   {
-  case single_click:
 
-    // reset management at startup
-    if (reset_possible)
+    switch (btn.getType())
     {
-      reset_pending = true;
-    }
+    case single_click:
 
-    if (screensaver == false)
-    {
-      mode = (mode + 1) % 7; // cycle through 7 screens
+      // reset management at startup
+      if (reset_possible)
+      {
+        reset_pending = true;
+      }
+
+      if (screensaver == false)
+      {
+        mode = (mode + 1) % 7; // cycle through 7 screens
+      }
+      resetTs = 0;
+      offTs = millis();
+      screensaver = false;
+      break;
+    case double_click:
+      mode = GRAPH;
+      resetTs = 0;
+      offTs = millis();
+      screensaver = false;
+      break;
+    case triple_click:
+      break;
+    case long_click:
+      // reset state machine mgmt
+      if (reset == RST_PAGE)
+      {
+        reset = RST_REQ;
+        // display reset confirmation
+        d->log("Appui long pour confirmer\nAppui court pour annuler", 10);
+        resetTs = millis();
+      }
+      else if (reset == RST_REQ)
+      {
+        reset = RST_ACK;
+        // display reset requested
+        d->log("Réinitialisation en cours");
+        // reset
+        wm.resetSettings();
+        // ESP.eraseConfig();
+        LittleFS.remove(CONFIG_FILE);
+        // display restart
+        d->log("Redémarrage", 1000);
+        // restart
+        // ESP.reset();
+        wm.reboot();
+        delay(200);
+      }
+      break;
+    case empty:
+      break;
     }
-    resetTs = 0;
-    offTs = millis();
-    screensaver = false;
-    break;
-  case double_click:
-    mode = GRAPH;
-    resetTs = 0;
-    offTs = millis();
-    screensaver = false;
-    break;
-  case triple_click:
-    break;
-  case long_click:
-    // reset state machine mgmt
-    if (reset == RST_PAGE)
-    {
-      reset = RST_REQ;
-      // display reset confirmation
-      d->log("Appui long pour confirmer\nAppui court pour annuler", 10);
-      resetTs = millis();
-    }
-    else if (reset == RST_REQ)
-    {
-      reset = RST_ACK;
-      // display reset requested
-      d->log("Réinitialisation en cours");
-      // reset
-      wm.resetSettings();
-      // ESP.eraseConfig();
-      LittleFS.remove(CONFIG_FILE);
-      // display restart
-      d->log("Redémarrage", 1000);
-      // restart
-      // ESP.reset();
-      wm.reboot();
-      delay(200);
-    }
-    break;
-  case empty:
-    break;
   }
-}
 }
 
 void setup()
@@ -390,25 +392,16 @@ void setup()
   d->logPercent("Démarrage", 5);
 
   unsigned long reset_start = millis();
-  
+
   while (millis() - reset_start < 500)
   {
-    // if button is pressed, display TIC 
+    // if button is pressed, display TIC
     if (!digitalRead(PIN_BUTTON))
     { // no use of click handler because not called yet in a loop
       d->displayReset();
 
       test_mode = true;
       d->displayTestTic("START", "START", 'X');
-      // char mode = ti.autoInit();
-      // while(millis() - reset_start < 30 * 1000){   // 30s max in the TIC test mode
-      //   ti.loop();
-      //   ti.AnalyzeTicForInternalData();
-      //   d->displayTestTic(String(ti.adresseCompteur), String(ti.papp), mode);
-      //   delay(50);
-      // }
-      // ESP.reset();
-      // wm.reboot();
     }
   }
 
@@ -481,31 +474,31 @@ void setup()
 
   wm.setBreakAfterConfig(true); // needed to use saveWifiCallback
 
-if(!test_mode){
-  d->logPercent("Connexion au réseau wifi...", 35);
-
-  // fetches ssid and pass and tries to connect
-  // if it does not connect it starts an access point with the specified name
-  // and goes into a blocking loop awaiting configuration
-  wm.setConnectTimeout(45);
-
-  // the AP password is random and specific to each device, but will be always the same for a device
-  if (!wm.autoConnect(AP_NAME, randKey->apPwd))
+  if (!test_mode)
   {
-    d->log("Connexion impossible\n Reset...");
-    delay(1000);
-    // reset and try again
-    ESP.reset();
-    delay(1000);
-  }
-  d->logPercent("Connecté à " + String(WiFi.SSID()), 40);
+    d->logPercent("Connexion au réseau wifi...", 35);
 
-  // /#REGION WifiManager ==================================
+    // fetches ssid and pass and tries to connect
+    // if it does not connect it starts an access point with the specified name
+    // and goes into a blocking loop awaiting configuration
+    wm.setConnectTimeout(45);
 
-} // end if !test_mode
+    // the AP password is random and specific to each device, but will be always the same for a device
+    if (!wm.autoConnect(AP_NAME, randKey->apPwd))
+    {
+      d->log("Connexion impossible\n Reset...");
+      delay(1000);
+      // reset and try again
+      ESP.reset();
+      delay(1000);
+    }
+    d->logPercent("Connecté à " + String(WiFi.SSID()), 40);
 
+    // /#REGION WifiManager ==================================
 
-// ================ OTA ================
+  } // end if !test_mode
+
+  // ================ OTA ================
   ArduinoOTA.setHostname(UNIQUE_ID);
   ArduinoOTA.setPassword(randKey->apPwd);
   d->logPercent("Démarrage OTA", 50);
@@ -563,32 +556,33 @@ if(!test_mode){
   button.setDoubleClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
-if(!test_mode){
-  uint16_t port = 1883;
-  if (config.mqtt_port[0] != '\0')
+  if (!test_mode)
   {
-    port = atoi(config.mqtt_port);
-    delay(1000);
-  }
+    uint16_t port = 1883;
+    if (config.mqtt_port[0] != '\0')
+    {
+      port = atoi(config.mqtt_port);
+      delay(1000);
+    }
 
-  ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
+    ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
 
-  d->logPercent("Obtention de l'heure", 60);
-  d->getTime();
+    d->logPercent("Obtention de l'heure", 60);
+    d->getTime();
 
-  d->logPercent("Connexion MQTT", 70);
-  if (!ti.LogStartup())
-  {
-    d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
-  }
+    d->logPercent("Connexion MQTT", 70);
+    if (!ti.LogStartup())
+    {
+      d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
+    }
 
-  d->logPercent("Envoi MQTT Discovery", 80);
+    d->logPercent("Envoi MQTT Discovery", 80);
 
-  ti.sendMqttDiscovery();
+    ti.sendMqttDiscovery();
 
-  d->logPercent("Activation portail config", 90);
+    d->logPercent("Activation portail config", 90);
 
-} // end if !test_mode
+  } // end if !test_mode
   wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);
   offTs = millis();
@@ -602,81 +596,84 @@ void loop()
   button.loop();
   wm.process();
 
-if(!test_mode){
-  // for cancelling reset settings requests automatically
-  if (resetTs != 0 && (millis() - resetTs > RESET_CONFIRM_DELAY))
+  if (!test_mode)
   {
-    resetTs = 0;
-    d->displayReset();
-  }
-
-  if (millis() - offTs > SCREENSAVER_DELAY)
-  {
-    screensaver = true;
-    d->displayOff();
-  }
-
-  if ((millis() - refreshTime > REFRESH_DELAY) || (mode == TIME && millis() - refreshTime > 1000))
-  {
-    data->storeValueBase(ti.index);
-
-    if (!screensaver)
+    // for cancelling reset settings requests automatically
+    if (resetTs != 0 && (millis() - resetTs > RESET_CONFIRM_DELAY))
     {
-      switch (mode)
-      {
-      case GRAPH:
-        reset = IDLE;
-        d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H'); 
-        break;
-      case DATA1:
-        reset = IDLE;
-        d->displayData1(ti.papp, ti.iinst);
-        break;
-      case DATA2:
-        reset = IDLE;
-        d->displayData2(ti.index, ti.adresseCompteur);
-        break;
-      case NETWORK:
-        reset = IDLE;
-        d->displayNetwork();
-        break;
-      case TIME:
-        reset = IDLE;
-        d->getTime();
-        d->displayTime();
-        break;
-      case RESET:
-        if (reset != RST_REQ && reset != RST_ACK)
-        {
-          reset = RST_PAGE;
-          d->displayReset();
-        }
-        break;
-      case OFF:
-        reset = IDLE;
-        if (millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
-        {
-          d->displayOff();
-        }
-        else
-        {
-          d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
-        }
-        break;
-      }
+      resetTs = 0;
+      d->displayReset();
     }
 
-    refreshTime = millis();
-  }
-}
-else{
-  // ==== test mode
-  if (millis() - refreshTime > REFRESH_DELAY){
+    if (millis() - offTs > SCREENSAVER_DELAY)
+    {
+      screensaver = true;
+      d->displayOff();
+    }
 
-    d->displayTestTic(String(ti.papp), String(ti.index), ti.ticMode == TINFO_MODE_STANDARD ? 'S' : 'H');
-    refreshTime = millis();
+    if ((millis() - refreshTime > REFRESH_DELAY) || (mode == TIME && millis() - refreshTime > 1000))
+    {
+      data->storeValueBase(ti.index);
+
+      if (!screensaver)
+      {
+        switch (mode)
+        {
+        case GRAPH:
+          reset = IDLE;
+          d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
+          break;
+        case DATA1:
+          reset = IDLE;
+          d->displayData1(ti.papp, ti.iinst);
+          break;
+        case DATA2:
+          reset = IDLE;
+          d->displayData2(ti.index, ti.adresseCompteur);
+          break;
+        case NETWORK:
+          reset = IDLE;
+          d->displayNetwork();
+          break;
+        case TIME:
+          reset = IDLE;
+          d->getTime();
+          d->displayTime();
+          break;
+        case RESET:
+          if (reset != RST_REQ && reset != RST_ACK)
+          {
+            reset = RST_PAGE;
+            d->displayReset();
+          }
+          break;
+        case OFF:
+          reset = IDLE;
+          if (millis() - offTs > SCREEN_OFF_MESSAGE_DELAY)
+          {
+            d->displayOff();
+          }
+          else
+          {
+            d->log("Ecran OFF dans 5s.\nAppui court pour rallumer.", 0);
+          }
+          break;
+        }
+      }
+
+      refreshTime = millis();
+    }
   }
-}
+  else
+  {
+    // ==== test mode
+    if (millis() - refreshTime > REFRESH_DELAY)
+    {
+
+      d->displayTestTic(String(ti.papp), String(ti.index), ti.ticMode == TINFO_MODE_STANDARD ? 'S' : 'H');
+      refreshTime = millis();
+    }
+  }
   ti.loop();
 
   // update time every 5 minutes

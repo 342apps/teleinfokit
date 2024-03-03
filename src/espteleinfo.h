@@ -26,7 +26,6 @@ public:
     ESPTeleInfo();
 
     void init(_Mode_e tic_mode);
-    char autoInit();
     void initMqtt(char *server, uint16_t port, char *username, char *password, int period_data);
     void loop(void);
 

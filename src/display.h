@@ -33,6 +33,7 @@ public:
     void displayReset();
     void displayOff();
     void displayStartup(String version);
+    void displayTestTic(String power, String index, char ticMode);
     void getTime();
 
 private:

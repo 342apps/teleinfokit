@@ -26,6 +26,7 @@ public:
     ESPTeleInfo();
 
     void init(_Mode_e tic_mode);
+    char autoInit();
     void initMqtt(char *server, uint16_t port, char *username, char *password, int period_data);
     void loop(void);
 
@@ -49,9 +50,10 @@ public:
     void Log(String s);
 
     void sendMqttDiscovery();
+    void AnalyzeTicForInternalData();
+    _Mode_e ticMode;
 
 private:
-    _Mode_e ticMode;
     long previousMillis;
     char logBuffer[100];
     char mqtt_user[32];
@@ -100,7 +102,6 @@ private:
     char payloadDiscovery[500];
 
     bool connectMqtt();
-    void AnalyzeTicForInternalData();
 
     String discoveryDevice;
 

@@ -54,6 +54,57 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     }
 }
 
+
+char ESPTeleInfo::autoInit(){
+    Serial.flush();
+    Serial.end();
+    char localbuff[15];
+
+    // try HISTORIQUE mode first
+    Serial.begin(1200, SERIAL_7E1);
+    // Init teleinfo
+    teleinfo.init(TINFO_MODE_HISTORIQUE);
+
+    localbuff[0] = '\0';
+    if (Serial.available())
+    {
+        delay(500);
+        teleinfo.process(Serial.read());
+        teleinfo.valueGet(_papp_, localbuff);
+    }
+
+    if(localbuff[0] == '\0'){
+        // try STANDARD mode   
+        Serial.flush();
+        Serial.end();
+        Serial.begin(9600, SERIAL_7E1);
+        // Init teleinfo
+        teleinfo.init(TINFO_MODE_STANDARD);
+
+
+        if (Serial.available())
+        {
+            delay(500);
+            teleinfo.process(Serial.read());
+            localbuff[0] = '\0';
+            teleinfo.valueGet(_sinsts_, localbuff);
+            if(localbuff[0] != '\0'){
+                ticMode = TINFO_MODE_STANDARD;
+                return 'S';
+            }
+            else{
+                return '?';
+            }
+            // if not STANDARD either... what do we do ?? => nothing, will fallback to STANDARD mode
+        }
+    }
+    else {
+        ticMode = TINFO_MODE_HISTORIQUE;
+        return 'H';
+    }
+    return 'N';
+}
+
 void ESPTeleInfo::initMqtt(char *server, uint16_t port, char *username, char *password, int period_data)
 {
     strcpy(mqtt_user, username);
@@ -79,6 +130,7 @@ bool ESPTeleInfo::connectMqtt()
 
 void ESPTeleInfo::AnalyzeTicForInternalData()
 {
+    // store intensity value for HIST or STD modes
     if (ticMode == TINFO_MODE_HISTORIQUE)
     {
         analyzeBuffer[0] = '\0';
@@ -106,7 +158,6 @@ void ESPTeleInfo::AnalyzeTicForInternalData()
     }
     else
     {
-        // store intensity value for HIST or STD modes
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_irms1_, analyzeBuffer);
         iinst = atol(analyzeBuffer);

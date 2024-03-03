@@ -157,6 +157,23 @@ void Display::displayOff()
   oled.displayOff();
 }
 
+
+void Display::displayTestTic(String power, String index, char ticMode){
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "TIC TEST");
+  oled.drawRect(118, 1, 9, 11);
+  oled.drawString(119, 0, String(ticMode));
+  oled.drawString(0, 10, "POWER");
+  oled.drawString(0, 20, "INDEX");
+  oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+  oled.drawString(128, 10, String(power));
+  oled.drawString(128, 20, String(index));
+  oled.display();
+}
+
 void Display::getTime()
 {
   now = time(nullptr);

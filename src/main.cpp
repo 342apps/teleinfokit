@@ -80,6 +80,8 @@ bool screensaver = false;
 bool reset_possible = true;
 bool reset_pending = false;
 
+bool test_mode = false;
+
 Data *data;
 Display *d;
 ESPTeleInfo ti = ESPTeleInfo();
@@ -282,6 +284,38 @@ void handlePreOtaUpdateCallback()
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
 {
+
+  d->log("Click");
+if(test_mode){
+  switch (btn.getType())
+  {
+  case single_click:
+  case double_click:
+  case triple_click:
+  case long_click:
+    if(ti.ticMode == TINFO_MODE_HISTORIQUE){
+      d->log("Switch STD");
+      // go mode standard
+      config.mode_tic_standard = true;
+      ti.init(TINFO_MODE_STANDARD);
+    }
+    else{
+      d->log("Switch HISTO");
+      // go mode historique
+      config.mode_tic_standard = false;
+      ti.init(TINFO_MODE_HISTORIQUE);
+
+    }
+  break;
+  case empty:
+    break;
+  }
+    resetTs = 0;
+    offTs = millis();
+    screensaver = false;
+}
+else{
+
   switch (btn.getType())
   {
   case single_click:
@@ -338,6 +372,7 @@ void handlerBtn(Button2 &btn)
     break;
   }
 }
+}
 
 void setup()
 {
@@ -355,8 +390,29 @@ void setup()
   d->logPercent("Démarrage", 5);
 
   unsigned long reset_start = millis();
+  
+  while (millis() - reset_start < 500)
+  {
+    // if button is pressed, display TIC 
+    if (!digitalRead(PIN_BUTTON))
+    { // no use of click handler because not called yet in a loop
+      d->displayReset();
 
-  while (millis() - reset_start < 1000)
+      test_mode = true;
+      d->displayTestTic("START", "START", 'X');
+      // char mode = ti.autoInit();
+      // while(millis() - reset_start < 30 * 1000){   // 30s max in the TIC test mode
+      //   ti.loop();
+      //   ti.AnalyzeTicForInternalData();
+      //   d->displayTestTic(String(ti.adresseCompteur), String(ti.papp), mode);
+      //   delay(50);
+      // }
+      // ESP.reset();
+      // wm.reboot();
+    }
+  }
+
+  while (!test_mode && millis() - reset_start < 1500)
   {
     // if button is pressed, reset management
     if (!digitalRead(PIN_BUTTON))
@@ -376,13 +432,14 @@ void setup()
   readConfig();
   ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
 
+  wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
+
   // #REGION WifiManager ==================================
 
   wm.setAPCallback(configModeCallback);
   wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveConfigCallback);
   wm.setSaveParamsCallback(saveParamCallback);
-  wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
 
   custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
   custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
@@ -424,6 +481,7 @@ void setup()
 
   wm.setBreakAfterConfig(true); // needed to use saveWifiCallback
 
+if(!test_mode){
   d->logPercent("Connexion au réseau wifi...", 35);
 
   // fetches ssid and pass and tries to connect
@@ -444,9 +502,12 @@ void setup()
 
   // /#REGION WifiManager ==================================
 
+} // end if !test_mode
+
+
 // ================ OTA ================
   ArduinoOTA.setHostname(UNIQUE_ID);
-  ArduinoOTA.setPassword("admin4tele9Info");
+  ArduinoOTA.setPassword(randKey->apPwd);
   d->logPercent("Démarrage OTA", 50);
 
   ArduinoOTA.onStart([]()
@@ -502,6 +563,7 @@ void setup()
   button.setDoubleClickHandler(handlerBtn);
   button.setLongClickHandler(handlerBtn);
 
+if(!test_mode){
   uint16_t port = 1883;
   if (config.mqtt_port[0] != '\0')
   {
@@ -526,9 +588,9 @@ void setup()
 
   d->logPercent("Activation portail config", 90);
 
+} // end if !test_mode
   wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);
-
   offTs = millis();
   ti.loop();
 }
@@ -537,10 +599,10 @@ void loop()
 {
 
   ArduinoOTA.handle();
-
   button.loop();
   wm.process();
 
+if(!test_mode){
   // for cancelling reset settings requests automatically
   if (resetTs != 0 && (millis() - resetTs > RESET_CONFIRM_DELAY))
   {
@@ -564,8 +626,7 @@ void loop()
       {
       case GRAPH:
         reset = IDLE;
-        // d->drawGraph(ti.papp);
-        d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H'); // to remove and use commented code
+        d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H'); 
         break;
       case DATA1:
         reset = IDLE;
@@ -607,7 +668,15 @@ void loop()
 
     refreshTime = millis();
   }
+}
+else{
+  // ==== test mode
+  if (millis() - refreshTime > REFRESH_DELAY){
 
+    d->displayTestTic(String(ti.papp), String(ti.index), ti.ticMode == TINFO_MODE_STANDARD ? 'S' : 'H');
+    refreshTime = millis();
+  }
+}
   ti.loop();
 
   // update time every 5 minutes

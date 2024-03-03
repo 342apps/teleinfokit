@@ -108,7 +108,7 @@ void Display::displayData2(long index, char *compteur)
   oled.display();
 }
 
-void Display::displayNetwork(String key)
+void Display::displayNetwork()
 {
   oled.displayOn();
   oled.clear();
@@ -116,7 +116,7 @@ void Display::displayNetwork(String key)
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, "Wifi " + WiFi.SSID());
   oled.drawString(0, 10, WiFi.localIP().toString());
-  oled.drawString(0, 20, key);
+  oled.drawString(0, 20, WiFi.macAddress());
   oled.display();
 }
 
@@ -134,20 +134,17 @@ void Display::displayTime()
   oled.display();
 }
 
-void Display::displayReset()
+void Display::displayReset(String apKey)
 {
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Réinitialisation ?");
+  oled.drawString(0, 0, "Réinit ?");
   oled.drawString(0, 10, "Appui long pour reset...");
-  oled.drawString(0, 20, VERSION);
+  oled.drawString(0, 20, apKey);
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  char valeurHex[10];
-  // Utilisation de sprintf pour formater en hexadécimal
-  sprintf(valeurHex, "%x", ESP.getChipId());
-  oled.drawString(120, 20, String(valeurHex));
+  oled.drawString(128, 0, VERSION);
   oled.display();
 }
 

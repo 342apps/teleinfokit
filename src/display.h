@@ -28,9 +28,9 @@ public:
     void drawGraph(long papp, char mode);
     void displayData1(long papp, long iinst);
     void displayData2(long index, char *compteur);
-    void displayNetwork(String key);
+    void displayNetwork();
     void displayTime();
-    void displayReset();
+    void displayReset(String apKey);
     void displayOff();
     void displayStartup(String version);
     void displayTestTic(String power, String index, char ticMode);

@@ -410,7 +410,7 @@ void setup()
     // if button is pressed, display TIC
     if (!digitalRead(PIN_BUTTON))
     { // no use of click handler because not called yet in a loop
-      d->displayReset();
+      d->displayReset(randKey->apPwd);
 
       test_mode = true;
       d->displayTestTic("START", "START", 'X');
@@ -422,7 +422,7 @@ void setup()
     // if button is pressed, reset management
     if (!digitalRead(PIN_BUTTON))
     { // no use of click handler because not called yet in a loop
-      d->displayReset();
+      d->displayReset(randKey->apPwd);
       reset = RST_PAGE;
       unsigned long now = millis();
       while (millis() - now < RESET_CONFIRM_DELAY)
@@ -609,7 +609,7 @@ void loop()
     if (resetTs != 0 && (millis() - resetTs > RESET_CONFIRM_DELAY))
     {
       resetTs = 0;
-      d->displayReset();
+      d->displayReset(randKey->apPwd);
     }
 
     if (millis() - offTs > SCREENSAVER_DELAY)
@@ -640,7 +640,7 @@ void loop()
           break;
         case NETWORK:
           reset = IDLE;
-          d->displayNetwork(randKey->apPwd);
+          d->displayNetwork();
           break;
         case TIME:
           reset = IDLE;
@@ -651,7 +651,7 @@ void loop()
           if (reset != RST_REQ && reset != RST_ACK)
           {
             reset = RST_PAGE;
-            d->displayReset();
+            d->displayReset(randKey->apPwd);
           }
           break;
         case OFF:

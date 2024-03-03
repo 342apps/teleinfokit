@@ -28,7 +28,7 @@ public:
     void drawGraph(long papp, char mode);
     void displayData1(long papp, long iinst);
     void displayData2(long index, char *compteur);
-    void displayNetwork();
+    void displayNetwork(String key);
     void displayTime();
     void displayReset();
     void displayOff();

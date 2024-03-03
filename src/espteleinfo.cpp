@@ -30,7 +30,6 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
 {
     instanceEsp = this;
     ticMode = tic_mode;
-    previousMillis = millis();
     iinst = 0;
     papp = 0;
     index = 0;
@@ -48,6 +47,7 @@ void ESPTeleInfo::init(_Mode_e tic_mode)
     teleinfo.init(tic_mode);
     teleinfo.attachData(DataCallback);
 
+    delay(1000);
     if (Serial.available())
     {
         teleinfo.process(Serial.read());

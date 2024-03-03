@@ -90,6 +90,19 @@ RandomKeyGenerator *randKey;
 
 time_t now;
 
+
+void handlerBtn(Button2 &btn);
+
+void initButton()
+{
+  button = Button2(PIN_BUTTON);
+  pinMode(PIN_BUTTON, INPUT_PULLUP);
+
+  button.setClickHandler(handlerBtn);
+  button.setDoubleClickHandler(handlerBtn);
+  button.setLongClickHandler(handlerBtn);
+}
+
 void getTime()
 {
   now = time(nullptr);
@@ -226,6 +239,7 @@ void saveParamCallback()
     if (std != config.mode_tic_standard)
     {
       ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+      initButton();
     }
     config.mode_tic_standard = std;
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
@@ -266,6 +280,7 @@ void saveParamCallback()
   ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
   configFile.close();
+  initButton();
 }
 
 void bindServerCallback()
@@ -283,8 +298,6 @@ void handlePreOtaUpdateCallback()
 // Handles clicks on button
 void handlerBtn(Button2 &btn)
 {
-
-  d->log("Click");
   if (test_mode)
   {
     switch (btn.getType())
@@ -295,17 +308,17 @@ void handlerBtn(Button2 &btn)
     case long_click:
       if (ti.ticMode == TINFO_MODE_HISTORIQUE)
       {
-        d->log("Switch STD");
         // go mode standard
         config.mode_tic_standard = true;
         ti.init(TINFO_MODE_STANDARD);
+        initButton();
       }
       else
       {
-        d->log("Switch HISTO");
         // go mode historique
         config.mode_tic_standard = false;
         ti.init(TINFO_MODE_HISTORIQUE);
+        initButton();
       }
       break;
     case empty:
@@ -316,8 +329,7 @@ void handlerBtn(Button2 &btn)
     screensaver = false;
   }
   else
-  {
-
+  { // normal operation, no test mode
     switch (btn.getType())
     {
     case single_click:
@@ -550,11 +562,7 @@ void setup()
     } });
   ArduinoOTA.begin();
 
-  pinMode(PIN_BUTTON, INPUT_PULLUP);
-
-  button.setClickHandler(handlerBtn);
-  button.setDoubleClickHandler(handlerBtn);
-  button.setLongClickHandler(handlerBtn);
+  initButton();
 
   if (!test_mode)
   {
@@ -591,7 +599,6 @@ void setup()
 
 void loop()
 {
-
   ArduinoOTA.handle();
   button.loop();
   wm.process();
@@ -633,7 +640,7 @@ void loop()
           break;
         case NETWORK:
           reset = IDLE;
-          d->displayNetwork();
+          d->displayNetwork(randKey->apPwd);
           break;
         case TIME:
           reset = IDLE;

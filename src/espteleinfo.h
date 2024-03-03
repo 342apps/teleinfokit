@@ -53,7 +53,6 @@ public:
     _Mode_e ticMode;
 
 private:
-    long previousMillis;
     char logBuffer[100];
     char mqtt_user[32];
     char mqtt_pwd[32];

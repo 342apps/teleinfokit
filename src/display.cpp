@@ -108,7 +108,7 @@ void Display::displayData2(long index, char *compteur)
   oled.display();
 }
 
-void Display::displayNetwork()
+void Display::displayNetwork(String key)
 {
   oled.displayOn();
   oled.clear();
@@ -116,7 +116,7 @@ void Display::displayNetwork()
   oled.setFont(ArialMT_Plain_10);
   oled.drawString(0, 0, "Wifi " + WiFi.SSID());
   oled.drawString(0, 10, WiFi.localIP().toString());
-  oled.drawString(0, 20, WiFi.macAddress());
+  oled.drawString(0, 20, key);
   oled.display();
 }
 

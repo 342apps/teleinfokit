@@ -45,7 +45,7 @@ La configuration est accessible via le bouton `Setup` la page principale
 
 Il existe deux mode TIC : Historique et Standard. Les anciens compteurs électroniques blanc génèrent seulement des informations TIC en mode Historique. Les compteurs linky peuvent être en mode Standard ou Historique. Le mode Standard envoie des informations plus nombreuses et plus précises que le mode Historique. Il est possible de demander à son fournisseur d'électricité de changer ce mode.
 
-Sélectionner le mode TIC adapté au compteur en cochant la case `Mode TIC Standard` si le compteur est paramétré en mode Standard.
+Sélectionner le mode TIC adapté au compteur en cochant la case `Mode TIC Standard` si le compteur est paramétré en mode Standard ; laisser la case décochée si le compteur est en mode historique.
 
 Le mode TIC courant sera affiché à gauche de l'écran du TeleInfoKit qui affiche le graphe (voir section [Ecran historique](#écran-1--historique)).
 
@@ -87,7 +87,7 @@ L'écran s'éteindra de lui même au bout d'une minute afin de limiter l'usure d
 
 ### Navigation
 
-### Écran #1 : Historique
+### Écran #1 : Graphe
 
 Ce premier écran rassemble un grand nombre d'informations. La zone principale est occupée par un graphe de la consommation sur les dernières 24h. 
 
@@ -104,6 +104,8 @@ Au fil des heures, le graphe se décale vers la gauche, les nouvelles valeurs de
 Dans le coin supérieur droit, la puissance consommée à l'instant t est affichée (ici 2985VA). Sa valeur est mise à jour en continu, environ toutes les 1 à 2 secondes.
 
 Dans le coin haut gauche se trouve l'indication du mode TIC. Pour le mode Standard, un `S` apparait dans un carré, pour le mode Historique ce sera un `H`. 
+
+Après un redémarrage, le graphe est vide, il se reconstruit au fil des heures.
 
 ### Écran #2 : Puissance / Intensité
 
@@ -122,7 +124,7 @@ Ces valeur sont mises à jour en continu, environ toutes les 2 secondes.
 Cet écran affiche les l'identifiant compteur et l'index total en Wh (tag `EAST` pour le mode standard, et tag `BASE` + `HCHP` + `HPHP` pour le mode Historique).
 
 ```text
-Compteur 123064875214
+Compteur 123061855214
 Index total 125456987
 
 ```
@@ -134,7 +136,7 @@ Sur cet écran, le réseau wifi auquel le module est connecté s'affiche, avec l
 ```text
 Wifi <nom du reseau>
 192.168.1.24
-DC:4F:22:E3:27:A3
+DC:4F:22:B7:27:A3
 ```
 
 Les valeurs sont données à titre d'exemple.
@@ -255,9 +257,15 @@ Comme lors de la réinitialisation classique, le module a supprimé toutes ses i
 
 Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarrage et Configuration](#démarrage-et-configuration).
 
-## API
+## Fonctionnalités dépréciées depuis le firmware v1.x [Breaking changes]
+
+### API
 
 Le module n'expose plus d'API HTTP REST depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.
+
+### Portail web
+
+Le portail web des firmwares 1.x qui présentait un graphe des consommation sur une page web n'est pas présent depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.
 
 ## Mode TEST
 

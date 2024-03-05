@@ -145,7 +145,7 @@ Les valeurs sont données à titre d'exemple.
 
 Affiche la date et l'heure pour vérifier la bonne connexion réseau.
 
-### Écran #6 : Réinitialisation + version + ID
+### Écran #6 : Réinitialisation + version + clé
 
 L'écran est le suivant :
 
@@ -157,7 +157,7 @@ ABCD-1234-EF56
 
 La version de firmware est affichée sur la première ligne sur la droite.
 
-Sur la dernière ligne se trouve le mot de passe du point d'accès WiFi lorsque celui-ci est actif à la première utilisation du TeleInfoKit ou bien après avoir réinitialisé les paramètres.
+Sur la dernière ligne se trouve le mot de passe du point d'accès WiFi lorsque celui-ci est actif à la première utilisation du TeleInfoKit ou bien après avoir réinitialisé les paramètres. Ce mot de passe sert aussi pour la mise à jour de firmware.
 
 Le mot de passe n'est composé que de tirets, de chiffres et de lettres majuscules comprises entre A et F (caractères hexadécimaux). 
 
@@ -257,16 +257,6 @@ Comme lors de la réinitialisation classique, le module a supprimé toutes ses i
 
 Pour enregistrer de nouveaux paramètres de connexion, voir la section [Démarrage et Configuration](#démarrage-et-configuration).
 
-## Fonctionnalités dépréciées depuis le firmware v1.x [Breaking changes]
-
-### API
-
-Le module n'expose plus d'API HTTP REST depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.
-
-### Portail web
-
-Le portail web des firmwares 1.x qui présentait un graphe des consommation sur une page web n'est pas présent depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.
-
 ## Mode TEST
 
 Un mode de test existe pour vérifier que le signal TIC arrive bien au module et que celui-ci parvient à le décoder. Ce mode de test s'active en appuyant sur le bouton frontal dans la première demi-seconde du démarrage. Lorsque le mode TEST est actif, le module ne se **connecte PAS au WiFi**, il n'envoie donc aucune information et la mise à jour "Over The Air" est indisponible.
@@ -287,3 +277,13 @@ En haut à droite de l'écran se trouve un `H` ou un `S` dans un encadré pour i
 Les données vont s'afficher au bout d'une seconde environ et vont se mettre à jour régulièrement.
 
 Pour sortir du mode TEST, redémarrer le module ou attendre 60 secondes sans appui sur le bouton, celui-ci va redémarrer automatiquement en mode normal.
+
+## Fonctionnalités dépréciées depuis le firmware v1.x [Breaking changes]
+
+### API
+
+Le module n'expose plus d'API HTTP REST depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.
+
+### Portail web
+
+Le portail web des firmwares 1.x qui présentait un graphe des consommation sur une page web n'est pas présent depuis la version 2.0 du firmware pour des raisons de simplification et d'optimisation du code, et du peu d'utilité que cette fonctionnalité apportait.

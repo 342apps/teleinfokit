@@ -340,7 +340,7 @@ void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
-    mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
+    mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);
 }
 
 void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon)
@@ -354,7 +354,7 @@ void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, St
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
-    mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
+    mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);
 }
 
 void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
@@ -367,7 +367,7 @@ void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
-    mqttClient.publish(strDiscoveryTopic, payloadDiscovery);
+    mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);
 }
 
 void ESPTeleInfo::freeList(UnsentValueList *&head)

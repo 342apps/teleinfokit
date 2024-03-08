@@ -4,7 +4,7 @@
 
 Lors du premier démarrage du module il est nécessaire de saisir les informations de connexion au réseau Wifi. Les informations concernant le serveur MQTT ou le mode TIC peuvent être également renseignées au démarrage, mais peuvent être saisies plus tard, une fois le module connecté au réseau WiFi.
 
-Brancher le connecteur USB-C à une source d'alimentation 5V (chargeur USB classique), puis attendre jusqu'à l'affichage de l'écran suivant :
+Brancher le connecteur USB-C à une source d'alimentation 5V (chargeur USB classique), puis attendre l'affichage de l'écran suivant :
 
 ```text
 Hotspot Wifi: TeleInfoKit

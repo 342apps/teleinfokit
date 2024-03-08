@@ -24,9 +24,9 @@ Les données de consommation et les index peuvent être exploitées dans Home As
 
 Les données remontées sont compatibles avec un usage dans le [Dashboard Energie](./doc/dashboard-energy.md).
 
-![graphe](./doc/graph-power.png)
-
 ![index](./doc/energy-dashboard.png)
+
+![graphe](./doc/graph-power.png)
 
 ## Affichage intégré au module TeleInfoKit
 
@@ -48,8 +48,8 @@ Se référer au dossier [doc](/doc) pour les documents suivants:
   * [Démarrage et configuration](./doc/user-guide.md#démarrage-et-configuration)
   * [Écrans](./doc/user-guide.md#écrans)
   * [Réinitialisation de la configuration](./doc/user-guide.md#réinitialisation-de-la-configuration-factory-reset)
-* [Integration dans Home Assistant](./configuration-ha.md)
-* [Dashboard Energie](./dashboard-energy.md)
+* [Integration dans Home Assistant](./doc/configuration-ha.md)
+* [Dashboard Energie](./doc/dashboard-energy.md)
 * [Messages MQTT](./doc/mqtt.md)
 
 ## Ressources
@@ -60,5 +60,5 @@ La présentation du boitier TeleInfoKit est disponible sur [342apps.net](https:/
 
 Le firmware v2 a évolué par rapport à son prédécesseur. Pour retrouver la documentation de la version 1, voir les liens ci-dessous :
 
-- [Guide d'utilisation v1](./user-guide_v1.x.md)
-- [Messages MQTT v1](./mqtt_v1.md)
+- [Guide d'utilisation v1](./doc/user-guide_v1.x.md)
+- [Messages MQTT v1](./doc/mqtt_v1.md)

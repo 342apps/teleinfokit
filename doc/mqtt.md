@@ -52,11 +52,11 @@ Pour connaître tous les labels envoyés, se référer à la [documentation Ened
 
 Exemple de données reçues sur un compteur en mode historique :
 
-![mqtt_std](./data_mqtt_hist.png)
+![mqtt_std](./img/data_mqtt_hist.png)
 
 Exemple de données reçues sur un compteur en mode standard :
 
-![mqtt_std](./data_mqtt_std.png)
+![mqtt_std](./img/data_mqtt_std.png)
 
 > **Note:** les données ne sont envoyées que si la valeur a changé depuis la dernière trame TIC reçue.
 

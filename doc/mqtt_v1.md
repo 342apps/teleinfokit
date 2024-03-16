@@ -54,7 +54,7 @@ Ces données génériques sont envoyées dans le topic `teleinfokit/data/`, puis
 
 Exemple de données reçues avec un firmware v1 :
 
-![Données génériques](./mqtt_generic.png)
+![Données génériques](./img/mqtt_generic.png)
 
 **Note:** les données ne sont envoyées que si la valeur a changé depuis la dernière trame TIC reçue.
 

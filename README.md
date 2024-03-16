@@ -8,7 +8,7 @@ As this is mainly intended for french people, the rest of this file will be in f
 
 Le firmware proposé ici est prévu pour fonctionner sur le [module TeleInfoKit](https://342apps.net) qui permet de collecter les données de télé-information émises par un compteur électrique de type Linky ou non-communicant (compteurs classiques blancs). Les données sont disponibles via l'écran du module.
 
-![teleinfokit](./doc/teleinfokit_v2.jpg)
+![teleinfokit](./doc/img/teleinfokit_01_screen_wide.png)
 
 Les données sont envoyées en temps réel sur un serveur MQTT pour être exploitées ensuite par un système domotique tel [Home Assistant](https://www.home-assistant.io/) ou un logiciel de monitoring comme [Grafana](https://www.home-assistant.io/).
 
@@ -24,9 +24,9 @@ Les données de consommation et les index peuvent être exploitées dans Home As
 
 Les données remontées sont compatibles avec un usage dans le [Dashboard Energie](./doc/dashboard-energy.md).
 
-![index](./doc/energy-dashboard.png)
+![index](./doc/img/energy-dashboard.png)
 
-![graphe](./doc/graph-power.png)
+![graphe](./doc/img/graph-power.png)
 
 ## Affichage intégré au module TeleInfoKit
 

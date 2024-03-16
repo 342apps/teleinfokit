@@ -6,7 +6,7 @@ L'intégration du module TeleInfoKit dans Home Assistant et l'envoi des données
 
 Il suffit pour cela, si ce n'est pas déjà fait, d'ajouter l'intégration MQTT à votre instance de Home Assistant à l'aide de la documentation officielle, ou en cliquant sur ce lien pour l'integration MQTT :
 
-[![myMQTT](./config_flow_start.svg)]((https://my.home-assistant.io/redirect/config_flow_start?domain=mqtt))
+[![myMQTT](./img/config_flow_start.svg)]((https://my.home-assistant.io/redirect/config_flow_start?domain=mqtt))
 
 ## Déclaration automatique dans Home Assistant
 
@@ -18,7 +18,7 @@ Dans la page du device en lui même vont se retrouver toutes les informations du
 
 L'exemple ci-dessous montre un boîtier TeleInfoKit relié à un compteur en mode TIC standard.
 
-![device](./teleinfokit_ha.png)
+![device](./img/teleinfokit_ha.png)
 
 ### Entités
 
@@ -98,4 +98,4 @@ Le sensor est à adapter selon son besoin à partir des données publiées par l
 
 Il est possible d'utiliser une application comme [MQTT Explorer](http://mqtt-explorer.com) pour visualiser tous les messages transitant sur un broker et donc l'ensemble des données émises par le compteur.
 
-![data mqtt](./data_mqtt_std.png)
+![data mqtt](./img/data_mqtt_std.png)

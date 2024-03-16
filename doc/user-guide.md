@@ -15,7 +15,7 @@ Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smar
 
 Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
 
-![Captive portal](./captive-portal_v2.png)
+![Captive portal](./img/captive-portal_v2.png)
 
 ### Optionnel : configuration MQTT et TIC
 
@@ -39,7 +39,7 @@ Le point d'accès wifi se désactive.
 
 La configuration est accessible via le bouton `Setup` la page principale 
 
-![MQTT config](./cp_config.png)
+![MQTT config](./img/cp_config.png)
 
 ### Mode TIC
 
@@ -95,7 +95,7 @@ A chaque barre correspond 1 heure. Les barres à gauche sont les plus anciennes,
 
 La barre horizontale à droite indique la hauteur maximale des barres du graphe. Le nombre indiqué sous cette barre (2864Wh sur l'exemple ci-dessous) indique la consommation max sur une période d'une heure au cours des dernières 24h. Cela sert donc d'échelle pour le graphe, cette valeur étant la consommation associée à la barre la plus haute du graphe.
 
-![Historique](./history-screen_v2.png)
+![Historique](./img/history-screen_v2.png)
 
 Le graphe est optimisé pour occuper le maximum de hauteur possible à l'écran. L'échelle (la plus grande consommation par tranche d'une heure) s'adapte donc au fur et a mesure du temps.
 

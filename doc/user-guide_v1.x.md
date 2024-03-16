@@ -15,7 +15,7 @@ Hotspot Wifi: TeleInfoKit
 
 Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est `givememydata`. Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
 
-![Captive portal](./captive-portal.png)
+![Captive portal](./img/captive-portal.png)
 
 * Cliquer sur le bouton "Configure Wifi" pour faire apparaître la liste des réseaux wifi à portée (l'ESP-01 est compatible wifi 2.4GHz seulement).
 * Taper le nom du réseau dans le champ SSID ou le sélectionner dans la liste.
@@ -39,7 +39,7 @@ Le point d'accès wifi se désactive.
 
 Lors de la configuration initiale il est possible de saisir un login/password pour protéger l'accès aux données. Ces identifiants sont utilisés pour activer une authentification HTTP Basic sur la page dashboard et l'accès aux APIs. Le navigateur demandera automatiquement ces identifiants.
 
-![Authentication](./authentication.png)
+![Authentication](./img/authentication.png)
 
 Si les deux champs sont laissés vides, l'authentification est désactivée.
 
@@ -75,7 +75,7 @@ A chaque barre correspond 1 heure. Les barres à gauche sont les plus anciennes,
 
 La barre horizontale à droite indique la hauteur maximale des barres du graphe. Le nombre indiqué sous cette barre (2453Wh sur l'exemple ci-dessous) indique la consommation max sur une période d'une heure au cours des dernières 24h. Cela sert donc d'échelle pour le graphe, cette valeur étant la consommation associée à la barre la plus haute du graphe.
 
-![Historique](./history-screen.png)
+![Historique](./img/history-screen.png)
 
 Le graphe est optimisé pour occuper le maximum de hauteur possible à l'écran. L'échelle (la plus grande consommation par tranche d'une heure) s'adapte donc au fur et a mesure du temps.
 

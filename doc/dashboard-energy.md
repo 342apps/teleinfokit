@@ -4,15 +4,15 @@ Une fois le TeleInfoKit [configuré et intégré à Home Assistant](./configurat
 
 Il est alors possible de visualiser ses données de consommation de manière détaillée, index par index et jour par jour, avec les coûts associés.
 
-![dashboard](./energy-dashboard.png)
+![dashboard](./img/energy-dashboard.png)
 
 Ici on voit les index sur une journée, associés à un abonnement Tempo et ses différents tarifs.
 
 Ceci est rendu possible par la configuration des sources de consommation avec les index 01 à 06 envoyés par le boîtier TeleInfoKit. Ils ont été renommés pour refléter leur signification dans le cas d'un abonnement tempo, puis leur tarif au Kwh assigné.
 
-![label](./label-index.png)
+![label](./img/label-index.png)
 
-![tarif](./price-index.png)
+![tarif](./img/price-index.png)
 
 ## Couleurs personnalisées pour les index
 
@@ -44,4 +44,4 @@ Energy dashboard:
 
 Le rendu en thème sombre :
 
-![dark](./dark-theme.png)
+![dark](./img/dark-theme.png)

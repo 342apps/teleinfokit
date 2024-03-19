@@ -6,9 +6,9 @@ SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY
 Display::Display()
 {
   oled.init();
-  #if _HW_VER == 1
+#if _HW_VER == 1
   oled.flipScreenVertically();
-  #endif
+#endif
   oled.setFont(ArialMT_Plain_10);
 }
 
@@ -58,7 +58,7 @@ void Display::logPercent(String text, int percentage)
   oled.display();
 }
 
-void Display::drawGraph(long papp)
+void Display::drawGraph(long papp, char mode)
 {
   oled.displayOn();
   oled.clear();
@@ -76,7 +76,9 @@ void Display::drawGraph(long papp)
   oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.drawString(0, 0, "Historique 24h");
+  oled.drawRect(0, 1, 9, 11);
+  oled.drawString(1, 0, String(mode));
+  oled.drawString(12, 0, "Graphe 24h");
   oled.display();
 }
 
@@ -92,53 +94,17 @@ void Display::displayData1(long papp, long iinst)
   oled.display();
 }
 
-void Display::displayData1Triphase(long papp, long iinst1, long iinst2, long iinst3)
+void Display::displayData2(long index, char *compteur)
 {
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Puissance/Intensités phases");
-  oled.drawString(0, 10, String(papp) + "VA");
-  oled.drawString(0, 20, String(iinst1) + " / " + String(iinst2) + " / " + String(iinst3) + " A");
-  oled.display();
-}
-
-void Display::displayData2(long hp, long hc)
-{
-  oled.displayOn();
-  oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Index compteurs");
-  oled.drawString(0, 10, "HC");
-  oled.drawString(20, 10, String(hc));
-  oled.drawString(0, 20, "HP");
-  oled.drawString(20, 20, String(hp));
-  oled.display();
-}
-
-void Display::displayData2Base(long base)
-{
-  oled.displayOn();
-  oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Index compteur");
-  oled.drawString(0, 10, "BASE");
-  oled.drawString(30, 10, String(base));
-  oled.display();
-}
-
-void Display::displayData3(char *adc0, long isousc, char *ptec)
-{
-  oled.displayOn();
-  oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "ID cpt " + String(adc0));
-  oled.drawString(0, 10, "Puiss. souscrite : " + String(isousc) + "A");
-  oled.drawString(0, 20, "Per. tarif : " + String(ptec));
+  oled.drawString(0, 0, "Compteur");
+  oled.drawString(0, 10, "Index total");
+  oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+  oled.drawString(120, 0, compteur);
+  oled.drawString(120, 10, String(index));
   oled.display();
 }
 
@@ -154,15 +120,31 @@ void Display::displayNetwork()
   oled.display();
 }
 
-void Display::displayReset()
+void Display::displayTime()
+{
+  struct tm timeinfo;
+  localtime_r(&now, &timeinfo); // update the structure tm with the current time
+  strftime(buffer, 80, "%a %d %b %Y %H:%M:%S ", &timeinfo);
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Date / heure ");
+  oled.drawString(0, 10, buffer);
+  oled.display();
+}
+
+void Display::displayReset(String apKey)
 {
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(0, 0, "Réinitialisation ?");
+  oled.drawString(0, 0, "Réinit ?");
   oled.drawString(0, 10, "Appui long pour reset...");
-  oled.drawString(0, 20, VERSION);
+  oled.drawString(0, 20, apKey);
+  oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+  oled.drawString(128, 0, VERSION);
   oled.display();
 }
 
@@ -170,4 +152,41 @@ void Display::displayOff()
 {
   oled.clear();
   oled.displayOff();
+}
+
+
+void Display::displayTestTic(String power, String index, char ticMode){
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "TIC TEST");
+  oled.drawRect(118, 1, 9, 11);
+  oled.drawString(119, 0, String(ticMode));
+  oled.drawString(0, 10, "POWER");
+  oled.drawString(0, 20, "INDEX");
+  oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+  oled.drawString(128, 10, String(power));
+  oled.drawString(128, 20, String(index));
+  oled.display();
+}
+
+void Display::getTime()
+{
+  now = time(nullptr);
+  unsigned timeout = 5000; // try for timeout
+  unsigned start = millis();
+
+  configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
+  while (now < 8 * 3600 * 2)
+  { // what is this ?
+    delay(100);
+    // Serial.print(".");
+    now = time(nullptr);
+    if ((millis() - start) > timeout)
+    {
+      oled.drawString(0, 0, "[ERROR] Failed to get NTP time.");
+      return;
+    }
+  }
 }

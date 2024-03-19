@@ -6,9 +6,11 @@ As this is mainly intended for french people, the rest of this file will be in f
 
 ## Description
 
-Le firmware proposé ici est prévu pour fonctionner sur le [module TeleInfoKit](https://342apps.net) qui permet de collecter les données de télé-information émises par un compteur électrique de type Linky ou non-communicant. Les données sont disponibles via l'écran du module et depuis un dashboard accessible depuis un navigateur internet.
+Le firmware proposé ici est prévu pour fonctionner sur le [module TeleInfoKit](https://342apps.net) qui permet de collecter les données de télé-information émises par un compteur électrique de type Linky ou non-communicant (compteurs classiques blancs). Les données sont disponibles via l'écran du module.
 
-Les données sont également envoyées en temps réel sur un serveur MQTT pour être exploitées ensuite par un système domotique tel [Home Assistant](https://www.home-assistant.io/) ou un logiciel de monitoring comme [Grafana](https://www.home-assistant.io/).
+![teleinfokit](./doc/img/teleinfokit_01_screen_wide.png)
+
+Les données sont envoyées en temps réel sur un serveur MQTT pour être exploitées ensuite par un système domotique tel [Home Assistant](https://www.home-assistant.io/) ou un logiciel de monitoring comme [Grafana](https://www.home-assistant.io/).
 
 Un [guide d'utilisation détaillé](./doc/user-guide.md) du module et son firmware sont disponible dans les sources du projet.
 
@@ -16,21 +18,19 @@ Un [guide d'utilisation détaillé](./doc/user-guide.md) du module et son firmwa
 
 Les données collectées depuis le bus de téléinformation du compteur (Linky ou anciens modèles) sont envoyées en temps réel sur un serveur MQTT (si configuré). La structure des messages et les topics utilisés sont décrits dans la [documentation mqtt](./doc/mqtt.md).
 
+## Visualisation dans Home Assistant
+
+Les données de consommation et les index peuvent être exploitées dans Home Assistant pour un affichage personnalisé. [L'intégration dans Home Assistant](./doc/configuration-ha.md) est automatisée.
+
+Les données remontées sont compatibles avec un usage dans le [Dashboard Energie](./doc/dashboard-energy.md).
+
+![index](./doc/img/energy-dashboard.png)
+
+![graphe](./doc/img/graph-power.png)
+
 ## Affichage intégré au module TeleInfoKit
 
 Un afficheur intégré au module TeleInfoKit restitue un historique de consommation sur 24h, la consommation instantanée et d'autre informations décrites dans la documentation.
-
-## Dashboard web
-
-Un dashboard sous la forme d'une page web est également accessible depuis un navigateur en se connectant au module via son adresse IP.
-
-[![dashboard](./doc/dashboard.png)](./doc/dashboard_big.png)
-
-Un graphe de la consommation instantanée et l'historique sur 24h est affiché. Des informations complémentaires sont disponibles au bas du dashboard.
-
-## APIs
-
-Une série d'APIs est mise à disposition pour accéder aux données autrement que par MQTT. Le dashboard utilise ces APIs dans son fonctionnement. Les [spécifications au format OpenAPI](./doc/TeleInfoKit-openapi.v1.yaml) sont disponibles dans les sources.
 
 ## Mises à jour OTA
 
@@ -40,17 +40,25 @@ Le firmware peut être mis à jour en mode OTA (Over The Air). Cela passe par la
 
 Le module TeleInfoKit s'architecture autour du module ESP-01 basé sur le chip [ESP8266 d'Espressif](https://www.espressif.com/en/products/socs/esp8266). Le firmware disponible ici est prévu pour être compilé pour cette plateforme.
 
-## Documentation
+## Documentation des firmwares v2.x
 
 Se référer au dossier [doc](/doc) pour les documents suivants:
 
 * [Guide utilisateur](./doc/user-guide.md)
-  * [Démarrage et configuration](./doc/user-guide.md#Démarrage-et-configuration)
-  * [Écrans](./doc/user-guide.md#Écrans)
-  * [Réinitialisation de la configuration](./doc/user-guide.md#Réinitialisation-de-la-configuration)
-  * [APIs](./doc/user-guide.md#API)
+  * [Démarrage et configuration](./doc/user-guide.md#démarrage-et-configuration)
+  * [Écrans](./doc/user-guide.md#écrans)
+  * [Réinitialisation de la configuration](./doc/user-guide.md#réinitialisation-de-la-configuration-factory-reset)
+* [Integration dans Home Assistant](./doc/configuration-ha.md)
+* [Dashboard Energie](./doc/dashboard-energy.md)
 * [Messages MQTT](./doc/mqtt.md)
 
 ## Ressources
 
 La présentation du boitier TeleInfoKit est disponible sur [342apps.net](https://342apps.net) et les sources hardware sont disponibles sur le repo [teleinfokit-board](https://github.com/342apps/teleinfokit-board)
+
+## Anciennes versions
+
+Le firmware v2 a évolué par rapport à son prédécesseur. Pour retrouver la documentation de la version 1, voir les liens ci-dessous :
+
+- [Guide d'utilisation v1](./doc/user-guide_v1.x.md)
+- [Messages MQTT v1](./doc/mqtt_v1.md)

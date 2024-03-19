@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: TeleInfoKit data
-  version: '1.0'
+  version: '2.0'
   description: Cette API permet d'accéder au données de télé-information reçues par le module TeleInfoKit. Le dashboard fourni utilise ces APIs pour alimenter les graphiques.
 servers:
   - url: 'http://TeleInfoKit_xxxxxxxx:80'
@@ -299,10 +299,6 @@ paths:
                     type: string
                     example: '2'
                     description: Version hardware board TeleInfoKit
-                  buildTime:
-                    type: string
-                    minLength: 1
-                    description: Date et heure au format texte de la compilation du firmware installé
                   ip:
                     type: string
                     minLength: 1

@@ -229,9 +229,6 @@ void readConfig()
       File configFile = LittleFS.open(CONFIG_FILE, "r");
       if (configFile)
       {
-        // get the file size
-        size_t fileSize = configFile.size();
-
         if(currentVersionExists()){
           configFile.read((byte *)&config, sizeof(config));
         }
@@ -542,8 +539,8 @@ void setup()
 
   custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
   checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
-  checkbox_triphase = new WiFiManagerParameter("mode_triphase", "Compteur Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
-  custom_mqtt_server = new WiFiManagerParameter("server", "<br />Serveur MQTT", mqtt_server, 40);
+  checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Compteur Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
+  custom_mqtt_server = new WiFiManagerParameter("server", "<br /><br />Serveur MQTT", mqtt_server, 40);
   custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
   custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login (taille max 32)", mqtt_server_username, 32);
   custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe (taille max 32)", mqtt_server_password, 32, "type=\"password\"");

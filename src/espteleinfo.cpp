@@ -291,8 +291,10 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryIndex(F("EASD02"), F("Index distributeur 02"));
             sendMqttDiscoveryIndex(F("EASD03"), F("Index distributeur 03"));
             sendMqttDiscoveryIndex(F("EASD04"), F("Index distributeur 04"));
+            sendMqttDiscoveryIndex(F("EAIT"), F("Energie active injectée totale "));
 
             sendMqttDiscoveryForType(F("SINSTS"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            sendMqttDiscoveryForType(F("SINSTI"), F("Puissance app. Instantanée injectée "), F("apparent_power"), "VA", F("mdi:power-plug"));
             
             sendMqttDiscoveryText(F("ADSC"), F("Adresse compteur"));
             sendMqttDiscoveryText(F("NGTF"), F("Option tarifaire"));
@@ -338,6 +340,8 @@ void ESPTeleInfo::sendMqttDiscovery()
                 sendMqttDiscoveryForType(F("IINST1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
                 sendMqttDiscoveryForType(F("IINST2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
                 sendMqttDiscoveryForType(F("IINST3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                
+                sendMqttDiscoveryForType(F("PMAX"), F("Puissance maximale triphasée atteinte "), F("power"), "W", F("mdi:lightning-bolt-circle"));
             }
             else
             {

@@ -25,7 +25,10 @@
 
 #define REFRESH_DELAY 1000
 
-// The structure that stores configuration
+// Existing previous versions
+#define V200 "v2.0.0.312588"
+
+// The structure that stores configuration of version 2.0.0
 typedef struct
 {
   bool mode_tic_standard;
@@ -34,6 +37,18 @@ typedef struct
   char mqtt_server_username[32];
   char mqtt_server_password[32];
   char data_transmission_period[10];
+} ConfStruct_V200;
+
+// The structure that stores configuration of version 2.1.0
+typedef struct
+{
+  bool mode_tic_standard;
+  char mqtt_server[40];
+  char mqtt_port[6];
+  char mqtt_server_username[32];
+  char mqtt_server_password[32];
+  char data_transmission_period[10];
+  bool mode_triphase;   // new field
 } ConfStruct;
 
 ConfStruct config;
@@ -140,6 +155,7 @@ bool WMISBLOCKING = true;  // use blocking or non blocking mode, non global para
 
 // network configuration variables
 char mode_tic_std_char[1];
+char mode_triphase_char[1];
 char mqtt_server[40];
 char mqtt_port[6];
 char mqtt_server_username[32];
@@ -147,8 +163,10 @@ char mqtt_server_password[32];
 char data_transmission_period[10];
 char UNIQUE_ID[30];
 
-char _customHtml_checkbox[] = "type=\"checkbox\"";
-WiFiManagerParameter *custom_checkbox;
+char _customHtml_checkbox_mode_tic[] = "type=\"checkbox\"";
+char _customHtml_checkbox_triphase[] = "type=\"checkbox\"";
+WiFiManagerParameter *checkbox_mode_tic;
+WiFiManagerParameter *checkbox_triphase;
 WiFiManagerParameter *custom_html;
 WiFiManagerParameter *custom_mqtt_server;
 WiFiManagerParameter *custom_mqtt_port;
@@ -168,6 +186,35 @@ void configModeCallback(WiFiManager *myWiFiManager)
   d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
 }
 
+// create a file whose name is the version of the firmware
+void createVersionFile()
+{
+  if (!LittleFS.exists("/" VERSION ".txt"))
+  {
+    File versionFile = LittleFS.open("/" VERSION ".txt", "w");
+  }
+}
+
+bool isVersionBeforeV200()
+{
+  // get the config file if exists and get its size
+  File configFile = LittleFS.open(CONFIG_FILE, "r");
+  if (configFile)
+  {
+    size_t fileSize = configFile.size();
+    if (fileSize <= sizeof(ConfStruct_V200))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool currentVersionExists()
+{
+  return LittleFS.exists("/" VERSION ".txt");
+}
+
 // Retreives configuration from filesystem
 void readConfig()
 {
@@ -182,15 +229,45 @@ void readConfig()
       File configFile = LittleFS.open(CONFIG_FILE, "r");
       if (configFile)
       {
-        configFile.read((byte *)&config, sizeof(config));
+        // get the file size
+        size_t fileSize = configFile.size();
 
+        if(currentVersionExists()){
+          configFile.read((byte *)&config, sizeof(config));
+        }
+        else {
+          // assume the file is from version 2.0.0
+          ConfStruct_V200 configV200;
+          configFile.read((byte *)&configV200, sizeof(configV200));
+
+          // copy the values from the old struct to the new struct
+          config.mode_tic_standard = configV200.mode_tic_standard;
+          strcpy(config.mqtt_server, configV200.mqtt_server);
+          strcpy(config.mqtt_port, configV200.mqtt_port);
+          strcpy(config.mqtt_server_username, configV200.mqtt_server_username);
+          strcpy(config.mqtt_server_password, configV200.mqtt_server_password);
+          strcpy(config.data_transmission_period, configV200.data_transmission_period);
+          config.mode_triphase = false; // set the new field to false by default
+        }
+
+        // mode standard
         if (config.mode_tic_standard)
         {
-          strcat(_customHtml_checkbox, " checked");
+          strcat(_customHtml_checkbox_mode_tic, " checked");
         }
         else
         {
-          strcpy(_customHtml_checkbox, "type=\"checkbox\"");
+          strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\"");
+        }
+
+        // mode triphasé
+        if (config.mode_triphase)
+        {
+          strcat(_customHtml_checkbox_triphase, " checked");
+        }
+        else
+        {
+          strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\"");
         }
 
         strcpy(mqtt_server, config.mqtt_server);
@@ -221,7 +298,8 @@ void saveParamCallback()
   d->logPercent("Sauvegarde configuration", 5);
   shouldSaveConfig = true;
 
-  strcpy(mode_tic_std_char, custom_checkbox->getValue());
+  strcpy(mode_tic_std_char, checkbox_mode_tic->getValue());
+  strcpy(mode_triphase_char, checkbox_triphase->getValue());
   strcpy(mqtt_server, custom_mqtt_server->getValue());
   strcpy(mqtt_port, custom_mqtt_port->getValue());
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
@@ -235,13 +313,16 @@ void saveParamCallback()
   }
   else
   {
-    bool std = strcmp(custom_checkbox->getValue(), "T") == 0;
+    bool std = strcmp(checkbox_mode_tic->getValue(), "T") == 0;
     if (std != config.mode_tic_standard)
     {
-      ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+      ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
       initButton();
     }
     config.mode_tic_standard = std;
+
+    config.mode_triphase = strcmp(checkbox_triphase->getValue(), "T") == 0;
+
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
     strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
@@ -251,13 +332,25 @@ void saveParamCallback()
 
     if (config.mode_tic_standard)
     {
-      strcat(_customHtml_checkbox, " checked");
+      strcat(_customHtml_checkbox_mode_tic, " checked");
     }
     else
     {
-      strcpy(_customHtml_checkbox, "type=\"checkbox\"");
+      strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\"");
     }
-    custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
+    checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
+
+    if (config.mode_triphase)
+    {
+      strcat(_customHtml_checkbox_triphase, " checked");
+    }
+    else
+    {
+      strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\"");
+    }
+    checkbox_triphase = new WiFiManagerParameter("mode_triphase", "Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
+
+    createVersionFile();
 
     d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
 
@@ -277,7 +370,7 @@ void saveParamCallback()
     port = atoi(config.mqtt_port);
     delay(1000);
   }
-  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
   configFile.close();
   initButton();
@@ -310,14 +403,14 @@ void handlerBtn(Button2 &btn)
       {
         // go mode standard
         config.mode_tic_standard = true;
-        ti.init(TINFO_MODE_STANDARD);
+        ti.init(TINFO_MODE_STANDARD, config.mode_triphase);
         initButton();
       }
       else
       {
         // go mode historique
         config.mode_tic_standard = false;
-        ti.init(TINFO_MODE_HISTORIQUE);
+        ti.init(TINFO_MODE_HISTORIQUE, config.mode_triphase);
         initButton();
       }
       break;
@@ -436,7 +529,7 @@ void setup()
   }
 
   readConfig();
-  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
 
   wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
 
@@ -448,15 +541,17 @@ void setup()
   wm.setSaveParamsCallback(saveParamCallback);
 
   custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
-  custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
+  checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
+  checkbox_triphase = new WiFiManagerParameter("mode_triphase", "Compteur Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
   custom_mqtt_server = new WiFiManagerParameter("server", "<br />Serveur MQTT", mqtt_server, 40);
   custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
-  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login", mqtt_server_username, 32);
-  custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
+  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login (taille max 32)", mqtt_server_username, 32);
+  custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe (taille max 32)", mqtt_server_password, 32, "type=\"password\"");
   custom_data_transmission_period = new WiFiManagerParameter("data_transmission_period", "Délai entre envoi données (secondes) [Laisser vide pour temps réel]", data_transmission_period, 10);
 
   wm.addParameter(custom_html);
-  wm.addParameter(custom_checkbox);
+  wm.addParameter(checkbox_mode_tic);
+  wm.addParameter(checkbox_triphase);
   wm.addParameter(custom_mqtt_server);
   wm.addParameter(custom_mqtt_port);
   wm.addParameter(custom_mqtt_username);

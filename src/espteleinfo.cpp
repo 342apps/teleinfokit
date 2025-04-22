@@ -26,10 +26,11 @@ static void DataCallback(ValueList *me, uint8_t flags)
     getESPTeleInfo()->SetData(me->name, me->value);
 }
 
-void ESPTeleInfo::init(_Mode_e tic_mode)
+void ESPTeleInfo::init(_Mode_e tic_mode, bool triphase)
 {
     instanceEsp = this;
     ticMode = tic_mode;
+    this->triphase = triphase;
     iinst = 0;
     papp = 0;
     index = 0;
@@ -292,9 +293,7 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryIndex(F("EASD04"), F("Index distributeur 04"));
 
             sendMqttDiscoveryForType(F("SINSTS"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
-            sendMqttDiscoveryForType(F("IRMS1"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
-            sendMqttDiscoveryForType(F("URMS1"), F("Tension"), F("voltage"), "V", F("mdi:sine-wave"));
-
+            
             sendMqttDiscoveryText(F("ADSC"), F("Adresse compteur"));
             sendMqttDiscoveryText(F("NGTF"), F("Option tarifaire"));
             sendMqttDiscoveryText(F("LTARF"), F("Libellé tarif en cours"));
@@ -302,6 +301,22 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryText(F("NJOURF+1"), F("Numéro du prochain jour calendrier fournisseur"));
             sendMqttDiscoveryText(F("MSG1"), F("Message"));
             sendMqttDiscoveryText(F("RELAIS"), F("Etat relais"));
+            
+            if(triphase)
+            {
+                sendMqttDiscoveryForType(F("IRMS1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IRMS2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IRMS3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                
+                sendMqttDiscoveryForType(F("URMS1"), F("Tension phase 1"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("URMS2"), F("Tension phase 2"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("URMS3"), F("Tension phase 3"), F("voltage"), "V", F("mdi:sine-wave"));
+            }
+            else
+            {
+                sendMqttDiscoveryForType(F("IRMS1"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("URMS1"), F("Tension"), F("voltage"), "V", F("mdi:sine-wave"));
+            }
         }
         else
         {
@@ -318,7 +333,16 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryIndex(F("BBRHPJR"), F("Index Tempo heures pleines jours Rouges"));
 
             sendMqttDiscoveryForType(F("PAPP"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
-            sendMqttDiscoveryForType(F("IINST"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+            if(triphase)
+            {
+                sendMqttDiscoveryForType(F("IINST1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IINST2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IINST3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+            }
+            else
+            {
+                sendMqttDiscoveryForType(F("IINST"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+            }
 
             sendMqttDiscoveryText(F("ADCO"), F("Adresse compteur"));
             sendMqttDiscoveryText(F("OPTARIF"), F("Option tarifaire"));

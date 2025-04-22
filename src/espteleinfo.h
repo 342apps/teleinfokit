@@ -25,7 +25,7 @@ class ESPTeleInfo
 public:
     ESPTeleInfo();
 
-    void init(_Mode_e tic_mode);
+    void init(_Mode_e tic_mode, bool triphase);
     void initMqtt(char *server, uint16_t port, char *username, char *password, int period_data);
     void loop(void);
 
@@ -51,6 +51,7 @@ public:
     void sendMqttDiscovery();
     void AnalyzeTicForInternalData();
     _Mode_e ticMode;
+    bool triphase;
 
 private:
     char logBuffer[100];

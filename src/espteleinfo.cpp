@@ -300,6 +300,7 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryText(F("NGTF"), F("Option tarifaire"));
             sendMqttDiscoveryText(F("LTARF"), F("Libellé tarif en cours"));
             sendMqttDiscoveryText(F("NTARF"), F("Numéro index tarifaire en cours"));
+            sendMqttDiscoveryText(F("PREF"), F("Puissance app. de référence"));
             sendMqttDiscoveryText(F("NJOURF+1"), F("Numéro du prochain jour calendrier fournisseur"));
             sendMqttDiscoveryText(F("MSG1"), F("Message"));
             sendMqttDiscoveryText(F("RELAIS"), F("Etat relais"));

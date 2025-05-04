@@ -161,6 +161,11 @@ void ESPTeleInfo::SendAllData()
 
 void ESPTeleInfo::SendData(char *label, char *value)
 {
+    // send only if bufDataTopic and label not empty        
+    if (bufDataTopic[0] == '\0' || label[0] == '\0')
+    {
+        return;
+    }
     // send all data in the data topic
     if (connectMqtt())
     {

@@ -40,7 +40,7 @@ void Display::displayStartup(String version)
   oled.setFont(ArialMT_Plain_16);
   oled.drawString(36, 0, "TeleInfoKit");
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(64, 20, version);
+  oled.drawString(36, 20, version);
 
   // ## LOGO ##
 

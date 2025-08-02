@@ -235,13 +235,17 @@ void readConfig()
       if (configFile)
       {
         configFile.read((byte *)&config, sizeof(config));
+        configFile.close();
       }
       else if (configFileV200)
       {
         d->logPercent("Migration config v2.0", 12);
+        delay(400);
+
         // assume the file is from version 2.0.0
         ConfStruct_V200 configV200;
-        configFile.read((byte *)&configV200, sizeof(configV200));
+        configFileV200.read((byte *)&configV200, sizeof(configV200));
+        configFileV200.close();
 
         // copy the values from the old struct to the new struct
         config.mode_tic_standard = configV200.mode_tic_standard;
@@ -279,7 +283,6 @@ void readConfig()
       strcpy(mqtt_server_username, config.mqtt_server_username);
       strcpy(mqtt_server_password, config.mqtt_server_password);
       strcpy(data_transmission_period, config.data_transmission_period);
-      configFile.close();
 
       d->logPercent("Configuration chargée", 15);
     }

@@ -13,6 +13,7 @@
 #include "espteleinfo.h"
 #include "display.h"
 #include "randomKeyGenerator.h"
+#include "version.h"
 
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
@@ -181,7 +182,8 @@ WiFiManagerParameter *custom_mqtt_port;
 WiFiManagerParameter *custom_mqtt_username;
 WiFiManagerParameter *custom_mqtt_password;
 WiFiManagerParameter *custom_data_transmission_period;
-WiFiManagerParameter *custom_bottom_html;
+WiFiManagerParameter *custom_link;
+WiFiManagerParameter *custom_version;
 
 // Network connection has been done through captive portal of hotspot or through config webportal
 void saveConfigCallback()
@@ -538,14 +540,13 @@ void setup()
   checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
 
   checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Compteur Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
-  custom_mqtt_server = new WiFiManagerParameter("server", "<br /><br />Serveur MQTT", mqtt_server, 40);
+  custom_mqtt_server = new WiFiManagerParameter("server", "<br /><br />Serveur MQTT (taille max 40)", mqtt_server, 40);
   custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
   custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login (taille max 32)", mqtt_server_username, 32);
   custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe (taille max 32)", mqtt_server_password, 32, "type=\"password\"");
   custom_data_transmission_period = new WiFiManagerParameter("data_transmission_period", "Délai entre envoi données (secondes) [Laisser vide pour temps réel]", data_transmission_period, 10);
-  char versionHtml[200];
-  snprintf(versionHtml, sizeof(versionHtml), "<br /><br /><p style=\"color:#375c72;font-size:12px;\">Version %s</p><br /><p><a href = https://342apps.net/teleinfokit>Documentation Teleinfokit</a></p><br /><br />", VERSION);
-  custom_bottom_html = new WiFiManagerParameter(versionHtml);
+  custom_link = new WiFiManagerParameter("<p><a href='https://342apps.net/teleinfokit'>Documentation Teleinfokit</a></p>");
+  custom_version = new WiFiManagerParameter(VERSION);
 
   wm.addParameter(custom_html);
   wm.addParameter(checkbox_mode_tic);
@@ -555,7 +556,8 @@ void setup()
   wm.addParameter(custom_mqtt_username);
   wm.addParameter(custom_mqtt_password);
   wm.addParameter(custom_data_transmission_period);
-  wm.addParameter(custom_bottom_html);
+  wm.addParameter(custom_link);
+  wm.addParameter(custom_version);
   wm.setCustomHeadElement("<style>body{background-color: #F9FAFB; color: #375c72;} .msg.S {border-left-color: #477089;} button{color: #FFF; background-color: #81AECA;}</style>");
   wm.setTitle(F("Portail TeleInfoKit"));
 

@@ -308,7 +308,7 @@ void readConfig()
 
 void saveParamCallback()
 {
-  d->log("Sauvegarde configuration", 200);
+  d->logPercent("Sauvegarde configuration", 5);
   shouldSaveConfig = true;
 
   // strcpy(mode_tic_std_char, checkbox_mode_tic->getValue());
@@ -318,6 +318,8 @@ void saveParamCallback()
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
   strcpy(mqtt_server_password, custom_mqtt_password->getValue());
   strcpy(data_transmission_period, custom_data_transmission_period->getValue());
+
+  d->logPercent("Sauvegarde configuration", 20);
 
   File configFile = LittleFS.open(CONFIG_FILE, "w");
   if (!configFile)
@@ -338,6 +340,8 @@ void saveParamCallback()
     }
     config.mode_tic_standard = std;
 
+    d->logPercent("Sauvegarde configuration", 30);
+
 
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
@@ -348,6 +352,8 @@ void saveParamCallback()
     configFile.write((byte *)&config, sizeof(config));
     configFile.close();
 
+    d->logPercent("Sauvegarde configuration", 50);
+
     if (config.mode_tic_standard)
     {
       strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_STD);
@@ -356,9 +362,9 @@ void saveParamCallback()
     {
       strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
     }
-    //checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
 
-    
+    d->logPercent("Sauvegarde configuration", 50);
+
     if (config.mode_triphase)
     {
       strcpy(_customHtml_checkbox_triphase, HTML_RADIO_TRIPHASE);
@@ -367,11 +373,8 @@ void saveParamCallback()
     {
       strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
     }
-    //checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
-
     
-    d->log("Configuration sauvée", 500);
-    d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
+    d->logPercent("Rechargement config", 75);
   }
   
   uint16_t port = 1883;
@@ -384,6 +387,9 @@ void saveParamCallback()
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
   ti.sendMqttDiscovery();
   initButton();
+  d->logPercent("Terminé", 100);
+  delay(300);
+  d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
 }
 
 void bindServerCallback()

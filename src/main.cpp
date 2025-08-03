@@ -172,8 +172,12 @@ char mqtt_server_password[32];
 char data_transmission_period[10];
 char UNIQUE_ID[30];
 
-char _customHtml_checkbox_mode_tic[50] = "type=\"checkbox\"";
+char _customHtml_checkbox_mode_tic[200] = "";
 char _customHtml_checkbox_triphase[50] = "type=\"checkbox\"";
+
+#define HTML_RADIO_TIC_STD "<label for='mode_tic_std'>Mode TIC</label><br /><input type='radio' name='mode_tic_std' value='H'> Historique<br><input type='radio' name='mode_tic_std' value='S' checked> Standard<br>"
+#define HTML_RADIO_TIC_HIST "<label for='mode_tic_std'>Mode TIC</label><br /><input type='radio' name='mode_tic_std' value='H' checked> Historique<br><input type='radio' name='mode_tic_std' value='S'> Standard<br>"
+
 WiFiManagerParameter *checkbox_mode_tic;
 WiFiManagerParameter *checkbox_triphase;
 WiFiManagerParameter *custom_html;
@@ -261,11 +265,11 @@ void readConfig()
       // mode standard
       if (config.mode_tic_standard)
       {
-        strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\" checked");
+        strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_STD);
       }
       else
       {
-        strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\"");
+        strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
       }
 
       // mode triphasé
@@ -301,7 +305,7 @@ void readConfig()
 
 void saveParamCallback()
 {
-  d->logPercent("Sauvegarde configuration", 5);
+  d->log("Sauvegarde configuration", 200);
   shouldSaveConfig = true;
 
   // strcpy(mode_tic_std_char, checkbox_mode_tic->getValue());
@@ -319,7 +323,7 @@ void saveParamCallback()
   }
   else
   {
-    bool std = getParam("mode_tic_std") == "T";
+    bool std = getParam("mode_tic_std") == "S";
     if (std != config.mode_tic_standard)
     {
       ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
@@ -328,9 +332,6 @@ void saveParamCallback()
     config.mode_tic_standard = std;
 
     config.mode_triphase = getParam("mode_triphase") == "T";
-
-    d->log("mode TIC: " + getParam("mode_tic_std"), 1000);
-    d->log("mode triphasé: " + getParam("mode_triphase"), 1000);
 
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
@@ -343,13 +344,13 @@ void saveParamCallback()
 
     if (config.mode_tic_standard)
     {
-      strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\" checked");
+      strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_STD);
     }
     else
     {
-      strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\"");
+      strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
     }
-    checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
+    //checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
 
     if (config.mode_triphase)
     {
@@ -364,7 +365,7 @@ void saveParamCallback()
 
     d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
 
-    d->logPercent("Configuration sauvée", 500);
+    d->log("Configuration sauvée", 500);
   }
 
   uint16_t port = 1883;
@@ -536,14 +537,13 @@ void setup()
   wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
 
   // #REGION WifiManager ==================================
-
   wm.setAPCallback(configModeCallback);
   wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveConfigCallback);
   wm.setSaveParamsCallback(saveParamCallback);
 
   custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
-  checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
+  checkbox_mode_tic = new WiFiManagerParameter(_customHtml_checkbox_mode_tic);
 
   checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Compteur Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
   custom_mqtt_server = new WiFiManagerParameter("server", "<br /><br />Serveur MQTT (taille max 40)", mqtt_server, 40);
@@ -553,6 +553,7 @@ void setup()
   custom_data_transmission_period = new WiFiManagerParameter("data_transmission_period", "Délai entre envoi données (secondes) [Laisser vide pour temps réel]", data_transmission_period, 10);
   custom_link = new WiFiManagerParameter("<p><a href='https://342apps.net/teleinfokit'>Documentation Teleinfokit</a></p>");
   custom_version = new WiFiManagerParameter(VERSION);
+
 
   wm.addParameter(custom_html);
   wm.addParameter(checkbox_mode_tic);

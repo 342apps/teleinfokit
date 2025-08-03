@@ -173,10 +173,13 @@ char data_transmission_period[10];
 char UNIQUE_ID[30];
 
 char _customHtml_checkbox_mode_tic[200] = "";
-char _customHtml_checkbox_triphase[50] = "type=\"checkbox\"";
+char _customHtml_checkbox_triphase[250] = "";
 
-#define HTML_RADIO_TIC_STD "<label for='mode_tic'>Mode TIC</label><br /><input type='radio' name='mode_tic' value='H'> Historique<br><input type='radio' name='mode_tic' value='S' checked> Standard<br>"
-#define HTML_RADIO_TIC_HIST "<label for='mode_tic'>Mode TIC</label><br /><input type='radio' name='mode_tic' value='H' checked> Historique<br><input type='radio' name='mode_tic' value='S'> Standard<br>"
+#define HTML_RADIO_TIC_STD "<label for='mode_tic'><b>Mode TIC</b></label><br /><input type='radio' name='mode_tic' value='H' /> Historique<br><input type='radio' name='mode_tic' value='S' checked /> Standard<br>"
+#define HTML_RADIO_TIC_HIST "<label for='mode_tic'><b>Mode TIC</b></label><br /><input type='radio' name='mode_tic' value='H' checked /> Historique<br><input type='radio' name='mode_tic' value='S' /> Standard<br>"
+
+#define HTML_RADIO_MONOPHASE "<br /><br /><label for='mode_triphase'><b>Type compteur</b></label><br /><input type='radio' name='mode_triphase' value='M' checked /> Simple phase<br><input type='radio' name='mode_triphase' value='T' /> Triphasé<br><br /><hr />"
+#define HTML_RADIO_TRIPHASE "<br /><br /><label for='mode_triphase'><b>Type compteur</b></label><br /><input type='radio' name='mode_triphase' value='M' /> Simple phase<br><input type='radio' name='mode_triphase' value='T' checked /> Triphasé<br><br /><hr />"
 
 WiFiManagerParameter *checkbox_mode_tic;
 WiFiManagerParameter *checkbox_triphase;
@@ -275,11 +278,11 @@ void readConfig()
       // mode triphasé
       if (config.mode_triphase)
       {
-        strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\" checked");
+        strcpy(_customHtml_checkbox_triphase, HTML_RADIO_TRIPHASE);
       }
       else
       {
-        strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\"");
+        strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
       }
 
       strcpy(mqtt_server, config.mqtt_server);
@@ -355,15 +358,16 @@ void saveParamCallback()
     }
     //checkbox_mode_tic = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox_mode_tic, WFM_LABEL_BEFORE);
 
+    
     if (config.mode_triphase)
     {
-      strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\" checked");
+      strcpy(_customHtml_checkbox_triphase, HTML_RADIO_TRIPHASE);
     }
     else
     {
-      strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\"");
+      strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
     }
-    checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
+    //checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
 
     
     d->log("Configuration sauvée", 500);
@@ -547,8 +551,8 @@ void setup()
 
   custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
   checkbox_mode_tic = new WiFiManagerParameter(_customHtml_checkbox_mode_tic);
+  checkbox_triphase = new WiFiManagerParameter(_customHtml_checkbox_triphase);
 
-  checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Compteur Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
   custom_mqtt_server = new WiFiManagerParameter("server", "<br /><br />Serveur MQTT (taille max 40)", mqtt_server, 40);
   custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
   custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login (taille max 32)", mqtt_server_username, 32);

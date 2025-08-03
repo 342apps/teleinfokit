@@ -296,6 +296,8 @@ void readConfig()
     else
     {
       {
+        strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
+        strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
         d->log("Aucun fichier de configuration");
       }
     }
@@ -482,7 +484,15 @@ void handlerBtn(Button2 &btn)
         // reset
         wm.resetSettings();
         // ESP.eraseConfig();
-        LittleFS.remove(CONFIG_FILE);
+        // if file exists, remove it
+        if (LittleFS.exists(CONFIG_FILE))
+        {
+          LittleFS.remove(CONFIG_FILE);
+        }
+        if (LittleFS.exists(CONFIG_V200_FILE))
+        {
+          LittleFS.remove(CONFIG_V200_FILE);
+        }
         // display restart
         d->log("Redémarrage", 1000);
         // restart
@@ -696,12 +706,13 @@ void setup()
     d->getTime();
 
     d->logPercent("Connexion MQTT", 70);
-    if (!ti.LogStartup())
+    if (config.mqtt_server[0] != '\0' && !ti.LogStartup())
     {
       d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
     }
-
-    d->logPercent("Envoi MQTT Discovery", 80);
+    else{
+      d->logPercent("Envoi MQTT Discovery", 80);
+    }
 
     ti.sendMqttDiscovery();
 
@@ -710,6 +721,11 @@ void setup()
   } // end if !test_mode
   wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);
+
+  if (config.mqtt_server[0] == '\0'){
+    d->log("Aucun serveur MQTT \nconfiguré", 2000);
+  } 
+
   offTs = millis();
   ti.loop();
 }

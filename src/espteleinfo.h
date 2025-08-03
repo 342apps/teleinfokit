@@ -35,7 +35,7 @@ public:
     long index;               // HIST: BASE + HCHC + HCHP   STD EAST
     char adresseCompteur[20]; // HIST: ADCO   STD ADSC
     char strDataTopic[50];
-    char strDiscoveryTopic[75];
+    char strDiscoveryTopic[128];
     long ts_analyzeData;
     long ts_startup;
     char analyzeBuffer[20];
@@ -85,7 +85,7 @@ private:
 
     char CHIP_ID[7] = {0};
     char UNIQUE_ID[30];
-    char bufLabel[10];
+    char bufLabel[12];
     char bufLogTopic[35];
     char bufDataTopic[35];
 
@@ -94,6 +94,8 @@ private:
     void SendData(char *label, char *value);
     bool sendGenericData();
 
+    void clearAllDiscovery();
+    void deleteMqttDiscovery(String label);
     void sendMqttDiscoveryIndex(String label, String friendlyName);
     void sendMqttDiscoveryText(String label, String friendlyName);
     void sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon);
@@ -101,6 +103,7 @@ private:
     char payloadDiscovery[500];
 
     bool connectMqtt();
+    String sanitizeLabel(String input);
 
     String discoveryDevice;
 

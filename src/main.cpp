@@ -175,8 +175,8 @@ char UNIQUE_ID[30];
 char _customHtml_checkbox_mode_tic[200] = "";
 char _customHtml_checkbox_triphase[50] = "type=\"checkbox\"";
 
-#define HTML_RADIO_TIC_STD "<label for='mode_tic_std'>Mode TIC</label><br /><input type='radio' name='mode_tic_std' value='H'> Historique<br><input type='radio' name='mode_tic_std' value='S' checked> Standard<br>"
-#define HTML_RADIO_TIC_HIST "<label for='mode_tic_std'>Mode TIC</label><br /><input type='radio' name='mode_tic_std' value='H' checked> Historique<br><input type='radio' name='mode_tic_std' value='S'> Standard<br>"
+#define HTML_RADIO_TIC_STD "<label for='mode_tic'>Mode TIC</label><br /><input type='radio' name='mode_tic' value='H'> Historique<br><input type='radio' name='mode_tic' value='S' checked> Standard<br>"
+#define HTML_RADIO_TIC_HIST "<label for='mode_tic'>Mode TIC</label><br /><input type='radio' name='mode_tic' value='H' checked> Historique<br><input type='radio' name='mode_tic' value='S'> Standard<br>"
 
 WiFiManagerParameter *checkbox_mode_tic;
 WiFiManagerParameter *checkbox_triphase;
@@ -323,15 +323,18 @@ void saveParamCallback()
   }
   else
   {
-    bool std = getParam("mode_tic_std") == "S";
+    config.mode_triphase = getParam("mode_triphase") == "T";
+    bool std = getParam("mode_tic") == "S";
     if (std != config.mode_tic_standard)
     {
       ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
       initButton();
     }
+    else{
+      ti.triphase = config.mode_triphase;
+    }
     config.mode_tic_standard = std;
 
-    config.mode_triphase = getParam("mode_triphase") == "T";
 
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
@@ -362,12 +365,11 @@ void saveParamCallback()
     }
     checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
 
-
-    d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
-
+    
     d->log("Configuration sauvée", 500);
+    d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
   }
-
+  
   uint16_t port = 1883;
   if (config.mqtt_port[0] != '\0')
   {
@@ -376,6 +378,7 @@ void saveParamCallback()
   }
   ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
+  ti.sendMqttDiscovery();
   initButton();
 }
 

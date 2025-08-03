@@ -114,7 +114,7 @@ Button2 button = Button2(PIN_BUTTON);
 RandomKeyGenerator *randKey;
 
 time_t now;
-
+String getParam(String name);
 void handlerBtn(Button2 &btn);
 
 void initButton()
@@ -163,8 +163,8 @@ bool ALLOWONDEMAND = true; // enable on demand
 bool WMISBLOCKING = true;  // use blocking or non blocking mode, non global params wont work in non blocking
 
 // network configuration variables
-char mode_tic_std_char[1];
-char mode_triphase_char[1];
+// char mode_tic_std_char[1];
+// char mode_triphase_char[1];
 char mqtt_server[40];
 char mqtt_port[6];
 char mqtt_server_username[32];
@@ -172,8 +172,8 @@ char mqtt_server_password[32];
 char data_transmission_period[10];
 char UNIQUE_ID[30];
 
-char _customHtml_checkbox_mode_tic[] = "type=\"checkbox\"";
-char _customHtml_checkbox_triphase[] = "type=\"checkbox\"";
+char _customHtml_checkbox_mode_tic[50] = "type=\"checkbox\"";
+char _customHtml_checkbox_triphase[50] = "type=\"checkbox\"";
 WiFiManagerParameter *checkbox_mode_tic;
 WiFiManagerParameter *checkbox_triphase;
 WiFiManagerParameter *custom_html;
@@ -261,7 +261,7 @@ void readConfig()
       // mode standard
       if (config.mode_tic_standard)
       {
-        strcat(_customHtml_checkbox_mode_tic, " checked");
+        strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\" checked");
       }
       else
       {
@@ -271,7 +271,7 @@ void readConfig()
       // mode triphasé
       if (config.mode_triphase)
       {
-        strcat(_customHtml_checkbox_triphase, " checked");
+        strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\" checked");
       }
       else
       {
@@ -304,8 +304,8 @@ void saveParamCallback()
   d->logPercent("Sauvegarde configuration", 5);
   shouldSaveConfig = true;
 
-  strcpy(mode_tic_std_char, checkbox_mode_tic->getValue());
-  strcpy(mode_triphase_char, checkbox_triphase->getValue());
+  // strcpy(mode_tic_std_char, checkbox_mode_tic->getValue());
+  // strcpy(mode_triphase_char, checkbox_triphase->getValue());
   strcpy(mqtt_server, custom_mqtt_server->getValue());
   strcpy(mqtt_port, custom_mqtt_port->getValue());
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
@@ -319,7 +319,7 @@ void saveParamCallback()
   }
   else
   {
-    bool std = strcmp(checkbox_mode_tic->getValue(), "T") == 0;
+    bool std = getParam("mode_tic_std") == "T";
     if (std != config.mode_tic_standard)
     {
       ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
@@ -327,7 +327,10 @@ void saveParamCallback()
     }
     config.mode_tic_standard = std;
 
-    config.mode_triphase = strcmp(checkbox_triphase->getValue(), "T") == 0;
+    config.mode_triphase = getParam("mode_triphase") == "T";
+
+    d->log("mode TIC: " + getParam("mode_tic_std"), 1000);
+    d->log("mode triphasé: " + getParam("mode_triphase"), 1000);
 
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
@@ -340,7 +343,7 @@ void saveParamCallback()
 
     if (config.mode_tic_standard)
     {
-      strcat(_customHtml_checkbox_mode_tic, " checked");
+      strcpy(_customHtml_checkbox_mode_tic, "type=\"checkbox\" checked");
     }
     else
     {
@@ -350,13 +353,13 @@ void saveParamCallback()
 
     if (config.mode_triphase)
     {
-      strcat(_customHtml_checkbox_triphase, " checked");
+      strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\" checked");
     }
     else
     {
       strcpy(_customHtml_checkbox_triphase, "type=\"checkbox\"");
     }
-    checkbox_triphase = new WiFiManagerParameter("mode_triphase", "Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
+    checkbox_triphase = new WiFiManagerParameter("mode_triphase", "<br />Mode Triphasé", "T", 2, _customHtml_checkbox_triphase, WFM_LABEL_BEFORE);
 
 
     d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
@@ -799,4 +802,13 @@ void loop()
     }
     mtime = millis();
   }
+}
+
+String getParam(String name){
+  //read parameter from server, for customhmtl input
+  String value;
+  if(wm.server->hasArg(name)) {
+    value = wm.server->arg(name);
+  }
+  return value;
 }

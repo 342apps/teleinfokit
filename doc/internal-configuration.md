@@ -4,7 +4,7 @@
 
 - **Versions ≤ 2.0.0**  
   La configuration est stockée dans le fichier `/config.dat` selon la structure `ConfStruct_V200`.
-- **Versions > 2.0.0**  
+- **Versions ≥ 2.1.0**  
   La configuration est stockée dans le fichier `/ext_config.dat` selon la structure étendue `ConfStruct`.
 
 ## 2. Structures de configuration

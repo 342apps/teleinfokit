@@ -18,12 +18,11 @@
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
 #define CONFIG_V200_FILE "/config.dat"
-#define CONFIG_FILE "/ext_config.dat"   // configuration file extended
+#define CONFIG_FILE "/ext_config.dat" // configuration file extended
 #define RESET_CONFIRM_DELAY 10000
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define SCREENSAVER_DELAY 60000
 #define AP_NAME "TeleInfoKit"
-// #define AP_PWD "givememydata"
 
 #define REFRESH_DELAY 1000
 
@@ -163,8 +162,6 @@ bool ALLOWONDEMAND = true; // enable on demand
 bool WMISBLOCKING = true;  // use blocking or non blocking mode, non global params wont work in non blocking
 
 // network configuration variables
-// char mode_tic_std_char[1];
-// char mode_triphase_char[1];
 char mqtt_server[40];
 char mqtt_port[6];
 char mqtt_server_username[32];
@@ -313,8 +310,6 @@ void saveParamCallback()
   d->logPercent("Sauvegarde configuration", 5);
   shouldSaveConfig = true;
 
-  // strcpy(mode_tic_std_char, checkbox_mode_tic->getValue());
-  // strcpy(mode_triphase_char, checkbox_triphase->getValue());
   strcpy(mqtt_server, custom_mqtt_server->getValue());
   strcpy(mqtt_port, custom_mqtt_port->getValue());
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
@@ -337,13 +332,13 @@ void saveParamCallback()
       ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
       initButton();
     }
-    else{
+    else
+    {
       ti.triphase = config.mode_triphase;
     }
     config.mode_tic_standard = std;
 
     d->logPercent("Sauvegarde configuration", 30);
-
 
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
@@ -375,10 +370,10 @@ void saveParamCallback()
     {
       strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
     }
-    
+
     d->logPercent("Rechargement config", 75);
   }
-  
+
   uint16_t port = 1883;
   if (config.mqtt_port[0] != '\0')
   {
@@ -496,7 +491,6 @@ void handlerBtn(Button2 &btn)
         // display restart
         d->log("Redémarrage", 1000);
         // restart
-        // ESP.reset();
         wm.reboot();
         delay(200);
       }
@@ -510,7 +504,6 @@ void handlerBtn(Button2 &btn)
 void setup()
 {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-  // //-pinMode(PIN_OPTO, INPUT_PULLUP);
   data = new Data();
   randKey = new RandomKeyGenerator();
   d = new Display();
@@ -576,7 +569,6 @@ void setup()
   custom_data_transmission_period = new WiFiManagerParameter("data_transmission_period", "Délai entre envoi données (secondes) [Laisser vide pour temps réel]", data_transmission_period, 10);
   custom_link = new WiFiManagerParameter("<p><a href='https://342apps.net/teleinfokit'>Documentation Teleinfokit</a></p>");
   custom_version = new WiFiManagerParameter(VERSION);
-
 
   wm.addParameter(custom_html);
   wm.addParameter(checkbox_mode_tic);
@@ -710,7 +702,8 @@ void setup()
     {
       d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
     }
-    else{
+    else
+    {
       d->logPercent("Envoi MQTT Discovery", 80);
     }
 
@@ -722,9 +715,10 @@ void setup()
   wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);
 
-  if (config.mqtt_server[0] == '\0'){
+  if (config.mqtt_server[0] == '\0')
+  {
     d->log("Aucun serveur MQTT \nconfiguré", 2000);
-  } 
+  }
 
   offTs = millis();
   ti.loop();
@@ -834,10 +828,12 @@ void loop()
   }
 }
 
-String getParam(String name){
-  //read parameter from server, for customhmtl input
+String getParam(String name)
+{
+  // read parameter from server, for customhmtl input
   String value;
-  if(wm.server->hasArg(name)) {
+  if (wm.server->hasArg(name))
+  {
     value = wm.server->arg(name);
   }
   return value;

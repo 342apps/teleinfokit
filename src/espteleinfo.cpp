@@ -161,7 +161,7 @@ void ESPTeleInfo::SendAllData()
 
 void ESPTeleInfo::SendData(char *label, char *value)
 {
-    // send only if bufDataTopic and label not empty        
+    // send only if bufDataTopic and label not empty
     if (bufDataTopic[0] == '\0' || label[0] == '\0')
     {
         return;
@@ -173,11 +173,12 @@ void ESPTeleInfo::SendData(char *label, char *value)
         String sanitizedLabel = sanitizeLabel(String(label));
         strncpy(bufLabel, sanitizedLabel.c_str(), sizeof(bufLabel) - 1);
         bufLabel[sizeof(bufLabel) - 1] = '\0';
-        
+
         // prepare the topic
         int n = snprintf(strDataTopic, sizeof(strDataTopic), "%s/%s", bufDataTopic, bufLabel);
         strDataTopic[sizeof(strDataTopic) - 1] = '\0'; // ensure null-termination
-        if (n < 0 || n >= (int)sizeof(strDataTopic)) {
+        if (n < 0 || n >= (int)sizeof(strDataTopic))
+        {
             // handle truncation or error if needed (optional: log or skip)
             return;
         }
@@ -320,7 +321,7 @@ void ESPTeleInfo::sendMqttDiscovery()
 
             sendMqttDiscoveryForType(F("SINSTS"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
             sendMqttDiscoveryForType(F("SINSTI"), F("Puissance app. Instantanée injectée "), F("apparent_power"), "VA", F("mdi:power-plug"));
-            
+
             sendMqttDiscoveryText(F("ADSC"), F("Adresse compteur"));
             sendMqttDiscoveryText(F("NGTF"), F("Option tarifaire"));
             sendMqttDiscoveryText(F("LTARF"), F("Libellé tarif en cours"));
@@ -331,13 +332,13 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryText(F("RELAIS"), F("Etat relais"));
 
             mqttClient.loop();
-            
-            if(triphase)
+
+            if (triphase)
             {
                 sendMqttDiscoveryForType(F("IRMS1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
                 sendMqttDiscoveryForType(F("IRMS2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
                 sendMqttDiscoveryForType(F("IRMS3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
-                
+
                 sendMqttDiscoveryForType(F("URMS1"), F("Tension phase 1"), F("voltage"), "V", F("mdi:sine-wave"));
                 sendMqttDiscoveryForType(F("URMS2"), F("Tension phase 2"), F("voltage"), "V", F("mdi:sine-wave"));
                 sendMqttDiscoveryForType(F("URMS3"), F("Tension phase 3"), F("voltage"), "V", F("mdi:sine-wave"));
@@ -365,12 +366,12 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryForType(F("PAPP"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
 
             mqttClient.loop();
-            if(triphase)
+            if (triphase)
             {
                 sendMqttDiscoveryForType(F("IINST1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
                 sendMqttDiscoveryForType(F("IINST2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
                 sendMqttDiscoveryForType(F("IINST3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
-                
+
                 sendMqttDiscoveryForType(F("PMAX"), F("Puissance maximale triphasée atteinte"), F("power"), "W", F("mdi:lightning-bolt-circle"));
             }
             else
@@ -387,8 +388,8 @@ void ESPTeleInfo::sendMqttDiscovery()
     mqttClient.setBufferSize(256);
 }
 
-
-void ESPTeleInfo::clearAllDiscovery(){
+void ESPTeleInfo::clearAllDiscovery()
+{
 
     deleteMqttDiscovery(F("EAST"));
     deleteMqttDiscovery(F("EASF01"));
@@ -452,13 +453,14 @@ void ESPTeleInfo::clearAllDiscovery(){
     mqttClient.loop();
 }
 
-void ESPTeleInfo::deleteMqttDiscovery(String label){
+void ESPTeleInfo::deleteMqttDiscovery(String label)
+{
     label = sanitizeLabel(label);
 
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    // clear the retained message 
+    // clear the retained message
     mqttClient.publish(strDiscoveryTopic, "\0", true);
 }
 
@@ -544,7 +546,8 @@ void ESPTeleInfo::addOrReplaceValueInList(UnsentValueList *&head, const char *na
     head = newNode;
 }
 
-String ESPTeleInfo::sanitizeLabel(String input) {
+String ESPTeleInfo::sanitizeLabel(String input)
+{
     input.replace("+", "_");
     input.replace(" ", "_");
     input.replace("/", "_");

@@ -60,7 +60,7 @@ Pour le mode **TIC historique** :
 | Etiquette | Définition                              |
 | --------- | --------------------------------------- |
 | BASE      | Index BASE                              |
-| HCHC      | Index heure cruse                       |
+| HCHC      | Index heure creuse                      |
 | HCHP      | Index heure pleine                      |
 | PAPP      | Puissance apparente                     |
 | IINST     | Intensité                               |

@@ -306,7 +306,7 @@ void ESPTeleInfo::sendMqttDiscovery()
         else
         {
             sendMqttDiscoveryIndex(F("BASE"), F("Index BASE"));
-            sendMqttDiscoveryIndex(F("HCHC"), F("Index heure cruse"));
+            sendMqttDiscoveryIndex(F("HCHC"), F("Index heure creuse"));
             sendMqttDiscoveryIndex(F("HCHP"), F("Index heure pleine"));
             sendMqttDiscoveryIndex(F("EJPHN"), F("Index EJP heure normale"));
             sendMqttDiscoveryIndex(F("EJPHPM"), F("Index EJP heure de pointe mobile"));

@@ -71,6 +71,8 @@ Si votre compteur est en triphasé, sélectionner ce mode pour auto-déclarer le
 * Saisir le login et le mot de passe du serveur MQTT (Si pas de login/mot de passe, laisser à vide)
 * Pour limiter la fréquence d'envoi des données via MQTT, saisir un délai (en secondes). La valeur `0` ou un champ vide signifie un envoi en temps réel.
 
+> **Note:** Avec le firmware v2.0.0.x il peut etre nécessaire d'effectuer un redémarrage du boitier pour forcer l'envoi de la mise à jour de la configuration à Home Assistant. Ce n'est plus nécessaire à partir de la version 2.1.0.x.
+
 > **Note:** Quelques secondes après le démarrage, l'ensemble des données est envoyé afin de resynchroniser les éventuels systèmes à l'écoute sur toutes les valeurs.
 
 > **Note:** Que ce soit en mode temps réel ou avec un délai défini, seules les données mises à jour sont envoyées.

@@ -26,10 +26,11 @@ static void DataCallback(ValueList *me, uint8_t flags)
     getESPTeleInfo()->SetData(me->name, me->value);
 }
 
-void ESPTeleInfo::init(_Mode_e tic_mode)
+void ESPTeleInfo::init(_Mode_e tic_mode, bool triphase)
 {
     instanceEsp = this;
     ticMode = tic_mode;
+    this->triphase = triphase;
     iinst = 0;
     papp = 0;
     index = 0;
@@ -160,10 +161,27 @@ void ESPTeleInfo::SendAllData()
 
 void ESPTeleInfo::SendData(char *label, char *value)
 {
+    // send only if bufDataTopic and label not empty
+    if (bufDataTopic[0] == '\0' || label[0] == '\0')
+    {
+        return;
+    }
     // send all data in the data topic
     if (connectMqtt())
     {
-        sprintf(strDataTopic, "%s/%s", bufDataTopic, label);
+        // sanitize the label to remove spaces and special characters
+        String sanitizedLabel = sanitizeLabel(String(label));
+        strncpy(bufLabel, sanitizedLabel.c_str(), sizeof(bufLabel) - 1);
+        bufLabel[sizeof(bufLabel) - 1] = '\0';
+
+        // prepare the topic
+        int n = snprintf(strDataTopic, sizeof(strDataTopic), "%s/%s", bufDataTopic, bufLabel);
+        strDataTopic[sizeof(strDataTopic) - 1] = '\0'; // ensure null-termination
+        if (n < 0 || n >= (int)sizeof(strDataTopic))
+        {
+            // handle truncation or error if needed (optional: log or skip)
+            return;
+        }
         mqttClient.publish(strDataTopic, value, true);
     }
 }
@@ -210,6 +228,7 @@ void ESPTeleInfo::loop(void)
             started = true;
         }
     }
+    mqttClient.loop();
 }
 
 bool ESPTeleInfo::LogStartup()
@@ -271,8 +290,16 @@ void ESPTeleInfo::sendMqttDiscovery()
     discoveryDevice = "\"dev\":{\"ids\":\"" + String(UNIQUE_ID) + "\" ,\"name\":\"TeleInfoKit\",\"sw\":\"" + String(VERSION) + "\",\"mdl\":\"TeleInfoKit v4\",\"mf\": \"342apps\"}";
     mqttClient.setBufferSize(500);
 
-    if (connectMqtt())
+    int8_t nbTry = 0;
+    while (nbTry < NBTRY && !connectMqtt())
     {
+        delay(250);
+        nbTry++;
+    }
+    if (nbTry < NBTRY)
+    {
+        clearAllDiscovery();
+
         if (ticMode == TINFO_MODE_STANDARD)
         {
             sendMqttDiscoveryIndex(F("EAST"), "Index total");
@@ -290,18 +317,58 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryIndex(F("EASD02"), F("Index distributeur 02"));
             sendMqttDiscoveryIndex(F("EASD03"), F("Index distributeur 03"));
             sendMqttDiscoveryIndex(F("EASD04"), F("Index distributeur 04"));
+            sendMqttDiscoveryIndex(F("EAIT"), F("Energie active injectée totale "));
 
-            sendMqttDiscoveryForType(F("SINSTS"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
-            sendMqttDiscoveryForType(F("IRMS1"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
-            sendMqttDiscoveryForType(F("URMS1"), F("Tension"), F("voltage"), "V", F("mdi:sine-wave"));
-
+            sendMqttDiscoveryForType(F("SINSTS"), F("Puissance apparente instantanée"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            sendMqttDiscoveryForType(F("SINSTI"), F("Puissance app. Instantanée injectée"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            sendMqttDiscoveryForType(F("SMAXSN"), F("Puissance app. max. soutirée n"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            sendMqttDiscoveryForType(F("SMAXSN-1"), F("Puissance app. max. soutirée n-1"), F("apparent_power"), "VA", F("mdi:power-plug"));
+            
+            
             sendMqttDiscoveryText(F("ADSC"), F("Adresse compteur"));
             sendMqttDiscoveryText(F("NGTF"), F("Option tarifaire"));
             sendMqttDiscoveryText(F("LTARF"), F("Libellé tarif en cours"));
             sendMqttDiscoveryText(F("NTARF"), F("Numéro index tarifaire en cours"));
+            sendMqttDiscoveryText(F("PREF"), F("Puissance app. de référence"));
             sendMqttDiscoveryText(F("NJOURF+1"), F("Numéro du prochain jour calendrier fournisseur"));
             sendMqttDiscoveryText(F("MSG1"), F("Message"));
             sendMqttDiscoveryText(F("RELAIS"), F("Etat relais"));
+            
+            // pour répondre au broker et ne pas être considéré comme un client inactif
+            mqttClient.loop();
+            
+            if (triphase)
+            {
+                sendMqttDiscoveryForType(F("IRMS1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IRMS2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IRMS3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                
+                sendMqttDiscoveryForType(F("URMS1"), F("Tension phase 1"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("URMS2"), F("Tension phase 2"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("URMS3"), F("Tension phase 3"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("UMOY1"), F("Tension moyenne Phase 1"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("UMOY2"), F("Tension moyenne Phase 2"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("UMOY3"), F("Tension moyenne Phase 3"), F("voltage"), "V", F("mdi:sine-wave"));
+                
+                sendMqttDiscoveryForType(F("SINSTS1"), F("Puissance apparente instantanée Phase 1"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SINSTS2"), F("Puissance apparente instantanée Phase 2"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SINSTS3"), F("Puissance apparente instantanée Phase 3"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                
+                sendMqttDiscoveryForType(F("SMAXSN1"), F("Puissance app. max. soutirée n Phase 1"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SMAXSN1-1"), F("Puissance app. max. soutirée n-1 Phase 1"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SMAXSN2"), F("Puissance app. max. soutirée n Phase 2"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SMAXSN2-1"), F("Puissance app. max. soutirée n-1 Phase 2"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SMAXSN3"), F("Puissance app. max. soutirée n Phase 3"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                sendMqttDiscoveryForType(F("SMAXSN3-1"), F("Puissance app. max. soutirée n-1 Phase 3"), F("apparent_power"), "VA", F("mdi:power-plug"));
+                
+                
+            }
+            else
+            {
+                sendMqttDiscoveryForType(F("IRMS1"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("URMS1"), F("Tension"), F("voltage"), "V", F("mdi:sine-wave"));
+                sendMqttDiscoveryForType(F("UMOY1"), F("Tension moyenne"), F("voltage"), "V", F("mdi:sine-wave"));
+            }
         }
         else
         {
@@ -318,19 +385,131 @@ void ESPTeleInfo::sendMqttDiscovery()
             sendMqttDiscoveryIndex(F("BBRHPJR"), F("Index Tempo heures pleines jours Rouges"));
 
             sendMqttDiscoveryForType(F("PAPP"), F("Puissance apparente"), F("apparent_power"), "VA", F("mdi:power-plug"));
-            sendMqttDiscoveryForType(F("IINST"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+            sendMqttDiscoveryForType(F("ADPS"), F("Avertissement Dépassement Puissance Souscrite"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+
+            // pour répondre au broker et ne pas être considéré comme un client inactif
+            mqttClient.loop();
+            if (triphase)
+            {
+                sendMqttDiscoveryForType(F("IINST1"), F("Intensité phase 1"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IINST2"), F("Intensité phase 2"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryForType(F("IINST3"), F("Intensité phase 3"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+
+                sendMqttDiscoveryForType(F("PMAX"), F("Puissance maximale triphasée atteinte"), F("power"), "W", F("mdi:lightning-bolt-circle"));
+                sendMqttDiscoveryText(F("PPOT"), F("Présence des potentiels"));
+            }
+            else
+            {
+                sendMqttDiscoveryForType(F("IINST"), F("Intensité"), F("current"), "A", F("mdi:lightning-bolt-circle"));
+            }
 
             sendMqttDiscoveryText(F("ADCO"), F("Adresse compteur"));
             sendMqttDiscoveryText(F("OPTARIF"), F("Option tarifaire"));
             sendMqttDiscoveryText(F("PTEC"), F("Période tarifaire en cours"));
             sendMqttDiscoveryText(F("DEMAIN"), F("Couleur du lendemain"));
+            sendMqttDiscoveryText(F("ISOUSC"), F("Intensité souscrite"));
         }
     }
     mqttClient.setBufferSize(256);
 }
 
+void ESPTeleInfo::clearAllDiscovery()
+{
+
+    deleteMqttDiscovery(F("EAST"));
+    deleteMqttDiscovery(F("EASF01"));
+    deleteMqttDiscovery(F("EASF02"));
+    deleteMqttDiscovery(F("EASF03"));
+    deleteMqttDiscovery(F("EASF04"));
+    deleteMqttDiscovery(F("EASF05"));
+    deleteMqttDiscovery(F("EASF06"));
+    deleteMqttDiscovery(F("EASF07"));
+    deleteMqttDiscovery(F("EASF08"));
+    deleteMqttDiscovery(F("EASF09"));
+    deleteMqttDiscovery(F("EASF10"));
+    deleteMqttDiscovery(F("EASD01"));
+    deleteMqttDiscovery(F("EASD02"));
+    deleteMqttDiscovery(F("EASD03"));
+    deleteMqttDiscovery(F("EASD04"));
+    // pour répondre au broker et ne pas être considéré comme un client inactif
+    mqttClient.loop();
+    deleteMqttDiscovery(F("EAIT"));
+    deleteMqttDiscovery(F("SINSTS"));
+    deleteMqttDiscovery(F("SINSTI"));
+    deleteMqttDiscovery(F("ADSC"));
+    deleteMqttDiscovery(F("NGTF"));
+    deleteMqttDiscovery(F("LTARF"));
+    deleteMqttDiscovery(F("NTARF"));
+    deleteMqttDiscovery(F("PREF"));
+    deleteMqttDiscovery(F("NJOURF+1"));
+    deleteMqttDiscovery(F("MSG1"));
+    deleteMqttDiscovery(F("RELAIS"));
+    mqttClient.loop();
+    deleteMqttDiscovery(F("IRMS1"));
+    deleteMqttDiscovery(F("IRMS2"));
+    deleteMqttDiscovery(F("IRMS3"));
+    deleteMqttDiscovery(F("URMS1"));
+    deleteMqttDiscovery(F("URMS2"));
+    deleteMqttDiscovery(F("URMS3"));
+
+    deleteMqttDiscovery(F("BASE"));
+    deleteMqttDiscovery(F("HCHC"));
+    deleteMqttDiscovery(F("HCHP"));
+    deleteMqttDiscovery(F("EJPHN"));
+    deleteMqttDiscovery(F("EJPHPM"));
+    deleteMqttDiscovery(F("BBRHCJB"));
+    deleteMqttDiscovery(F("BBRHPJB"));
+    deleteMqttDiscovery(F("BBRHCJW"));
+    mqttClient.loop();
+    deleteMqttDiscovery(F("BBRHPJW"));
+    deleteMqttDiscovery(F("BBRHCJR"));
+    deleteMqttDiscovery(F("BBRHPJR"));
+    deleteMqttDiscovery(F("PAPP"));
+    deleteMqttDiscovery(F("IINST1"));
+    deleteMqttDiscovery(F("IINST2"));
+    deleteMqttDiscovery(F("IINST3"));
+    deleteMqttDiscovery(F("PMAX"));
+    deleteMqttDiscovery(F("IINST"));
+    deleteMqttDiscovery(F("ADCO"));
+    deleteMqttDiscovery(F("OPTARIF"));
+    deleteMqttDiscovery(F("PTEC"));
+    deleteMqttDiscovery(F("DEMAIN"));
+    mqttClient.loop();
+    // ...existing code...
+    deleteMqttDiscovery(F("SMAXSN"));
+    deleteMqttDiscovery(F("SMAXSN-1"));
+    deleteMqttDiscovery(F("SINSTI"));
+    deleteMqttDiscovery(F("SMAXSN1"));
+    deleteMqttDiscovery(F("SMAXSN1-1"));
+    deleteMqttDiscovery(F("SMAXSN2"));
+    deleteMqttDiscovery(F("SMAXSN2-1"));
+    deleteMqttDiscovery(F("SMAXSN3"));
+    deleteMqttDiscovery(F("SMAXSN3-1"));
+    deleteMqttDiscovery(F("SINSTS1"));
+    deleteMqttDiscovery(F("SINSTS2"));
+    deleteMqttDiscovery(F("SINSTS3"));
+    deleteMqttDiscovery(F("UMOY1"));
+    deleteMqttDiscovery(F("UMOY2"));
+    deleteMqttDiscovery(F("UMOY3"));
+    deleteMqttDiscovery(F("PPOT"));
+    mqttClient.loop();
+}
+
+void ESPTeleInfo::deleteMqttDiscovery(String label)
+{
+    label = sanitizeLabel(label);
+
+    label.toCharArray(bufLabel, 10);
+    sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
+
+    // clear the retained message
+    mqttClient.publish(strDiscoveryTopic, "\0", true);
+}
+
 void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
 {
+    label = sanitizeLabel(label);
+
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
@@ -345,6 +524,7 @@ void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
 
 void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon)
 {
+    label = sanitizeLabel(label);
 
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
@@ -359,6 +539,8 @@ void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, St
 
 void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
 {
+    label = sanitizeLabel(label);
+
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
@@ -404,4 +586,13 @@ void ESPTeleInfo::addOrReplaceValueInList(UnsentValueList *&head, const char *na
     newNode->value = strdup(newValue);
     newNode->next = head;
     head = newNode;
+}
+
+String ESPTeleInfo::sanitizeLabel(String input)
+{
+    input.replace("+", "_");
+    input.replace("#", "_");
+    input.replace("/", "_");
+    // ajoute d’autres si besoin
+    return input;
 }

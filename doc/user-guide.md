@@ -13,15 +13,19 @@ Clé: ABCD-1234-EF56
 
 Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est affiché à l'écran. Il est unique à chaque boitier.
 
+> Les caractères possibles sont uniquement des tirets, les chiffres de `0` à `9` et les lettres de `A` à `F`. 
+>
+> *La lettre `O`n'est pas présente, ne pas la confondre avec le chiffre `0`.*
+
 Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
 
 ![Captive portal](./img/captive-portal_v2.png)
 
 ### Optionnel : configuration MQTT et TIC
 
-Il est possible de configurer dès maintenant le serveur MQTT et les réglages pour les données TIC. Pour cela, se référer à la section [configuration MQTT et TIC](#configuration-mqtt-et-tic).
+Bien que recommandé de simplement effectuer la configuration wifi dans un premier temps, il est possible de configurer dès maintenant le serveur MQTT et les réglages pour les données TIC. Pour cela, se référer à la section [configuration MQTT et TIC](#configuration-mqtt-et-tic).
 
-Ces réglages seront toujours accessibles une fois le module connecté au réseau WiFi.
+Ces réglages seront toujours accessibles une fois le module connecté au réseau WiFi en se connectant sur son adresse IP avec un navigateur.
 
 ### Configuration WiFi
 
@@ -37,9 +41,15 @@ Le point d'accès wifi se désactive.
 
 ## Configuration MQTT et TIC
 
-La configuration est accessible via le bouton `Setup` la page principale 
+La configuration est accessible via le bouton `Setup` la page principale
+
+Pour un firmware **v2.0.0** :
 
 ![MQTT config](./img/cp_config.png)
+
+Pour un firmware **v2.1.0** :
+
+![MQTT config](./img/cp_config_v210.jpeg)
 
 ### Mode TIC
 
@@ -50,6 +60,10 @@ Sélectionner le mode TIC adapté au compteur en cochant la case `Mode TIC Stand
 Le mode TIC courant sera affiché à gauche de l'écran du TeleInfoKit qui affiche le graphe (voir section [Ecran historique](#écran-1--historique)).
 
 > Pour vérifier si votre compteur est en mode TIC Historique ou Standard, sur l'écran de celui-ci il sera affiché `Historique mode TIC` ou `Standard mode TIC` en appuyant quelques fois sur son bouton.
+
+### Type compteur
+
+Si votre compteur est en triphasé, sélectionner ce mode pour auto-déclarer les entité spéciques à ce mode dans Home Assistant.
 
 ### Configuration MQTT
 

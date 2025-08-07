@@ -13,19 +13,23 @@
 #include "espteleinfo.h"
 #include "display.h"
 #include "randomKeyGenerator.h"
+#include "version.h"
 
 #define PIN_OPTO 3
 #define PIN_BUTTON 1
-#define CONFIG_FILE "/config.dat"
+#define CONFIG_V200_FILE "/config.dat"
+#define CONFIG_FILE "/ext_config.dat" // configuration file extended
 #define RESET_CONFIRM_DELAY 10000
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define SCREENSAVER_DELAY 60000
 #define AP_NAME "TeleInfoKit"
-// #define AP_PWD "givememydata"
 
 #define REFRESH_DELAY 1000
 
-// The structure that stores configuration
+// Existing previous versions
+#define V200 "v2.0.0.312588"
+
+// The structure that stores configuration of version 2.0.0
 typedef struct
 {
   bool mode_tic_standard;
@@ -34,6 +38,26 @@ typedef struct
   char mqtt_server_username[32];
   char mqtt_server_password[32];
   char data_transmission_period[10];
+} ConfStruct_V200;
+
+// The generic structure that stores configuration of versions > 2.0.0
+typedef struct
+{
+  bool mode_tic_standard;
+  char mqtt_server[40];
+  char mqtt_port[6];
+  char mqtt_server_username[32];
+  char mqtt_server_password[32];
+  char data_transmission_period[10];
+
+  // new fields in V2.1
+  bool mode_triphase;
+  char version[20];
+
+  // generic fields for future versions
+  bool bool_conf[10];
+  char string_conf[30][40];
+  int int_conf[30];
 } ConfStruct;
 
 ConfStruct config;
@@ -89,8 +113,7 @@ Button2 button = Button2(PIN_BUTTON);
 RandomKeyGenerator *randKey;
 
 time_t now;
-
-
+String getParam(String name);
 void handlerBtn(Button2 &btn);
 
 void initButton()
@@ -139,7 +162,6 @@ bool ALLOWONDEMAND = true; // enable on demand
 bool WMISBLOCKING = true;  // use blocking or non blocking mode, non global params wont work in non blocking
 
 // network configuration variables
-char mode_tic_std_char[1];
 char mqtt_server[40];
 char mqtt_port[6];
 char mqtt_server_username[32];
@@ -147,19 +169,30 @@ char mqtt_server_password[32];
 char data_transmission_period[10];
 char UNIQUE_ID[30];
 
-char _customHtml_checkbox[] = "type=\"checkbox\"";
-WiFiManagerParameter *custom_checkbox;
+char _customHtml_checkbox_mode_tic[200] = "";
+char _customHtml_checkbox_triphase[250] = "";
+
+#define HTML_RADIO_TIC_STD "<label for='mode_tic'><b>Mode TIC</b></label><br /><input type='radio' name='mode_tic' value='H' /> Historique<br><input type='radio' name='mode_tic' value='S' checked /> Standard<br>"
+#define HTML_RADIO_TIC_HIST "<label for='mode_tic'><b>Mode TIC</b></label><br /><input type='radio' name='mode_tic' value='H' checked /> Historique<br><input type='radio' name='mode_tic' value='S' /> Standard<br>"
+
+#define HTML_RADIO_MONOPHASE "<br /><br /><label for='mode_triphase'><b>Type compteur</b></label><br /><input type='radio' name='mode_triphase' value='M' checked /> Simple phase<br><input type='radio' name='mode_triphase' value='T' /> Triphasé<br><br /><hr />"
+#define HTML_RADIO_TRIPHASE "<br /><br /><label for='mode_triphase'><b>Type compteur</b></label><br /><input type='radio' name='mode_triphase' value='M' /> Simple phase<br><input type='radio' name='mode_triphase' value='T' checked /> Triphasé<br><br /><hr />"
+
+WiFiManagerParameter *checkbox_mode_tic;
+WiFiManagerParameter *checkbox_triphase;
 WiFiManagerParameter *custom_html;
 WiFiManagerParameter *custom_mqtt_server;
 WiFiManagerParameter *custom_mqtt_port;
 WiFiManagerParameter *custom_mqtt_username;
 WiFiManagerParameter *custom_mqtt_password;
 WiFiManagerParameter *custom_data_transmission_period;
+WiFiManagerParameter *custom_link;
+WiFiManagerParameter *custom_version;
 
 // Network connection has been done through captive portal of hotspot or through config webportal
 void saveConfigCallback()
 {
-  d->log("Configuration WiFi sauvée", 500);
+  d->log("Configuration sauvée", 500);
 }
 
 // gets called when WiFiManager enters configuration mode
@@ -168,51 +201,107 @@ void configModeCallback(WiFiManager *myWiFiManager)
   d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
 }
 
+File isVersion200OrLess()
+{
+  // get the config file if exists and get its size
+  File configFile = LittleFS.open(CONFIG_V200_FILE, "r");
+  if (configFile)
+  {
+    size_t fileSize = configFile.size();
+    if (fileSize <= sizeof(ConfStruct_V200))
+    {
+      return configFile;
+    }
+  }
+  return File();
+}
+
+File currentVersionExists()
+{
+  // get the config file if exists and get its size
+  File configFile = LittleFS.open(CONFIG_FILE, "r");
+  return configFile;
+}
+
 // Retreives configuration from filesystem
 void readConfig()
 {
 
   if (LittleFS.begin())
   {
-    if (LittleFS.exists(CONFIG_FILE))
+    if (LittleFS.exists(CONFIG_FILE) || LittleFS.exists(CONFIG_V200_FILE))
     {
       // file exists, reading and loading
       d->logPercent("Lecture configuration", 10);
 
-      File configFile = LittleFS.open(CONFIG_FILE, "r");
+      File configFile = currentVersionExists();
+      File configFileV200 = isVersion200OrLess();
       if (configFile)
       {
         configFile.read((byte *)&config, sizeof(config));
-
-        if (config.mode_tic_standard)
-        {
-          strcat(_customHtml_checkbox, " checked");
-        }
-        else
-        {
-          strcpy(_customHtml_checkbox, "type=\"checkbox\"");
-        }
-
-        strcpy(mqtt_server, config.mqtt_server);
-        strcpy(mqtt_port, config.mqtt_port);
-        strcpy(mqtt_server_username, config.mqtt_server_username);
-        strcpy(mqtt_server_password, config.mqtt_server_password);
-        strcpy(data_transmission_period, config.data_transmission_period);
         configFile.close();
+      }
+      else if (configFileV200)
+      {
+        d->logPercent("Migration config v2.0", 12);
+        delay(400);
 
-        d->logPercent("Configuration chargée", 15);
+        // assume the file is from version 2.0.0
+        ConfStruct_V200 configV200;
+        configFileV200.read((byte *)&configV200, sizeof(configV200));
+        configFileV200.close();
+
+        // copy the values from the old struct to the new struct
+        config.mode_tic_standard = configV200.mode_tic_standard;
+        strcpy(config.mqtt_server, configV200.mqtt_server);
+        strcpy(config.mqtt_port, configV200.mqtt_port);
+        strcpy(config.mqtt_server_username, configV200.mqtt_server_username);
+        strcpy(config.mqtt_server_password, configV200.mqtt_server_password);
+        strcpy(config.data_transmission_period, configV200.data_transmission_period);
+        config.mode_triphase = false; // set the new field to false by default
+        strcpy(config.version, V200); // set the version to the default v2.0.0
+      }
+
+      // mode standard
+      if (config.mode_tic_standard)
+      {
+        strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_STD);
       }
       else
       {
-        {
-          d->log("Aucun fichier de configuration");
-        }
+        strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
+      }
+
+      // mode triphasé
+      if (config.mode_triphase)
+      {
+        strcpy(_customHtml_checkbox_triphase, HTML_RADIO_TRIPHASE);
+      }
+      else
+      {
+        strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
+      }
+
+      strcpy(mqtt_server, config.mqtt_server);
+      strcpy(mqtt_port, config.mqtt_port);
+      strcpy(mqtt_server_username, config.mqtt_server_username);
+      strcpy(mqtt_server_password, config.mqtt_server_password);
+      strcpy(data_transmission_period, config.data_transmission_period);
+
+      d->logPercent("Configuration chargée", 15);
+    }
+    else
+    {
+      {
+        strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
+        strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
+        d->log("Aucun fichier de configuration");
       }
     }
   }
   else
   {
-    d->log("Erreur montage filesystem");
+    d->log("Erreur montage filesystem", 1000);
   }
 }
 
@@ -221,54 +310,68 @@ void saveParamCallback()
   d->logPercent("Sauvegarde configuration", 5);
   shouldSaveConfig = true;
 
-  strcpy(mode_tic_std_char, custom_checkbox->getValue());
   strcpy(mqtt_server, custom_mqtt_server->getValue());
   strcpy(mqtt_port, custom_mqtt_port->getValue());
   strcpy(mqtt_server_username, custom_mqtt_username->getValue());
   strcpy(mqtt_server_password, custom_mqtt_password->getValue());
   strcpy(data_transmission_period, custom_data_transmission_period->getValue());
 
+  d->logPercent("Sauvegarde configuration", 20);
+
   File configFile = LittleFS.open(CONFIG_FILE, "w");
   if (!configFile)
   {
-    d->log("Erreur écriture config");
+    d->log("Erreur écriture config", 1000);
   }
   else
   {
-    bool std = strcmp(custom_checkbox->getValue(), "T") == 0;
+    config.mode_triphase = getParam("mode_triphase") == "T";
+    bool std = getParam("mode_tic") == "S";
     if (std != config.mode_tic_standard)
     {
-      ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+      ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
       initButton();
     }
+    else
+    {
+      ti.triphase = config.mode_triphase;
+    }
     config.mode_tic_standard = std;
+
+    d->logPercent("Sauvegarde configuration", 30);
+
     strcpy(config.mqtt_server, custom_mqtt_server->getValue());
     strcpy(config.mqtt_port, custom_mqtt_port->getValue());
     strcpy(config.mqtt_server_username, custom_mqtt_username->getValue());
     strcpy(config.mqtt_server_password, custom_mqtt_password->getValue());
     strcpy(config.data_transmission_period, custom_data_transmission_period->getValue());
+    strcpy(config.version, VERSION);
     configFile.write((byte *)&config, sizeof(config));
+    configFile.close();
+
+    d->logPercent("Sauvegarde configuration", 50);
 
     if (config.mode_tic_standard)
     {
-      strcat(_customHtml_checkbox, " checked");
+      strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_STD);
     }
     else
     {
-      strcpy(_customHtml_checkbox, "type=\"checkbox\"");
+      strcpy(_customHtml_checkbox_mode_tic, HTML_RADIO_TIC_HIST);
     }
-    custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
 
-    d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
+    d->logPercent("Sauvegarde configuration", 50);
 
-    for (uint8_t i = 10; i <= 100; i++)
+    if (config.mode_triphase)
     {
-      d->logPercent("Sauvegarde configuration", i);
-      delay(5);
+      strcpy(_customHtml_checkbox_triphase, HTML_RADIO_TRIPHASE);
+    }
+    else
+    {
+      strcpy(_customHtml_checkbox_triphase, HTML_RADIO_MONOPHASE);
     }
 
-    d->logPercent("Configuration sauvée", 100);
-    delay(500);
+    d->logPercent("Rechargement config", 75);
   }
 
   uint16_t port = 1883;
@@ -277,10 +380,13 @@ void saveParamCallback()
     port = atoi(config.mqtt_port);
     delay(1000);
   }
-  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
   ti.initMqtt(config.mqtt_server, port, config.mqtt_server_username, config.mqtt_server_password, atoi(config.data_transmission_period));
-  configFile.close();
+  ti.sendMqttDiscovery();
   initButton();
+  d->logPercent("Terminé", 100);
+  delay(300);
+  d->drawGraph(ti.papp, config.mode_tic_standard ? 'S' : 'H');
 }
 
 void bindServerCallback()
@@ -310,14 +416,14 @@ void handlerBtn(Button2 &btn)
       {
         // go mode standard
         config.mode_tic_standard = true;
-        ti.init(TINFO_MODE_STANDARD);
+        ti.init(TINFO_MODE_STANDARD, config.mode_triphase);
         initButton();
       }
       else
       {
         // go mode historique
         config.mode_tic_standard = false;
-        ti.init(TINFO_MODE_HISTORIQUE);
+        ti.init(TINFO_MODE_HISTORIQUE, config.mode_triphase);
         initButton();
       }
       break;
@@ -373,11 +479,18 @@ void handlerBtn(Button2 &btn)
         // reset
         wm.resetSettings();
         // ESP.eraseConfig();
-        LittleFS.remove(CONFIG_FILE);
+        // if file exists, remove it
+        if (LittleFS.exists(CONFIG_FILE))
+        {
+          LittleFS.remove(CONFIG_FILE);
+        }
+        if (LittleFS.exists(CONFIG_V200_FILE))
+        {
+          LittleFS.remove(CONFIG_V200_FILE);
+        }
         // display restart
         d->log("Redémarrage", 1000);
         // restart
-        // ESP.reset();
         wm.reboot();
         delay(200);
       }
@@ -391,7 +504,6 @@ void handlerBtn(Button2 &btn)
 void setup()
 {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-  // //-pinMode(PIN_OPTO, INPUT_PULLUP);
   data = new Data();
   randKey = new RandomKeyGenerator();
   d = new Display();
@@ -436,32 +548,38 @@ void setup()
   }
 
   readConfig();
-  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE);
+  ti.init(config.mode_tic_standard ? TINFO_MODE_STANDARD : TINFO_MODE_HISTORIQUE, config.mode_triphase);
 
   wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
 
   // #REGION WifiManager ==================================
-
   wm.setAPCallback(configModeCallback);
   wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveConfigCallback);
   wm.setSaveParamsCallback(saveParamCallback);
 
   custom_html = new WiFiManagerParameter("<p style=\"color:#375c72;font-size:22px;font-weight:Bold;\">Configuration TeleInfoKit</p>"); // only custom html
-  custom_checkbox = new WiFiManagerParameter("mode_tic_std", "Mode TIC Standard", "T", 2, _customHtml_checkbox, WFM_LABEL_BEFORE);
-  custom_mqtt_server = new WiFiManagerParameter("server", "<br />Serveur MQTT", mqtt_server, 40);
+  checkbox_mode_tic = new WiFiManagerParameter(_customHtml_checkbox_mode_tic);
+  checkbox_triphase = new WiFiManagerParameter(_customHtml_checkbox_triphase);
+
+  custom_mqtt_server = new WiFiManagerParameter("server", "<br /><br />Serveur MQTT (taille max 40)", mqtt_server, 40);
   custom_mqtt_port = new WiFiManagerParameter("port", "Port MQTT", mqtt_port, 6);
-  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login", mqtt_server_username, 32);
-  custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe", mqtt_server_password, 32, "type=\"password\"");
+  custom_mqtt_username = new WiFiManagerParameter("username", "MQTT login (taille max 32)", mqtt_server_username, 32);
+  custom_mqtt_password = new WiFiManagerParameter("password", "MQTT mot de passe (taille max 32)", mqtt_server_password, 32, "type=\"password\"");
   custom_data_transmission_period = new WiFiManagerParameter("data_transmission_period", "Délai entre envoi données (secondes) [Laisser vide pour temps réel]", data_transmission_period, 10);
+  custom_link = new WiFiManagerParameter("<p><a href='https://342apps.net/teleinfokit'>Documentation Teleinfokit</a></p>");
+  custom_version = new WiFiManagerParameter(VERSION);
 
   wm.addParameter(custom_html);
-  wm.addParameter(custom_checkbox);
+  wm.addParameter(checkbox_mode_tic);
+  wm.addParameter(checkbox_triphase);
   wm.addParameter(custom_mqtt_server);
   wm.addParameter(custom_mqtt_port);
   wm.addParameter(custom_mqtt_username);
   wm.addParameter(custom_mqtt_password);
   wm.addParameter(custom_data_transmission_period);
+  wm.addParameter(custom_link);
+  wm.addParameter(custom_version);
   wm.setCustomHeadElement("<style>body{background-color: #F9FAFB; color: #375c72;} .msg.S {border-left-color: #477089;} button{color: #FFF; background-color: #81AECA;}</style>");
   wm.setTitle(F("Portail TeleInfoKit"));
 
@@ -580,12 +698,14 @@ void setup()
     d->getTime();
 
     d->logPercent("Connexion MQTT", 70);
-    if (!ti.LogStartup())
+    if (config.mqtt_server[0] != '\0' && !ti.LogStartup())
     {
       d->log("Erreur config MQTT \nRéinitialiser les réglages", 2000);
     }
-
-    d->logPercent("Envoi MQTT Discovery", 80);
+    else
+    {
+      d->logPercent("Envoi MQTT Discovery", 80);
+    }
 
     ti.sendMqttDiscovery();
 
@@ -594,6 +714,12 @@ void setup()
   } // end if !test_mode
   wm.startWebPortal();
   d->logPercent("Démarrage terminé", 100);
+
+  if (config.mqtt_server[0] == '\0')
+  {
+    d->log("Aucun serveur MQTT \nconfiguré", 2000);
+  }
+
   offTs = millis();
   ti.loop();
 }
@@ -681,7 +807,8 @@ void loop()
       d->displayTestTic(String(ti.papp), String(ti.index), ti.ticMode == TINFO_MODE_STANDARD ? 'S' : 'H');
       refreshTime = millis();
 
-      if(millis() - offTs > 60000){
+      if (millis() - offTs > 60000)
+      {
         // restart auto
         d->log("Sortie du mode TEST", 1000);
         wm.reboot();
@@ -699,4 +826,15 @@ void loop()
     }
     mtime = millis();
   }
+}
+
+String getParam(String name)
+{
+  // read parameter from server, for customhmtl input
+  String value;
+  if (wm.server->hasArg(name))
+  {
+    value = wm.server->arg(name);
+  }
+  return value;
 }

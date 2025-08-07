@@ -36,11 +36,41 @@ void Display::displayStartup(String version)
 {
   oled.displayOn();
   oled.clear();
-  oled.setTextAlignment(TEXT_ALIGN_CENTER);
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.setFont(ArialMT_Plain_16);
-  oled.drawString(64, 0, "TeleInfoKit");
+  oled.drawString(36, 0, "TeleInfoKit");
   oled.setFont(ArialMT_Plain_10);
-  oled.drawString(64, 20, version);
+  oled.drawString(36, 20, version);
+
+  // ## LOGO ##
+
+  oled.drawLine(2, 16, 7, 2);
+  oled.drawLine(3, 16, 8, 2);
+
+  oled.drawLine(8, 16, 13, 2);
+  oled.drawLine(9, 16, 14, 2);
+
+  oled.drawLine(14, 16, 19, 2);
+  oled.drawLine(15, 16, 20, 2);
+
+  oled.drawLine(5, 31, 10, 17);
+  oled.drawLine(6, 31, 11, 17);
+
+  oled.drawLine(11, 31, 16, 17);
+  oled.drawLine(12, 31, 17, 17);
+
+  oled.drawLine(17, 31, 22, 17);
+  oled.drawLine(18, 31, 23, 17);
+
+  oled.drawLine(22, 31, 27, 17);
+  oled.drawLine(23, 31, 28, 17);
+
+  oled.drawLine(5, 17, 6, 17);
+  oled.drawLine(6, 17, 11, 31);
+
+  oled.drawLine(11, 17, 11, 17);
+  oled.drawLine(12, 17, 17, 31);
+
   oled.display();
   delay(800);
 }
@@ -154,8 +184,8 @@ void Display::displayOff()
   oled.displayOff();
 }
 
-
-void Display::displayTestTic(String power, String index, char ticMode){
+void Display::displayTestTic(String power, String index, char ticMode)
+{
   oled.displayOn();
   oled.clear();
   oled.setTextAlignment(TEXT_ALIGN_LEFT);

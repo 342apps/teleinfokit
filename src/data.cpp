@@ -26,7 +26,7 @@ void Data::setNtp()
 {
     now = time(nullptr);
     localtime_r(&now, &timeinfo); // update the structure tm with the current time
-    startupTime = now; // epoch time
+    startupTime = now;            // epoch time
     previousHour = timeinfo.tm_hour;
 }
 

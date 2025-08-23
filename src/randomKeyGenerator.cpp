@@ -2,8 +2,13 @@
 
 RandomKeyGenerator::RandomKeyGenerator()
 {
+    #ifdef ESP8266
     randomSeed(ESP.getChipId());
     generateRandomHexKey(apPwd);
+    #elif defined(ESP32)
+    randomSeed((uint32_t)ESP.getEfuseMac());
+    generateRandomHexKey(apPwd);
+    #endif
 }
 
 char RandomKeyGenerator::generateRandomHexChar()

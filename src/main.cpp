@@ -1,6 +1,10 @@
 #include <WiFiManager.h>
 #include <time.h>
-#include <TZ.h>
+#if defined(ESP8266)
+  #include <TZ.h>
+#elif defined(ESP32)
+  #include "TZ_ESP32.h"
+#endif
 #include <stdio.h>
 
 #include <WiFiUdp.h>
@@ -15,8 +19,12 @@
 #include "randomKeyGenerator.h"
 #include "version.h"
 
-#define PIN_OPTO 3
+#ifdef ESP32
+#define PIN_BUTTON 0
+#elif defined(ESP8266)
 #define PIN_BUTTON 1
+#endif
+
 #define CONFIG_V200_FILE "/config.dat"
 #define CONFIG_FILE "/ext_config.dat" // configuration file extended
 #define RESET_CONFIRM_DELAY 10000
@@ -132,7 +140,13 @@ void getTime()
   unsigned timeout = 5000; // try for timeout
   unsigned start = millis();
 
-  configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
+    #ifdef ESP8266
+    configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
+  #elif defined(ESP32)
+     configTime(0, 0, "pool.ntp.org", "time.nist.gov");  // 0, 0 because we will use TZ in the next line
+      setenv("TZ", TZ_Europe_Paris, 1);            // Set environment variable with your time zone
+      tzset();
+  #endif
   d->log("Waiting for NTP time sync: ");
   while (now < 8 * 3600 * 2)
   { // what is this ?
@@ -501,8 +515,20 @@ void handlerBtn(Button2 &btn)
   }
 }
 
+void log(String message)
+{
+  #ifdef ESP32
+  Serial.println(message);
+  #endif
+}
+
 void setup()
 {
+  #ifdef ESP32
+  Serial.begin(115200);
+  Serial.println("ESP32 Start");
+  #endif
+
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   data = new Data();
   randKey = new RandomKeyGenerator();
@@ -510,7 +536,11 @@ void setup()
   data->init();
   d->init(data);
 
-  snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
+      #ifdef ESP8266
+    snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
+    #elif defined(ESP32)
+    snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", String(ESP.getEfuseMac()));
+    #endif
 
   d->displayStartup(String(VERSION));
 
@@ -529,6 +559,7 @@ void setup()
   }
 
   d->logPercent("Démarrage", 5);
+  log("Unique ID: " + String(UNIQUE_ID));
 
   while (!test_mode && millis() - reset_start < 1500)
   {
@@ -620,7 +651,11 @@ void setup()
       d->log("Connexion impossible\n Reset...");
       delay(1000);
       // reset and try again
-      ESP.reset();
+      #ifdef ESP8266
+        ESP.reset();
+      #elif defined(ESP32)
+        ESP.restart();
+      #endif
       delay(1000);
     }
     d->logPercent("Connecté à " + String(WiFi.SSID()), 40);

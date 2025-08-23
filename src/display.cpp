@@ -1,14 +1,20 @@
 #include "display.h"
 
 // Initialize the OLED display using Arduino Wire:
+#ifdef ESP8266
 SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY_GEOMETRY  -  Extra param required for 128x32 displays.
+#elif defined(ESP32)
+SSD1306Wire oled(0x3c, 8, 9, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY_GEOMETRY  -  Extra param required for 128x32 displays.
+#endif
+
+
 
 Display::Display()
 {
   oled.init();
-#if _HW_VER == 1
+  #if _HW_VER == 1
   oled.flipScreenVertically();
-#endif
+  #endif
   oled.setFont(ArialMT_Plain_10);
 }
 
@@ -207,7 +213,14 @@ void Display::getTime()
   unsigned timeout = 5000; // try for timeout
   unsigned start = millis();
 
-  configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
+
+  #ifdef ESP8266
+    configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
+  #elif defined(ESP32)
+     configTime(0, 0, "pool.ntp.org", "time.nist.gov");  // 0, 0 because we will use TZ in the next line
+      setenv("TZ", TZ_Europe_Paris, 1);            // Set environment variable with your time zone
+      tzset();
+  #endif
   while (now < 8 * 3600 * 2)
   { // what is this ?
     delay(100);

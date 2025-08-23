@@ -2,9 +2,15 @@
 #define DISPLAY_H
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+  #include <TZ.h>
+#elif defined(ESP32)
+  #include <WiFi.h>
+  #include "TZ_ESP32.h"
+#endif
+
 #include <Wire.h>
-#include <TZ.h>
 #include "SSD1306Wire.h"
 #include "data.h"
 #include "version.h"

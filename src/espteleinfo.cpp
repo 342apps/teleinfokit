@@ -36,22 +36,30 @@ void ESPTeleInfo::init(_Mode_e tic_mode, bool triphase)
     index = 0;
     adresseCompteur[0] = '\0';
 
+    #ifdef ESP8266
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
+    #elif defined(ESP32)
+    snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getEfuseMac());
+    #endif
     snprintf(bufLogTopic, 35, "%s/log", UNIQUE_ID);
     snprintf(bufDataTopic, 35, "%s/data", UNIQUE_ID);
 
-    Serial.flush();
-    Serial.end();
+    Serial1.flush();
+    Serial1.end();
 
-    Serial.begin(tic_mode == TINFO_MODE_HISTORIQUE ? 1200 : 9600, SERIAL_7E1);
+    #ifdef ESP8266
+        Serial.begin(tic_mode == TINFO_MODE_HISTORIQUE ? 1200 : 9600, SERIAL_7E1);
+    #elif defined(ESP32)
+        Serial1.begin(tic_mode == TINFO_MODE_HISTORIQUE ? 1200 : 9600, SERIAL_7E1, 20, 21);
+    #endif
     // Init teleinfo
     teleinfo.init(tic_mode);
     teleinfo.attachData(DataCallback);
 
     delay(1000);
-    if (Serial.available())
+    if (Serial1.available())
     {
-        teleinfo.process(Serial.read());
+        teleinfo.process(Serial1.read());
     }
 }
 
@@ -193,9 +201,9 @@ void ESPTeleInfo::loop(void)
         ts_startup = millis();
     }
 
-    if (Serial.available())
+    if (Serial1.available())
     {
-        teleinfo.process(Serial.read());
+        teleinfo.process(Serial1.read());
 
         if (millis() - ts_analyzeData > 1000)
         {
@@ -513,9 +521,9 @@ void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"") +
-                    F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:counter\",") +
+    String sensor = String(F("{\"name\":\"")) + friendlyName + String(F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"")) +
+                    String(F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"")) + bufDataTopic + "/" + label + String(F("\",\"uniq_id\":\"")) + String(UNIQUE_ID) + "-" + label +
+                    String(F("\",\"obj_id\":\"")) + String(UNIQUE_ID) + "-" + label + String(F("\",\"ic\":\"mdi:counter\",")) +
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
@@ -529,8 +537,8 @@ void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, St
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"") + deviceClass + F("\",\"unit_of_meas\":\"") + unit + "\"" +
-                    F(",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + "\",\"ic\":\"" + icon + "\"," +
+    String sensor = String(F("{\"name\":\"")) + friendlyName + String(F("\",\"dev_cla\":\"")) + deviceClass + String(F("\",\"unit_of_meas\":\"")) + unit + "\"" +
+                    String(F(",\"stat_t\":\"")) + bufDataTopic + "/" + label + String(F("\",\"uniq_id\":\"")) + String(UNIQUE_ID) + "-" + label + String(F("\",\"obj_id\":\"")) + String(UNIQUE_ID) + "-" + label + String("\",\"ic\":\"") + icon + "\"," +
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
@@ -544,8 +552,8 @@ void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
     label.toCharArray(bufLabel, 10);
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
-    String sensor = F("{\"name\":\"") + friendlyName + F("\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:information-outline\",") +
+    String sensor = String(F("{\"name\":\"")) + friendlyName + String(F("\",\"stat_t\":\"")) + String(bufDataTopic) + "/" + label + String(F("\",\"uniq_id\":\"")) + String(UNIQUE_ID) + "-" + label +
+                    String(F("\",\"obj_id\":\"")) + String(UNIQUE_ID) + "-" + label + String(F("\",\"ic\":\"mdi:information-outline\",")) +
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);

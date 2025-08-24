@@ -36,10 +36,10 @@ void ESPTeleInfo::init(_Mode_e tic_mode, bool triphase)
     index = 0;
     adresseCompteur[0] = '\0';
 
-    #ifdef ESP8266
+    #if _HW_VER <= 4
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
-    #elif defined(ESP32)
-    snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getEfuseMac());
+    #elif _HW_VER == 5
+    snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", String(ESP.getEfuseMac()));
     #endif
     snprintf(bufLogTopic, 35, "%s/log", UNIQUE_ID);
     snprintf(bufDataTopic, 35, "%s/data", UNIQUE_ID);
@@ -47,9 +47,9 @@ void ESPTeleInfo::init(_Mode_e tic_mode, bool triphase)
     Serial1.flush();
     Serial1.end();
 
-    #ifdef ESP8266
+    #if _HW_VER <= 4
         Serial.begin(tic_mode == TINFO_MODE_HISTORIQUE ? 1200 : 9600, SERIAL_7E1);
-    #elif defined(ESP32)
+    #elif _HW_VER == 5
         Serial1.begin(tic_mode == TINFO_MODE_HISTORIQUE ? 1200 : 9600, SERIAL_7E1, 20, 21);
     #endif
     // Init teleinfo

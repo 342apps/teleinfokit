@@ -2,10 +2,10 @@
 #define DISPLAY_H
 
 #include <Arduino.h>
-#if defined(ESP8266)
+#if _HW_VER <= 4
   #include <ESP8266WiFi.h>
   #include <TZ.h>
-#elif defined(ESP32)
+#elif _HW_VER == 5
   #include <WiFi.h>
   #include "TZ_ESP32.h"
 #endif

@@ -1,13 +1,10 @@
 #include "display.h"
 
-// Initialize the OLED display using Arduino Wire:
-#ifdef ESP8266
-SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY_GEOMETRY  -  Extra param required for 128x32 displays.
-#elif defined(ESP32)
-SSD1306Wire oled(0x3c, 8, 9, GEOMETRY_128_32); // ADDRESS, SDA, SCL, OLEDDISPLAY_GEOMETRY  -  Extra param required for 128x32 displays.
+#if _HW_VER <= 4
+SSD1306Wire oled(0x3c, 0, 2, GEOMETRY_128_32);
+#elif _HW_VER == 5
+SSD1306Wire oled(0x3c, 8, 9, GEOMETRY_128_32);
 #endif
-
-
 
 Display::Display()
 {

@@ -1,8 +1,8 @@
 #include <WiFiManager.h>
 #include <time.h>
-#if defined(ESP8266)
+#if _HW_VER <= 4
   #include <TZ.h>
-#elif defined(ESP32)
+#elif _HW_VER == 5
   #include "TZ_ESP32.h"
 #endif
 #include <stdio.h>
@@ -19,10 +19,10 @@
 #include "randomKeyGenerator.h"
 #include "version.h"
 
-#ifdef ESP32
-#define PIN_BUTTON 0
-#elif defined(ESP8266)
+#if _HW_VER <= 4
 #define PIN_BUTTON 1
+#elif _HW_VER == 5
+#define PIN_BUTTON 0
 #endif
 
 #define CONFIG_V200_FILE "/config.dat"
@@ -124,6 +124,14 @@ time_t now;
 String getParam(String name);
 void handlerBtn(Button2 &btn);
 
+
+void log(String message)
+{
+  #ifdef ESP32
+  Serial.println(message);
+  #endif
+}
+
 void initButton()
 {
   button = Button2(PIN_BUTTON);
@@ -140,12 +148,12 @@ void getTime()
   unsigned timeout = 5000; // try for timeout
   unsigned start = millis();
 
-    #ifdef ESP8266
+  #if _HW_VER <= 4
     configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
-  #elif defined(ESP32)
-     configTime(0, 0, "pool.ntp.org", "time.nist.gov");  // 0, 0 because we will use TZ in the next line
-      setenv("TZ", TZ_Europe_Paris, 1);            // Set environment variable with your time zone
-      tzset();
+  #elif _HW_VER == 5
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov");  // 0, 0 because we will use TZ in the next line
+    setenv("TZ", TZ_Europe_Paris, 1);            // Set environment variable with your time zone
+    tzset();
   #endif
   d->log("Waiting for NTP time sync: ");
   while (now < 8 * 3600 * 2)
@@ -212,6 +220,10 @@ void saveConfigCallback()
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager *myWiFiManager)
 {
+  log("Entered Configuration Mode");
+  log("MAC: " + ESP.getEfuseMac());
+  log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID());
+  log("Hotspot Password: " + String(randKey->apPwd));
   d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
 }
 
@@ -241,7 +253,11 @@ File currentVersionExists()
 void readConfig()
 {
 
+#if _HW_VER <= 4
   if (LittleFS.begin())
+#elif _HW_VER == 5
+  if (LittleFS.begin(false, "/littlefs", 10U, "littlefs"))
+#endif
   {
     if (LittleFS.exists(CONFIG_FILE) || LittleFS.exists(CONFIG_V200_FILE))
     {
@@ -515,18 +531,11 @@ void handlerBtn(Button2 &btn)
   }
 }
 
-void log(String message)
-{
-  #ifdef ESP32
-  Serial.println(message);
-  #endif
-}
-
 void setup()
 {
   #ifdef ESP32
   Serial.begin(115200);
-  Serial.println("ESP32 Start");
+  log("Démarrage...");
   #endif
 
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -536,9 +545,9 @@ void setup()
   data->init();
   d->init(data);
 
-      #ifdef ESP8266
+    #if _HW_VER <= 4
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
-    #elif defined(ESP32)
+    #elif _HW_VER == 5
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", String(ESP.getEfuseMac()));
     #endif
 

@@ -2,13 +2,14 @@
 
 RandomKeyGenerator::RandomKeyGenerator()
 {
-    #ifdef ESP8266
+    #if _HW_VER <= 4
     randomSeed(ESP.getChipId());
-    generateRandomHexKey(apPwd);
-    #elif defined(ESP32)
-    randomSeed((uint32_t)ESP.getEfuseMac());
-    generateRandomHexKey(apPwd);
+    #elif _HW_VER == 5
+    randomSeed(ESP.getEfuseMac());
     #endif
+    // init with 0
+    memset(apPwd, 0, sizeof(apPwd));
+    generateRandomHexKey(apPwd);
 }
 
 char RandomKeyGenerator::generateRandomHexChar()
@@ -18,7 +19,7 @@ char RandomKeyGenerator::generateRandomHexChar()
 }
 
 // Generates a key with format "XXXX-XXXX-XXXX"
-void RandomKeyGenerator::generateRandomHexKey(char hexKey[14])
+void RandomKeyGenerator::generateRandomHexKey(char hexKey[15])
 {
     for (int i = 0; i < 14; ++i)
     {
@@ -30,4 +31,5 @@ void RandomKeyGenerator::generateRandomHexKey(char hexKey[14])
             hexKey[i] = '-';
         }
     }
+    hexKey[14] = '\0';
 }

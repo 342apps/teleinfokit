@@ -5,9 +5,9 @@
 #define DATA_MAX_SIZE 200
 #define NBTRY 5
 
-#if defined(ESP8266)
+#if _HW_VER <= 4
   #include <ESP8266WiFi.h>
-#elif defined(ESP32)
+#elif _HW_VER == 5
   #include <WiFi.h>
 #endif
 #include <LibTeleinfo.h>

@@ -80,7 +80,6 @@ bool ESPTeleInfo::connectMqtt()
 
 void ESPTeleInfo::AnalyzeTicForInternalData()
 {
-    // store intensity value for HIST or STD modes
     if (ticMode == TINFO_MODE_HISTORIQUE)
     {
         analyzeBuffer[0] = '\0';
@@ -91,29 +90,69 @@ void ESPTeleInfo::AnalyzeTicForInternalData()
         teleinfo.valueGet(_papp_, analyzeBuffer);
         papp = atol(analyzeBuffer);
 
+        // BASE / HP-HC
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_base_, analyzeBuffer);
         indexes[0] = atol(analyzeBuffer);
-        index = indexes[0] + indexes[1] + indexes[2];
 
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_hchc_, analyzeBuffer);
         indexes[1] = atol(analyzeBuffer);
-        index = indexes[0] + indexes[1] + indexes[2];
 
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_hchp_, analyzeBuffer);
         indexes[2] = atol(analyzeBuffer);
-        index = indexes[0] + indexes[1] + indexes[2];
+
+        /*** MODIF TEMPO : lecture des 6 index Tempo ***/
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhcjb_, analyzeBuffer);
+        idx_bbrhcjb = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhpjb_, analyzeBuffer);
+        idx_bbrhpjb = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhcjw_, analyzeBuffer);
+        idx_bbrhcjw = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhpjw_, analyzeBuffer);
+        idx_bbrhpjw = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhcjr_, analyzeBuffer);
+        idx_bbrhcjr = atol(analyzeBuffer);
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhpjr_, analyzeBuffer);
+        idx_bbrhpjr = atol(analyzeBuffer);
+
+        /*** MODIF TEMPO : calcul énergie cumulée totale ***/
+        if (idx_bbrhcjb || idx_bbrhpjb || idx_bbrhcjw || idx_bbrhpjw || idx_bbrhcjr || idx_bbrhpjr)
+        {
+            // Tempo : somme des 6 index
+            index =
+                idx_bbrhcjb + idx_bbrhpjb +
+                idx_bbrhcjw + idx_bbrhpjw +
+                idx_bbrhcjr + idx_bbrhpjr;
+        }
+        else
+        {
+            // Base / HP-HC
+            index = indexes[0] + indexes[1] + indexes[2];
+        }
     }
     else
     {
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_irms1_, analyzeBuffer);
         iinst = atol(analyzeBuffer);
+
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_sinsts_, analyzeBuffer);
         papp = atol(analyzeBuffer);
+
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_east_, analyzeBuffer);
         index = atol(analyzeBuffer);

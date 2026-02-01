@@ -32,7 +32,7 @@ public:
     // les données de consommation
     long iinst;               // HIST: IINST  STD IRMS1
     long papp;                // HIST: PAPP   STD SINSTS
-    long index;               // HIST: BASE + HCHC + HCHP   STD EAST
+    long index;               // énergie cumulée totale (tous tarifs)
     char adresseCompteur[20]; // HIST: ADCO   STD ADSC
     char strDataTopic[50];
     char strDiscoveryTopic[128];
@@ -40,12 +40,10 @@ public:
     long ts_startup;
     char analyzeBuffer[20];
 
-    // _Mode_e tic_mode = TINFO_MODE_STANDARD;
     TInfo tic;
 
     bool LogStartup();
     void SetData(char *name, char *val);
-    // 100 char max !
     void Log(String s);
 
     void sendMqttDiscovery();
@@ -69,18 +67,31 @@ private:
     char *_hchc_ = (char *)"HCHC";
     char *_hchp_ = (char *)"HCHP";
 
-    // to store 3 for hist mode (BASE, HP, HC)
+    /*** MODIF TEMPO : labels Tempo ***/
+    char *_bbrhcjb_ = (char *)"BBRHCJB";
+    char *_bbrhpjb_ = (char *)"BBRHPJB";
+    char *_bbrhcjw_ = (char *)"BBRHCJW";
+    char *_bbrhpjw_ = (char *)"BBRHPJW";
+    char *_bbrhcjr_ = (char *)"BBRHCJR";
+    char *_bbrhpjr_ = (char *)"BBRHPJR";
+
+    // to store 3 for hist mode (BASE, HC, HP)
     long indexes[3];
+
+    /*** MODIF TEMPO : stockage index Tempo ***/
+    uint64_t idx_bbrhcjb = 0;
+    uint64_t idx_bbrhpjb = 0;
+    uint64_t idx_bbrhcjw = 0;
+    uint64_t idx_bbrhpjw = 0;
+    uint64_t idx_bbrhcjr = 0;
+    uint64_t idx_bbrhpjr = 0;
 
     unsigned int delay_generic;
     bool sendGeneric;
     bool started;
 
-    // timestamp for the last power data send
     unsigned long ts_power;
-    // timestamp for the last index data send
     unsigned long ts_index;
-    // timestamp for the last generic data send
     unsigned long ts_generic;
 
     char CHIP_ID[7] = {0};

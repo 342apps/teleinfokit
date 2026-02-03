@@ -554,8 +554,8 @@ void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
 
     String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"") +
                     F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"def_ent_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + 
-                    F("\",\"ic\":\"mdi:counter\",") + discoveryDevice + "}";
+                    F("\",\"default_entity_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:counter\",") +
+                    discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);
@@ -569,9 +569,8 @@ void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, St
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
     String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"") + deviceClass + F("\",\"unit_of_meas\":\"") + unit + "\"" +
-                    F(",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label + 
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"def_ent_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + 
-                    "\",\"ic\":\"" + icon + "\"," + discoveryDevice + "}";
+                    F(",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"default_entity_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + "\",\"ic\":\"" + icon + "\"," +
+                    discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);
@@ -585,8 +584,8 @@ void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
     String sensor = F("{\"name\":\"") + friendlyName + F("\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"def_ent_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + 
-                    F("\",\"ic\":\"mdi:information-outline\",") + discoveryDevice + "}";
+                    F("\",\"default_entity_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:information-outline\",") +
+                    discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);

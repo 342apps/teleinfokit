@@ -28,6 +28,10 @@ public:
     void setNtp();
 
 private:
+    bool indexValid = false;
+    long lastIndex = 0;
+    bool hasPreviousIndex = false;
+    long previousIndex = 0;
     void calculateMax();
     void shiftIndex();
     bool newHour;

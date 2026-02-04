@@ -747,8 +747,6 @@ void loop()
 
     if ((millis() - refreshTime > REFRESH_DELAY) || (mode == TIME && millis() - refreshTime > 1000))
     {
-      data->storeValueBase(ti.index);
-
       if (!screensaver)
       {
         switch (mode)

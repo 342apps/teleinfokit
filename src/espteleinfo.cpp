@@ -240,6 +240,11 @@ void ESPTeleInfo::loop(void)
         {
             AnalyzeTicForInternalData();
             ts_analyzeData = millis();
+            
+            // >>> FIX GRAPHE 24H <<<
+            extern Data* data;
+            if (data != nullptr)
+                data->storeValueBase(index);
         }
 
         if (delay_generic > 0 && sendGenericData())

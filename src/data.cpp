@@ -26,7 +26,7 @@ void Data::setNtp()
 {
     now = time(nullptr);
     localtime_r(&now, &timeinfo); // update the structure tm with the current time
-    startupTime = now;
+    startupTime = now;            // epoch time
     previousHour = timeinfo.tm_hour;
 }
 
@@ -43,48 +43,32 @@ void Data::calculateGraph()
     }
 }
 
-void Data::storeValueBase(long indexTotal)
+void Data::storeValueBase(long base)
 {
-    // Index invalide → on ignore
-    if (indexTotal <= 0)
-        return;
-
     now = time(nullptr);
-    localtime_r(&now, &timeinfo);
-
-    // Première valeur : on ne calcule RIEN
-    if (!hasPreviousIndex)
+    localtime_r(&now, &timeinfo); // update the structure tm with the current time
+    if (previousHour != timeinfo.tm_hour)
     {
-        previousIndex = indexTotal;
-        hasPreviousIndex = true;
-        previousHour = timeinfo.tm_hour;
-
-        // reset propre
-        for (uint8_t i = 0; i < NB_BARS; i++)
-            history_base[i] = 0;
-
-        return;
-    }
-
-    // Delta réel depuis la dernière lecture
-    long delta = indexTotal - previousIndex;
-
-    // Protection anti-délire
-    if (delta < 0 || delta > 50000) // 50 kWh max par pas
-    {
-        previousIndex = indexTotal;
-        return;
-    }
-
-    history_base[0] += delta;
-    previousIndex = indexTotal;
-
-    // Changement d'heure → on décale
-    if (timeinfo.tm_year > 120 && timeinfo.tm_hour != previousHour)
-    {
+        // each hour
         shiftIndex();
+        hourTimestamp = millis();
+        newHour = true;
         previousHour = timeinfo.tm_hour;
-        history_base[0] = 0;
+    }
+
+    if (newHour)
+    {
+        if (base != 0)
+        {
+            firstIndex_base = base;
+            newHour = false;
+        }
+
+        historyStartTime = now;
+    }
+    else
+    {
+        history_base[0] = base - firstIndex_base;
     }
 }
 

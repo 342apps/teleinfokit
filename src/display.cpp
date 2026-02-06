@@ -102,7 +102,9 @@ void Display::drawGraph(long papp, char mode)
   }
   oled.drawHorizontalLine(98, HEIGHT - BAR_HEIGHT, 28);
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->max));
+  // oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->max));
+  // oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
+  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->getTotal24h()));
   oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);

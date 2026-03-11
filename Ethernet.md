@@ -1,0 +1,5 @@
+- https://github.com/egnor/wt32-eth01
+- https://github.com/Networking-for-Arduino/EthernetESP32/blob/master/examples/WebClient/WebClient.ino
+- https://github.com/khoih-prog/WebServer_WT32_ETH01/tree/main
+- https://github.com/espressif/arduino-esp32/blob/master/libraries/Ethernet/examples/ETH_LAN8720/ETH_LAN8720.ino
+- https://github.com/egnor/wt32-eth01/blob/main/README.md

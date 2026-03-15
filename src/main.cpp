@@ -22,7 +22,6 @@
 #define RESET_CONFIRM_DELAY 10000
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define SCREENSAVER_DELAY 60000
-#define AP_NAME "TeleInfoKit"
 
 #define REFRESH_DELAY 1000
 
@@ -154,6 +153,12 @@ void getTime()
   d->log(buffer, 1000);
 }
 
+// wifi checks and connection once started
+unsigned long ts_last_wifi_check = 0;
+#define WIFI_CHECK_INTERVAL 60000 // 1 minute
+#define NB_WIFI_CONNECT_TRY 5
+int wifi_reconnect_try_count = 0;
+
 // #REGION WifiManager ==================================
 WiFiManager wm;
 
@@ -168,6 +173,7 @@ char mqtt_server_username[32];
 char mqtt_server_password[32];
 char data_transmission_period[10];
 char UNIQUE_ID[30];
+char AP_NAME[30];
 
 char _customHtml_checkbox_mode_tic[200] = "";
 char _customHtml_checkbox_triphase[250] = "";
@@ -511,6 +517,7 @@ void setup()
   d->init(data);
 
   snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
+  snprintf(AP_NAME, 30, "TeleInfoKit-%06X", ESP.getChipId());
 
   d->displayStartup(String(VERSION));
 
@@ -729,6 +736,63 @@ void loop()
   ArduinoOTA.handle();
   button.loop();
   wm.process();
+
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (millis() - ts_last_wifi_check > WIFI_CHECK_INTERVAL)
+    {
+      ts_last_wifi_check = millis();
+
+      if (wifi_reconnect_try_count < NB_WIFI_CONNECT_TRY)
+      {
+        wifi_reconnect_try_count++;
+        d->log("Wifi KO, tentative " + String(wifi_reconnect_try_count) + "/" + String(NB_WIFI_CONNECT_TRY), 500);
+        WiFi.reconnect();
+
+        // Leave a short window for asynchronous reconnection.
+        unsigned long wait_start = millis();
+        while (millis() - wait_start < 2000 && WiFi.status() != WL_CONNECTED)
+        {
+          ArduinoOTA.handle();
+          button.loop();
+          wm.process();
+          delay(10);
+        }
+
+        if (WiFi.status() == WL_CONNECTED)
+        {
+          wifi_reconnect_try_count = 0;
+          d->log("Reconnexion réussie !");
+          getTime(); // update time after reconnection
+        }
+        else
+        {
+          d->log("Echec tentative wifi.");
+        }
+      }
+
+      if (wifi_reconnect_try_count >= NB_WIFI_CONNECT_TRY)
+      {
+        d->log("Wifi indisponible\nOuverture portail config", 1000);
+        wm.setConfigPortalTimeout(180);
+
+        // startConfigPortal is blocking; if it fails, reboot as last resort.
+        if (!wm.startConfigPortal(AP_NAME, randKey->apPwd))
+        {
+          d->log("Echec portail config, redemarrage", 1000);
+          wm.reboot();
+        }
+
+        wifi_reconnect_try_count = 0;
+        ts_last_wifi_check = millis();
+      }
+    }
+  }
+  else
+  {
+    wifi_reconnect_try_count = 0;
+  }
+  
 
   if (!test_mode)
   {

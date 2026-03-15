@@ -107,7 +107,7 @@ void Display::drawGraph(long papp, char mode)
   uint32_t totalWh = data->getTotal24h();
   String valuepower;
   String unitpower;
-  if (totalWh < 9999)
+  if (totalWh <= 9999)
   {
       valuepower = String(totalWh);
       unitpower = "Wh";
@@ -115,7 +115,7 @@ void Display::drawGraph(long papp, char mode)
   else
   {
       float totalkwh = totalWh / 1000.0f;
-      valuepower = String(totalkwh, 2);   // 2 décimales
+      valuepower = String(totalkwh, 3);   // 3 décimales
       unitpower = "kWh";
   }
   oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, valuepower);

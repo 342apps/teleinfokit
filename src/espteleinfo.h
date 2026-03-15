@@ -25,17 +25,17 @@ class ESPTeleInfo
 public:
     ESPTeleInfo();
 
-    void init(_Mode_e tic_mode);
+    void init(_Mode_e tic_mode, bool triphase);
     void initMqtt(char *server, uint16_t port, char *username, char *password, int period_data);
     void loop(void);
 
     // les données de consommation
     long iinst;               // HIST: IINST  STD IRMS1
     long papp;                // HIST: PAPP   STD SINSTS
-    long index;               // HIST: BASE + HCHC + HCHP   STD EAST
+    long index;               // HIST: BASE + HCHC + HCHP + TEMPO  STD EAST
     char adresseCompteur[20]; // HIST: ADCO   STD ADSC
     char strDataTopic[50];
-    char strDiscoveryTopic[75];
+    char strDiscoveryTopic[128];
     long ts_analyzeData;
     long ts_startup;
     char analyzeBuffer[20];
@@ -51,6 +51,7 @@ public:
     void sendMqttDiscovery();
     void AnalyzeTicForInternalData();
     _Mode_e ticMode;
+    bool triphase;
 
 private:
     char logBuffer[100];
@@ -67,9 +68,16 @@ private:
     char *_base_ = (char *)"BASE";
     char *_hchc_ = (char *)"HCHC";
     char *_hchp_ = (char *)"HCHP";
+    /*** MODIF TEMPO : labels Tempo ***/
+    char *_bbrhcjb_ = (char *)"BBRHCJB";
+    char *_bbrhpjb_ = (char *)"BBRHPJB";
+    char *_bbrhcjw_ = (char *)"BBRHCJW";
+    char *_bbrhpjw_ = (char *)"BBRHPJW";
+    char *_bbrhcjr_ = (char *)"BBRHCJR";
+    char *_bbrhpjr_ = (char *)"BBRHPJR";
 
-    // to store 3 for hist mode (BASE, HP, HC)
-    long indexes[3];
+    // to store 9 for hist mode (BASE, HP, HC + TEMPO)
+    long indexes[9];
 
     unsigned int delay_generic;
     bool sendGeneric;
@@ -84,7 +92,7 @@ private:
 
     char CHIP_ID[7] = {0};
     char UNIQUE_ID[30];
-    char bufLabel[10];
+    char bufLabel[12];
     char bufLogTopic[35];
     char bufDataTopic[35];
 
@@ -93,6 +101,8 @@ private:
     void SendData(char *label, char *value);
     bool sendGenericData();
 
+    void clearAllDiscovery();
+    void deleteMqttDiscovery(String label);
     void sendMqttDiscoveryIndex(String label, String friendlyName);
     void sendMqttDiscoveryText(String label, String friendlyName);
     void sendMqttDiscoveryForType(String label, String friendlyName, String deviceClass, String unit, String icon);
@@ -100,6 +110,7 @@ private:
     char payloadDiscovery[500];
 
     bool connectMqtt();
+    String sanitizeLabel(String input);
 
     String discoveryDevice;
 

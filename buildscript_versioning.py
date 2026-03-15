@@ -11,7 +11,7 @@ tm = datetime.datetime.today()
 FILENAME_BUILDNO = 'versioning'
 FILENAME_VERSION_H = 'include/version.h'
 compileTime =  datetime.datetime.now()
-version_root = 'v2.0.0.'
+version_root = 'v2.1.0.'
 beta = ''
 # beta = ''
 

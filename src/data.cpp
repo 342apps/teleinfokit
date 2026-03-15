@@ -10,6 +10,9 @@ void Data::init()
 {
     hourTimestamp = 0;
     previousHour = -1;
+    // garde fou au demarrage
+    lastBase = -1;
+    historyReady = false;
     max = 1; // not 0 because used to divide
     newHour = true;
     firstIndex_base = 0;
@@ -26,7 +29,7 @@ void Data::setNtp()
 {
     now = time(nullptr);
     localtime_r(&now, &timeinfo); // update the structure tm with the current time
-    startupTime = now; // epoch time
+    startupTime = now;            // epoch time
     previousHour = timeinfo.tm_hour;
 }
 
@@ -46,10 +49,13 @@ void Data::calculateGraph()
 void Data::storeValueBase(long base)
 {
     now = time(nullptr);
-    localtime_r(&now, &timeinfo); // update the structure tm with the current time
+    localtime_r(&now, &timeinfo);
+
+    // Ignore base invalid
+    if (base <= 0) return;
+
     if (previousHour != timeinfo.tm_hour)
     {
-        // each hour
         shiftIndex();
         hourTimestamp = millis();
         newHour = true;
@@ -58,18 +64,40 @@ void Data::storeValueBase(long base)
 
     if (newHour)
     {
-        if (base != 0)
-        {
-            firstIndex_base = base;
-            newHour = false;
-        }
-
+        firstIndex_base = base;
+        newHour = false;
+        historyReady = true;      // ✅ historique OK à partir d’ici
         historyStartTime = now;
+        history_base[0] = 0;      // ✅ reset conso heure courante
+        lastBase = base;          // ✅ mémorise la base
+        return;
     }
-    else
+
+    if (!historyReady) return;
+
+    // resync si le compteur recule (valeur instable au boot)
+    if (base < lastBase)
     {
-        history_base[0] = base - firstIndex_base;
+        firstIndex_base = base;
+        lastBase = base;
+        history_base[0] = 0;
+        return;
     }
+
+    long delta = base - firstIndex_base;
+
+    // garde-fou anti spike (ex: au boot)
+    const long MAX_WH_PER_HOUR = 50000L; // ajuste si besoin
+    if (delta < 0 || delta > MAX_WH_PER_HOUR)
+    {
+        firstIndex_base = base;   // resync
+        lastBase = base;
+        history_base[0] = 0;
+        return;
+    }
+
+    history_base[0] = delta;
+    lastBase = base;
 }
 
 void Data::calculateMax()
@@ -93,4 +121,17 @@ void Data::shiftIndex()
     }
 
     history_base[0] = 0;
+}
+
+uint32_t Data::getTotal24h()
+{
+    if (!historyReady) return 0;
+
+    uint32_t total = 0;
+    for (uint8_t i = 0; i < NB_BARS; i++)
+    {
+        long v = history_base[i];
+        if (v > 0) total += (uint32_t)v;
+    }
+    return total;
 }

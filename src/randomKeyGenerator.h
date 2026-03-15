@@ -13,10 +13,8 @@ public:
     char apPwd[14];
 
 private:
-
     void generateRandomHexKey(char hexKey[14]);
     char generateRandomHexChar();
-
 };
 
 #endif // RANDOMKEYGENERATOR_H

@@ -38,6 +38,6 @@ public:
 
 private:
     Data *data;
-};
+}; 
 
 #endif /* DISPLAY_H */

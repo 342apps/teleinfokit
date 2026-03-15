@@ -56,6 +56,8 @@ Se référer au dossier [doc](/doc) pour les documents suivants:
 
 La présentation du boitier TeleInfoKit est disponible sur [342apps.net](https://342apps.net) et les sources hardware sont disponibles sur le repo [teleinfokit-board](https://github.com/342apps/teleinfokit-board)
 
+Le **[Wiki du repository](https://github.com/342apps/teleinfokit/wiki)** rassemble l'essentiel des informations.
+
 ## Anciennes versions
 
 Le firmware v2 a évolué par rapport à son prédécesseur. Pour retrouver la documentation de la version 1, voir les liens ci-dessous :

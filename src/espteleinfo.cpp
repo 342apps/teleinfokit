@@ -94,17 +94,49 @@ void ESPTeleInfo::AnalyzeTicForInternalData()
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_base_, analyzeBuffer);
         indexes[0] = atol(analyzeBuffer);
-        index = indexes[0] + indexes[1] + indexes[2];
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
 
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_hchc_, analyzeBuffer);
         indexes[1] = atol(analyzeBuffer);
-        index = indexes[0] + indexes[1] + indexes[2];
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
 
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_hchp_, analyzeBuffer);
         indexes[2] = atol(analyzeBuffer);
-        index = indexes[0] + indexes[1] + indexes[2];
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
+        /*** MODIF TEMPO : lecture des 6 index Tempo ***/
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhcjb_, analyzeBuffer);
+        indexes[3] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhpjb_, analyzeBuffer);
+        indexes[4] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhcjw_, analyzeBuffer);
+        indexes[5] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhpjw_, analyzeBuffer);
+        indexes[6] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhcjr_, analyzeBuffer);
+        indexes[7] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
+        analyzeBuffer[0] = '\0';
+        teleinfo.valueGet(_bbrhpjr_, analyzeBuffer);
+        indexes[8] = atol(analyzeBuffer);
+        index = indexes[0] + indexes[1] + indexes[2] + indexes[3] + indexes[4] + indexes[5] + indexes[6] + indexes[7] + indexes[8];
+
     }
     else
     {
@@ -515,7 +547,7 @@ void ESPTeleInfo::sendMqttDiscoveryIndex(String label, String friendlyName)
 
     String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"energy\",\"stat_cla\":\"total_increasing\",\"unit_of_meas\":\"kWh\"") +
                     F(",\"val_tpl\":\"{{float(value)/1000.0}}\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:counter\",") +
+                    F("\",\"default_entity_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:counter\",") +
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
@@ -530,9 +562,9 @@ void ESPTeleInfo::sendMqttDiscoveryForType(String label, String friendlyName, St
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
     String sensor = F("{\"name\":\"") + friendlyName + F("\",\"dev_cla\":\"") + deviceClass + F("\",\"unit_of_meas\":\"") + unit + "\"" +
-                    F(",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + "\",\"ic\":\"" + icon + "\"," +
+                    F(",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"default_entity_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + "\",\"ic\":\"" + icon + "\"," +                    discoveryDevice + "}";
                     discoveryDevice + "}";
-
+                    
     sensor.toCharArray(payloadDiscovery, 500);
     mqttClient.publish(strDiscoveryTopic, payloadDiscovery, true);
 }
@@ -545,7 +577,7 @@ void ESPTeleInfo::sendMqttDiscoveryText(String label, String friendlyName)
     sprintf(strDiscoveryTopic, "homeassistant/sensor/%s/%s/config", UNIQUE_ID, bufLabel);
 
     String sensor = F("{\"name\":\"") + friendlyName + F("\",\"stat_t\":\"") + bufDataTopic + "/" + label + F("\",\"uniq_id\":\"") + String(UNIQUE_ID) + "-" + label +
-                    F("\",\"obj_id\":\"") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:information-outline\",") +
+                    F("\",\"default_entity_id\":\"sensor.") + String(UNIQUE_ID) + "-" + label + F("\",\"ic\":\"mdi:information-outline\",") +
                     discoveryDevice + "}";
 
     sensor.toCharArray(payloadDiscovery, 500);
@@ -595,4 +627,4 @@ String ESPTeleInfo::sanitizeLabel(String input)
     input.replace("/", "_");
     // ajoute d’autres si besoin
     return input;
-}
+} 

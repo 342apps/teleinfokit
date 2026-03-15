@@ -32,7 +32,7 @@ public:
     // les données de consommation
     long iinst;               // HIST: IINST  STD IRMS1
     long papp;                // HIST: PAPP   STD SINSTS
-    long index;               // HIST: BASE + HCHC + HCHP   STD EAST
+    long index;               // HIST: BASE + HCHC + HCHP + TEMPO  STD EAST
     char adresseCompteur[20]; // HIST: ADCO   STD ADSC
     char strDataTopic[50];
     char strDiscoveryTopic[128];
@@ -68,9 +68,16 @@ private:
     char *_base_ = (char *)"BASE";
     char *_hchc_ = (char *)"HCHC";
     char *_hchp_ = (char *)"HCHP";
+    /*** MODIF TEMPO : labels Tempo ***/
+    char *_bbrhcjb_ = (char *)"BBRHCJB";
+    char *_bbrhpjb_ = (char *)"BBRHPJB";
+    char *_bbrhcjw_ = (char *)"BBRHCJW";
+    char *_bbrhpjw_ = (char *)"BBRHPJW";
+    char *_bbrhcjr_ = (char *)"BBRHCJR";
+    char *_bbrhpjr_ = (char *)"BBRHPJR";
 
-    // to store 3 for hist mode (BASE, HP, HC)
-    long indexes[3];
+    // to store 9 for hist mode (BASE, HP, HC + TEMPO)
+    long indexes[9];
 
     unsigned int delay_generic;
     bool sendGeneric;

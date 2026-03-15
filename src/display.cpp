@@ -102,8 +102,24 @@ void Display::drawGraph(long papp, char mode)
   }
   oled.drawHorizontalLine(98, HEIGHT - BAR_HEIGHT, 28);
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->max));
-  oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
+  // oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->getTotal24h()));
+  // oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
+  uint32_t totalWh = data->getTotal24h();
+  String valuepower;
+  String unitpower;
+  if (totalWh <= 9999)
+  {
+      valuepower = String(totalWh);
+      unitpower = "Wh";
+  }
+  else
+  {
+      float totalkwh = totalWh / 1000.0f;
+      valuepower = String(totalkwh, 3);   // 3 décimales
+      unitpower = "kWh";
+  }
+  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, valuepower);
+  oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), unitpower);
   oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oled.drawRect(0, 1, 9, 11);
@@ -219,4 +235,4 @@ void Display::getTime()
       return;
     }
   }
-}
+} 

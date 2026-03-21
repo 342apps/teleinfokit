@@ -88,6 +88,42 @@ void Display::logPercent(String text, int percentage)
   oled.display();
 }
 
+void Display::displayAPData(String ssid, String password)
+{
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Hotsport Wifi :");
+  oled.drawString(0, 10, ssid);
+  oled.drawString(0, 20, password);
+  oled.display();
+
+  // generate QR code for wifi connection
+  QRCode qrcode;
+  String wifiConfig = "WIFI:T:WPA;S:" + ssid + ";P:" + password + ";;";
+
+  uint8_t qrcodeData[qrcode_getBufferSize(3)];
+  qrcode_initText(&qrcode, qrcodeData, 3, 0, wifiConfig.c_str());
+
+  int qrSize = qrcode.size;
+  int start_x = (oled.width() - qrSize - 2); //qr on the right
+  int start_y = (oled.height() - qrSize);
+  
+  for (int y = 0; y < qrSize; y++)
+  {
+    for (int x = 0; x < qrSize; x++)
+    {
+      if (qrcode_getModule(&qrcode, x, y))
+      {
+        oled.setPixel(start_x + x, start_y + y);
+      }
+    }
+  }
+  oled.display();
+
+}
+
 void Display::drawGraph(long papp, char mode)
 {
   oled.displayOn();

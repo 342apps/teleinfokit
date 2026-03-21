@@ -5,6 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 #include <TZ.h>
+#include "qrcode.h"
 #include "SSD1306Wire.h"
 #include "data.h"
 #include "version.h"
@@ -25,6 +26,7 @@ public:
     void loop(void);
     void log(String text, int16_t displayTime = 500);
     void logPercent(String text, int percentage);
+    void displayAPData(String ssid, String password);
     void drawGraph(long papp, char mode);
     void displayData1(long papp, long iinst);
     void displayData2(long index, char *compteur);

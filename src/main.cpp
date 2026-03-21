@@ -207,7 +207,8 @@ void saveConfigCallback()
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager *myWiFiManager)
 {
-  d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
+  //d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
+  d->displayAPData(myWiFiManager->getConfigPortalSSID(), randKey->apPwd);
 }
 
 File isVersion200OrLess()

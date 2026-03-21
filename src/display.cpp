@@ -15,6 +15,8 @@ Display::Display()
 void Display::init(Data *d)
 {
   data = d;
+  displayGraphStep = 0;
+  lastGraphStepUpdate = 0;
 }
 
 void Display::loop(void)
@@ -88,6 +90,42 @@ void Display::logPercent(String text, int percentage)
   oled.display();
 }
 
+void Display::displayAPData(String ssid, String password)
+{
+  oled.displayOn();
+  oled.clear();
+  oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  oled.setFont(ArialMT_Plain_10);
+  oled.drawString(0, 0, "Hotsport Wifi :");
+  oled.drawString(0, 10, ssid);
+  oled.drawString(0, 20, password);
+  oled.display();
+
+  // generate QR code for wifi connection
+  QRCode qrcode;
+  String wifiConfig = "WIFI:T:WPA;S:" + ssid + ";P:" + password + ";;";
+
+  uint8_t qrcodeData[qrcode_getBufferSize(3)];
+  qrcode_initText(&qrcode, qrcodeData, 3, 0, wifiConfig.c_str());
+
+  int qrSize = qrcode.size;
+  int start_x = (oled.width() - qrSize - 2); //qr on the right
+  int start_y = (oled.height() - qrSize);
+  
+  for (int y = 0; y < qrSize; y++)
+  {
+    for (int x = 0; x < qrSize; x++)
+    {
+      if (qrcode_getModule(&qrcode, x, y))
+      {
+        oled.setPixel(start_x + x, start_y + y);
+      }
+    }
+  }
+  oled.display();
+
+}
+
 void Display::drawGraph(long papp, char mode)
 {
   oled.displayOn();
@@ -102,13 +140,44 @@ void Display::drawGraph(long papp, char mode)
   }
   oled.drawHorizontalLine(98, HEIGHT - BAR_HEIGHT, 28);
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->max));
+  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->maxGraph));
   oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  
+  // loop through title, 24h total, max papp
+  if(millis() - lastGraphStepUpdate > DISPLAY_STEP_MS) {
+    displayGraphStep = (displayGraphStep + 1) % 4;
+    lastGraphStepUpdate = millis();
+  }
+
+  if (displayGraphStep <= 1) {
+    // twice more time to show title
+    oled.drawString(12, 0, "Historique 24h");
+  }
+  else if(displayGraphStep == 2) {
+    uint32_t totalWh = data->getTotal24h();
+    String valuepower;
+    String unitpower;
+    if (totalWh <= 9999)
+    {
+        valuepower = String(totalWh);
+        unitpower = "Wh";
+    }
+    else
+    {
+        float totalkwh = totalWh / 1000.0f;
+        valuepower = String(totalkwh, 3);   // 3 décimales
+        unitpower = "kWh";
+    }
+    oled.drawString(12, 0, "Total " + valuepower + unitpower);
+  }
+  else if(displayGraphStep == 3) {
+    oled.drawString(12, 0, "Max " + String(data->maxPower) + "VA");
+  }
+
   oled.drawRect(0, 1, 9, 11);
   oled.drawString(1, 0, String(mode));
-  oled.drawString(12, 0, "Graphe 24h");
   oled.display();
 }
 
@@ -219,4 +288,4 @@ void Display::getTime()
       return;
     }
   }
-}
+} 

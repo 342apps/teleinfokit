@@ -40,6 +40,8 @@ public:
     long ts_startup;
     char analyzeBuffer[20];
 
+    long maxPapp;
+
     // _Mode_e tic_mode = TINFO_MODE_STANDARD;
     TInfo tic;
 
@@ -89,6 +91,9 @@ private:
     unsigned long ts_index;
     // timestamp for the last generic data send
     unsigned long ts_generic;
+    unsigned long ts_maxPapp;
+
+    const unsigned long ONE_DAY_MS = 24UL * 60UL * 60UL * 1000UL;
 
     char CHIP_ID[7] = {0};
     char UNIQUE_ID[30];

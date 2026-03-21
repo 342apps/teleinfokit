@@ -22,7 +22,6 @@
 #define RESET_CONFIRM_DELAY 10000
 #define SCREEN_OFF_MESSAGE_DELAY 5000
 #define SCREENSAVER_DELAY 60000
-#define AP_NAME "TeleInfoKit"
 
 #define REFRESH_DELAY 1000
 
@@ -154,6 +153,14 @@ void getTime()
   d->log(buffer, 1000);
 }
 
+// wifi checks and connection once started
+unsigned long ts_last_wifi_check = 0;
+#define WIFI_CHECK_INTERVAL 60000 // 1 minute
+#define NB_WIFI_CONNECT_TRY 10
+#define WIFI_CONFIG_PORTAL_TIMEOUT_SEC 300 // 5 minutes
+int wifi_reconnect_try_count = 0;
+bool wifi_config_saved_during_portal = false;
+
 // #REGION WifiManager ==================================
 WiFiManager wm;
 
@@ -168,6 +175,7 @@ char mqtt_server_username[32];
 char mqtt_server_password[32];
 char data_transmission_period[10];
 char UNIQUE_ID[30];
+char AP_NAME[30];
 
 char _customHtml_checkbox_mode_tic[200] = "";
 char _customHtml_checkbox_triphase[250] = "";
@@ -192,13 +200,15 @@ WiFiManagerParameter *custom_version;
 // Network connection has been done through captive portal of hotspot or through config webportal
 void saveConfigCallback()
 {
+  wifi_config_saved_during_portal = true;
   d->log("Configuration sauvée", 500);
 }
 
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager *myWiFiManager)
 {
-  d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
+  //d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
+  d->displayAPData(myWiFiManager->getConfigPortalSSID(), randKey->apPwd);
 }
 
 File isVersion200OrLess()
@@ -511,6 +521,7 @@ void setup()
   d->init(data);
 
   snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
+  snprintf(AP_NAME, 30, "TeleInfoKit-%06X", ESP.getChipId());
 
   d->displayStartup(String(VERSION));
 
@@ -613,11 +624,21 @@ void setup()
     // if it does not connect it starts an access point with the specified name
     // and goes into a blocking loop awaiting configuration
     wm.setConnectTimeout(45);
+    wm.setConfigPortalTimeout(WIFI_CONFIG_PORTAL_TIMEOUT_SEC);
+    wifi_config_saved_during_portal = false;
 
     // the AP password is random and specific to each device, but will be always the same for a device
-    if (!wm.autoConnect(AP_NAME, randKey->apPwd))
+    bool auto_connected = wm.autoConnect(AP_NAME, randKey->apPwd);
+    if (!auto_connected)
     {
-      d->log("Connexion impossible\n Reset...");
+      if (!wifi_config_saved_during_portal)
+      {
+        d->log("Aucune configuration en 5 min\nRedemarrage", 1000);
+      }
+      else
+      {
+        d->log("Connexion impossible\nRedemarrage", 1000);
+      }
       delay(1000);
       // reset and try again
       ESP.reset();
@@ -729,6 +750,74 @@ void loop()
   ArduinoOTA.handle();
   button.loop();
   wm.process();
+
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (millis() - ts_last_wifi_check > WIFI_CHECK_INTERVAL)
+    {
+      ts_last_wifi_check = millis();
+
+      if (wifi_reconnect_try_count < NB_WIFI_CONNECT_TRY)
+      {
+        wifi_reconnect_try_count++;
+        d->log("Wifi KO, tentative " + String(wifi_reconnect_try_count) + "/" + String(NB_WIFI_CONNECT_TRY), 500);
+        WiFi.reconnect();
+
+        // Leave a short window for asynchronous reconnection.
+        unsigned long wait_start = millis();
+        while (millis() - wait_start < 2000 && WiFi.status() != WL_CONNECTED)
+        {
+          ArduinoOTA.handle();
+          button.loop();
+          wm.process();
+          delay(10);
+        }
+
+        if (WiFi.status() == WL_CONNECTED)
+        {
+          wifi_reconnect_try_count = 0;
+          d->log("Reconnexion réussie !");
+          getTime(); // update time after reconnection
+        }
+        else
+        {
+          d->log("Echec tentative wifi.");
+        }
+      }
+
+      if (wifi_reconnect_try_count >= NB_WIFI_CONNECT_TRY)
+      {
+        d->log("Wifi indisponible\nOuverture portail config", 1000);
+        wifi_config_saved_during_portal = false;
+        wm.setConfigPortalTimeout(WIFI_CONFIG_PORTAL_TIMEOUT_SEC);
+
+        // startConfigPortal is blocking.
+        bool portal_connected = wm.startConfigPortal(AP_NAME, randKey->apPwd);
+        bool wifi_connected = WiFi.status() == WL_CONNECTED;
+
+        // If no configuration was saved during the portal session and WiFi is still down,
+        // reboot to retry normal auto connection with previously known credentials.
+        if (!wifi_config_saved_during_portal && !wifi_connected)
+        {
+          d->log("Aucune configuration en 5 min\nRedemarrage", 1000);
+          wm.reboot();
+        }
+        else if (!portal_connected && !wifi_connected)
+        {
+          d->log("Echec portail config, redemarrage", 1000);
+          wm.reboot();
+        }
+
+        wifi_reconnect_try_count = 0;
+        ts_last_wifi_check = millis();
+      }
+    }
+  }
+  else
+  {
+    wifi_reconnect_try_count = 0;
+  }
+  
 
   if (!test_mode)
   {

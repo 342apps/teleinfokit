@@ -13,10 +13,12 @@ void Data::init()
     // garde fou au demarrage
     lastBase = -1;
     historyReady = false;
-    max = 1; // not 0 because used to divide
+    maxGraph = 1; // not 0 because used to divide
     newHour = true;
     firstIndex_base = 0;
     bargraph_float = 0.0;
+    maxPower = 0;
+
 
     for (uint8_t i = 0; i < NB_BARS; i++)
     {
@@ -40,7 +42,7 @@ void Data::calculateGraph()
     for (uint8_t i = 0; i < NB_BARS; i++)
     {
         // convert to float to avoid precision loss (result in values = 0)
-        bargraph_float = ((float)(history_base[i]) / (float)max) * (float)BAR_HEIGHT;
+        bargraph_float = ((float)(history_base[i]) / (float)maxGraph) * (float)BAR_HEIGHT;
         // invert positions to ease the graph generation
         bargraph[NB_BARS - i - 1] = (int8_t)bargraph_float;
     }
@@ -102,12 +104,12 @@ void Data::storeValueBase(long base)
 
 void Data::calculateMax()
 {
-    max = 1; // not 0 beause used to divide
+    maxGraph = 1; // not 0 beause used to divide
     for (uint8_t i = 0; i < NB_BARS; i++)
     {
-        if (history_base[i] > max)
+        if (history_base[i] > maxGraph)
         {
-            max = history_base[i];
+            maxGraph = history_base[i];
         }
     }
 }

@@ -157,7 +157,9 @@ void getTime()
 unsigned long ts_last_wifi_check = 0;
 #define WIFI_CHECK_INTERVAL 60000 // 1 minute
 #define NB_WIFI_CONNECT_TRY 5
+#define WIFI_CONFIG_PORTAL_TIMEOUT_SEC 300 // 5 minutes
 int wifi_reconnect_try_count = 0;
+bool wifi_config_saved_during_portal = false;
 
 // #REGION WifiManager ==================================
 WiFiManager wm;
@@ -198,6 +200,7 @@ WiFiManagerParameter *custom_version;
 // Network connection has been done through captive portal of hotspot or through config webportal
 void saveConfigCallback()
 {
+  wifi_config_saved_during_portal = true;
   d->log("Configuration sauvée", 500);
 }
 
@@ -620,11 +623,21 @@ void setup()
     // if it does not connect it starts an access point with the specified name
     // and goes into a blocking loop awaiting configuration
     wm.setConnectTimeout(45);
+    wm.setConfigPortalTimeout(WIFI_CONFIG_PORTAL_TIMEOUT_SEC);
+    wifi_config_saved_during_portal = false;
 
     // the AP password is random and specific to each device, but will be always the same for a device
-    if (!wm.autoConnect(AP_NAME, randKey->apPwd))
+    bool auto_connected = wm.autoConnect(AP_NAME, randKey->apPwd);
+    if (!auto_connected)
     {
-      d->log("Connexion impossible\n Reset...");
+      if (!wifi_config_saved_during_portal)
+      {
+        d->log("Aucune configuration en 5 min\nRedemarrage", 1000);
+      }
+      else
+      {
+        d->log("Connexion impossible\nRedemarrage", 1000);
+      }
       delay(1000);
       // reset and try again
       ESP.reset();
@@ -774,10 +787,21 @@ void loop()
       if (wifi_reconnect_try_count >= NB_WIFI_CONNECT_TRY)
       {
         d->log("Wifi indisponible\nOuverture portail config", 1000);
-        wm.setConfigPortalTimeout(180);
+        wifi_config_saved_during_portal = false;
+        wm.setConfigPortalTimeout(WIFI_CONFIG_PORTAL_TIMEOUT_SEC);
 
-        // startConfigPortal is blocking; if it fails, reboot as last resort.
-        if (!wm.startConfigPortal(AP_NAME, randKey->apPwd))
+        // startConfigPortal is blocking.
+        bool portal_connected = wm.startConfigPortal(AP_NAME, randKey->apPwd);
+        bool wifi_connected = WiFi.status() == WL_CONNECTED;
+
+        // If no configuration was saved during the portal session and WiFi is still down,
+        // reboot to retry normal auto connection with previously known credentials.
+        if (!wifi_config_saved_during_portal && !wifi_connected)
+        {
+          d->log("Aucune configuration en 5 min\nRedemarrage", 1000);
+          wm.reboot();
+        }
+        else if (!portal_connected && !wifi_connected)
         {
           d->log("Echec portail config, redemarrage", 1000);
           wm.reboot();

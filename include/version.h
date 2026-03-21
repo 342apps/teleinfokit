@@ -3,5 +3,5 @@
   #define BUILD_HASH "6fba16"
 #endif
 #ifndef VERSION
-  #define VERSION "v2.1.0.6fba16"
+  #define VERSION "v2.2.0.6fba16"
 #endif

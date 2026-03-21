@@ -140,8 +140,6 @@ void Display::drawGraph(long papp, char mode)
   }
   oled.drawHorizontalLine(98, HEIGHT - BAR_HEIGHT, 28);
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  // oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->getTotal24h()));
-  // oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->maxGraph));
   oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(128, 0, String(papp) + "VA");
@@ -155,7 +153,7 @@ void Display::drawGraph(long papp, char mode)
 
   if (displayGraphStep <= 1) {
     // twice more time to show title
-    oled.drawString(12, 0, "Histo 24h");
+    oled.drawString(12, 0, "Historique 24h");
   }
   else if(displayGraphStep == 2) {
     uint32_t totalWh = data->getTotal24h();

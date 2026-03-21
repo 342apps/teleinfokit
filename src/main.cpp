@@ -156,7 +156,7 @@ void getTime()
 // wifi checks and connection once started
 unsigned long ts_last_wifi_check = 0;
 #define WIFI_CHECK_INTERVAL 60000 // 1 minute
-#define NB_WIFI_CONNECT_TRY 5
+#define NB_WIFI_CONNECT_TRY 10
 #define WIFI_CONFIG_PORTAL_TIMEOUT_SEC 300 // 5 minutes
 int wifi_reconnect_try_count = 0;
 bool wifi_config_saved_during_portal = false;

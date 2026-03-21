@@ -7,19 +7,38 @@ Lors du premier démarrage du module il est nécessaire de saisir les informatio
 Brancher le connecteur USB-C à une source d'alimentation 5V (chargeur USB classique), puis attendre l'affichage de l'écran suivant :
 
 ```text
-Hotspot Wifi: TeleInfoKit
-Clé: ABCD-1234-EF56 
+Hotspot Wifi             ▪◽◽◽▪▪
+TeleInfoKit-XXXXXX       ◽◽▪◽◽◽
+ABCD-1234-EF56           ▪◽◽▪▪◽
 ```
 
-Un réseau Wifi portant le SSID `TeleInfoKit` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est affiché à l'écran. Il est unique à chaque boitier.
+Un réseau Wifi portant le SSID `TeleInfoKit-xxxxxx` a été créé. A l'aide d'un smartphone ou d'un ordinateur, se connecter à ce réseau Wifi. Le mot de passe du hotspot wifi est affiché à l'écran sur la dernière ligne. Il est unique à chaque boitier.
+
+A droite se trouve un QRCode permettant une connexion directe au Wifi de configuration (à partir du firmware 2.2.x).
 
 > Les caractères possibles sont uniquement des tirets, les chiffres de `0` à `9` et les lettres de `A` à `F`. 
 >
-> *La lettre `O`n'est pas présente, ne pas la confondre avec le chiffre `0`.*
+> *La lettre `O`n'est **pas** présente, ne pas la confondre avec le chiffre `0`.*
 
 Une fois connecté au réseau wifi avec un smartphone, le captive portail s'affiche.
 
 ![Captive portal](./img/captive-portal_v2.png)
+
+### Gestion de la reconnexion wifi
+
+La gestion de reconnexion décrite si dessous n'est disponible qu'à partir de la version 2.2 du firmware.
+
+#### Au démarrage
+
+Au démarrage du module, des tentatives de connexion au réseau wifi précédemment configuré vont se faire pendant 45 secondes. Si le wifi n'est toujours pas disponible au bout des **45 secondes**, le module va passer en mode 'Hotspot de confifguration', comme lors de la configuration initiale, permettant de configurer un réseau wifi si besoin.
+
+Si aucune configuration n'est faite dans les **5 minutes** qui suivent, le module va redémarrer et va rententer la connextion à son réseau wifi précédemment configuré pendant 45s, et ainsi de suite en boucle.
+
+Cela permet de retrouver automatiquement et sans intervention la connexion wifi si celui-ci n'est pas disponible pendant une longue durée, ou si le wifi n'est pas disponible instantanément après une coupure de courant par exemple.
+
+#### En fonctionnement
+
+Si le wifi est perdu en cours de fonctionnement, **10 tentatives** de reconnexion vont être effectuées à **1 minute** d'intervalle. Au bout des 10 tentatives, le boitier redémarre et reprendra la séquence de démarrage décrite plus haut.
 
 ### Optionnel : configuration MQTT et TIC
 
@@ -107,7 +126,9 @@ L'écran s'éteindra de lui même au bout d'une minute afin de limiter l'usure d
 
 Ce premier écran rassemble un grand nombre d'informations. La zone principale est occupée par un graphe de la consommation sur les dernières 24h. 
 
-A chaque barre correspond 1 heure. Les barres à gauche sont les plus anciennes, la barre la plus à droite est l'heure courante. La hauteur de la barre indique le nombre de Wh consommés sur cette période d'une heure (HC + HP).
+A chaque barre correspond 1 heure. Les barres à gauche sont les plus anciennes, la barre la plus à droite est l'heure courante. La hauteur de la barre indique le nombre de Wh consommés sur cette période d'une heure (HC + HP ou somme index TEMPO).
+
+La consommation totale sur 24h et le maximum de consommation instantanné des dernieres 24h s'affichent en boucle au dessus de l'écran (à partir du firmware 2.2).
 
 La barre horizontale à droite indique la hauteur maximale des barres du graphe. Le nombre indiqué sous cette barre (2864Wh sur l'exemple ci-dessous) indique la consommation max sur une période d'une heure au cours des dernières 24h. Cela sert donc d'échelle pour le graphe, cette valeur étant la consommation associée à la barre la plus haute du graphe.
 
@@ -191,6 +212,10 @@ Appui court pour rallumer.
 Sans appui supplémentaire sur le bouton, l'écran va s'éteindre au bout de 5s au lieu d'une minute pour les autres écrans. Un nouvel appui sur le bouton réactive l'écran et passe à la page suivante.
 
 ## Réinitialisation de la configuration (Factory reset)
+
+### Depuis un navigateur 
+
+Depuis un navigateur, se connecter à l'ip du module et depuis la page `Infos`, cliquer sur le bouton `Erase Wifi config`situé tout en bas de la page. Les informations wifi vont être effacées et le boitier va redémarrer.
 
 ### Depuis les menus à l'écran
 

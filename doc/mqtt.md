@@ -85,17 +85,19 @@ Exemple d'un message de discovery pour l'index total d'un compteur mode standard
     "val_tpl": "{{float(value)/1000.0}}",
     "stat_t": "teleinfokit-xxxxxx/data/EAST",
     "uniq_id": "teleinfokit-xxxxxx-EAST",
-    "obj_id": "teleinfokit-xxxxxx-EAST",
+    "default_entity_id": "sensor.teleinfokit-xxxxxx-EAST",
     "ic": "mdi:counter",
     "dev": {
         "ids": "teleinfokit-xxxxxx",
         "name": "TeleInfoKit",
-        "sw": "v2.0.0.yyyyy",
+        "sw": "v2.2.0.yyyyy",
         "mdl": "TeleInfoKit v4",
         "mf": "342apps"
     }
 }
 ```
+
+> Note : à partir de la version 2.2 du firmware, le champ `obj_id: teleinfokit-xxxxxx` a été remplacé par `default_entity_id: sensor.teleinfokit-xxxxxx` pour suivre les breaking changes MQTT dans Home Assistant à partir de la version 2026.4 ou `obj_id` n'est plus supporté.
 
 Il n'y a pas à se préoccuper de ces messages, ceux-ci sont à destination de Home Assistant et non utiles dans un autre contexte.
 

@@ -68,10 +68,10 @@ void Data::storeValueBase(long base)
     {
         firstIndex_base = base;
         newHour = false;
-        historyReady = true;      // ✅ historique OK à partir d’ici
+        historyReady = true; 
         historyStartTime = now;
-        history_base[0] = 0;      // ✅ reset conso heure courante
-        lastBase = base;          // ✅ mémorise la base
+        history_base[0] = 0;
+        lastBase = base;
         return;
     }
 
@@ -89,7 +89,7 @@ void Data::storeValueBase(long base)
     long delta = base - firstIndex_base;
 
     // garde-fou anti spike (ex: au boot)
-    const long MAX_WH_PER_HOUR = 50000L; // ajuste si besoin
+    const long MAX_WH_PER_HOUR = 50000L;
     if (delta < 0 || delta > MAX_WH_PER_HOUR)
     {
         firstIndex_base = base;   // resync

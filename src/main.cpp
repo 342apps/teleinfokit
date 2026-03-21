@@ -134,9 +134,8 @@ void getTime()
   configTime(TZ_Europe_Paris, "pool.ntp.org", "time.nist.gov");
   d->log("Waiting for NTP time sync: ");
   while (now < 8 * 3600 * 2)
-  { // what is this ?
+  { 
     delay(100);
-    // Serial.print(".");
     now = time(nullptr);
     if ((millis() - start) > timeout)
     {
@@ -207,7 +206,6 @@ void saveConfigCallback()
 // gets called when WiFiManager enters configuration mode
 void configModeCallback(WiFiManager *myWiFiManager)
 {
-  //d->log("Hotspot Wifi: " + myWiFiManager->getConfigPortalSSID() + "\nClé : " + String(randKey->apPwd));
   d->displayAPData(myWiFiManager->getConfigPortalSSID(), randKey->apPwd);
 }
 
@@ -919,7 +917,7 @@ void loop()
 
 String getParam(String name)
 {
-  // read parameter from server, for customhmtl input
+  // read parameter from server, for customhtml input
   String value;
   if (wm.server->hasArg(name))
   {

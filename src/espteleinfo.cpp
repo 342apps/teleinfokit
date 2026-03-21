@@ -519,7 +519,6 @@ void ESPTeleInfo::clearAllDiscovery()
     deleteMqttDiscovery(F("PTEC"));
     deleteMqttDiscovery(F("DEMAIN"));
     mqttClient.loop();
-    // ...existing code...
     deleteMqttDiscovery(F("SMAXSN"));
     deleteMqttDiscovery(F("SMAXSN-1"));
     deleteMqttDiscovery(F("SINSTI"));
@@ -637,6 +636,5 @@ String ESPTeleInfo::sanitizeLabel(String input)
     input.replace("+", "_");
     input.replace("#", "_");
     input.replace("/", "_");
-    // ajoute d’autres si besoin
     return input;
 } 

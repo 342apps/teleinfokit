@@ -18,6 +18,8 @@ ESPTeleInfo::ESPTeleInfo()
     mqtt_pwd[0] = '\0';
     ts_analyzeData = 0;
     ts_startup = 0;
+    maxPapp = 0;
+    ts_maxPapp = 0;
     started = false;
 }
 
@@ -34,6 +36,8 @@ void ESPTeleInfo::init(_Mode_e tic_mode, bool triphase)
     iinst = 0;
     papp = 0;
     index = 0;
+    maxPapp = 0;
+    ts_maxPapp = 0;
     adresseCompteur[0] = '\0';
 
     snprintf(UNIQUE_ID, 30, "teleinfokit-%06X", ESP.getChipId());
@@ -90,6 +94,14 @@ void ESPTeleInfo::AnalyzeTicForInternalData()
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_papp_, analyzeBuffer);
         papp = atol(analyzeBuffer);
+
+        const unsigned long now = millis();
+
+        if (papp > maxPapp || (now - ts_maxPapp) >= ONE_DAY_MS)
+        {
+            maxPapp = papp;
+            ts_maxPapp = now;
+        }
 
         analyzeBuffer[0] = '\0';
         teleinfo.valueGet(_base_, analyzeBuffer);

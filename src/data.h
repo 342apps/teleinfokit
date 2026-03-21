@@ -18,7 +18,8 @@ public:
 
     // les données de consommation
     long history_base[NB_BARS];
-    long max;
+    long maxGraph;
+    long maxPower;
     uint8_t bargraph[NB_BARS];
     uint32_t getTotal24h();
     unsigned long startupTime;

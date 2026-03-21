@@ -14,6 +14,8 @@
 #define HEIGHT 32
 #define WIDTH 128
 
+#define DISPLAY_STEP_MS 2000
+
 class Display
 {
 public:
@@ -40,6 +42,8 @@ public:
 
 private:
     Data *data;
+    uint8_t displayGraphStep;
+    unsigned long lastGraphStepUpdate;
 }; 
 
 #endif /* DISPLAY_H */

@@ -15,6 +15,8 @@ Display::Display()
 void Display::init(Data *d)
 {
   data = d;
+  displayGraphStep = 0;
+  lastGraphStepUpdate = 0;
 }
 
 void Display::loop(void)
@@ -140,27 +142,44 @@ void Display::drawGraph(long papp, char mode)
   oled.setTextAlignment(TEXT_ALIGN_RIGHT);
   // oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->getTotal24h()));
   // oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
-  uint32_t totalWh = data->getTotal24h();
-  String valuepower;
-  String unitpower;
-  if (totalWh <= 9999)
-  {
-      valuepower = String(totalWh);
-      unitpower = "Wh";
-  }
-  else
-  {
-      float totalkwh = totalWh / 1000.0f;
-      valuepower = String(totalkwh, 3);   // 3 décimales
-      unitpower = "kWh";
-  }
-  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, valuepower);
-  oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), unitpower);
+  oled.drawString(WIDTH, HEIGHT - BAR_HEIGHT, String(data->maxGraph));
+  oled.drawString(WIDTH, HEIGHT - (BAR_HEIGHT / 2), "Wh");
   oled.drawString(128, 0, String(papp) + "VA");
   oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  
+  // loop through title, 24h total, max papp
+  if(millis() - lastGraphStepUpdate > DISPLAY_STEP_MS) {
+    displayGraphStep = (displayGraphStep + 1) % 4;
+    lastGraphStepUpdate = millis();
+  }
+
+  if (displayGraphStep <= 1) {
+    // twice more time to show title
+    oled.drawString(12, 0, "Histo 24h");
+  }
+  else if(displayGraphStep == 2) {
+    uint32_t totalWh = data->getTotal24h();
+    String valuepower;
+    String unitpower;
+    if (totalWh <= 9999)
+    {
+        valuepower = String(totalWh);
+        unitpower = "Wh";
+    }
+    else
+    {
+        float totalkwh = totalWh / 1000.0f;
+        valuepower = String(totalkwh, 3);   // 3 décimales
+        unitpower = "kWh";
+    }
+    oled.drawString(12, 0, "Total " + valuepower + unitpower);
+  }
+  else if(displayGraphStep == 3) {
+    oled.drawString(12, 0, "Max " + String(data->maxPower) + "VA");
+  }
+
   oled.drawRect(0, 1, 9, 11);
   oled.drawString(1, 0, String(mode));
-  oled.drawString(12, 0, "Graphe 24h");
   oled.display();
 }
 
